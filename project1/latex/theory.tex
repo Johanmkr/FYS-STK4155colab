@@ -1,0 +1,68 @@
+\section{Theory}\label{sec:theroy}
+
+\hl{*} Presisér indeks-notasjon! \hl{*} 
+
+We assume the data $y_i=f(x_i)+\epsilon_i\in \RR[n]$ where $f(x_i)\in\RR[n]$ is a continous function and $\epsilon_i\in \RR[n] $ is a normally distributed noise. We let $f(x_i)=X_{ij}\beta_{j}$ where $X_{ij}\in \RR[n\cross p]$ is the design matrix s.t.
+
+\begin{align*}
+    X_{ij} = (x_i)^{j-1}, \quad i = 1, \dots, n \quad j = 1, \dots, p,
+\end{align*}
+
+and $\beta_j\in \RR[p]$ are the unknown parameters to be determined. The integers $n$ and $p$ represent the number of data points and features, respectively. 
+
+\begin{align*}
+    y_i &= f(x_i) + \epsilon_i = X_{ij}\beta_j + \epsilon_i \\
+    \tilde{y}_i &= X_{ij}\hat{\beta}_j 
+\end{align*}
+
+
+\begin{align*}
+    \EE{X_{ij}\beta_j} \stackrel{\text{non-stochastic}}{=} X_{ij}\beta_j 
+\end{align*}
+
+\begin{align*}
+    \EE{\epsilon_i} \stackrel{\text{per def.}}{=} 0
+\end{align*}
+
+\begin{align*}
+    \EE{y_i} &= \EE{X_{ij}\beta_j + \epsilon_i} \\
+    &= \EE{X_{ij}\beta_j} + \EE{\epsilon_i} \\
+    &= X_{ij}\beta_j
+\end{align*}
+
+
+\begin{align*}
+    \variance{y_i} &= \EE{y_i y_i\TT} -\EE{y_i}\EE{y_i\TT} \\
+    &= \EE{X_{ij}\beta_j\beta_j\TT X_{ij}\TT + X_{ij}\beta_j\epsilon_i\TT + \epsilon_i \beta_j\TT X_{ij}\TT + \epsilon_i \epsilon_i\TT } \\ 
+    & \quad - X_{ij}\beta_j\beta_j\TT X_{ij}\TT \\
+    &= X_{ij}\beta_j\beta_j\TT X_{ij}\TT  + \EE{\epsilon_i \epsilon_i\TT} - X_{ij}\beta_j\beta_j\TT X_{ij}\TT  \\
+    &= \sigma^2
+\end{align*}
+
+\hl{...}
+
+\begin{align*}
+    \EE{\hat{\beta}} &= \EE{\invhessian X\TT y} \\
+    &= \invhessian X\TT \EE{y} \\
+    &= \invhessian \hessian \beta \\
+    &= \beta
+\end{align*}
+
+\begin{align*}
+    \variance{\hat{\beta}} &= \EE{\hat{\beta} \hat{\beta}\TT} -\EE{\hat{\beta}} \EE{\hat{\beta}\TT} \\
+    &= \EE{\invhessian X\TT y y\TT X (\invhessian)\TT} - \beta \beta\TT \\
+    &= \invhessian X\TT \EE{y y\TT } X \invhessian - \beta \beta\TT \\
+    &\stackrel{\text{*}}{=}\invhessian X\TT ( X\beta \beta\TT + \II\sigma^2) X \invhessian \\
+    &= \beta \beta \TT + \invhessian X\TT \sigma^2 X \invhessian - \beta \beta \TT \\
+    &= \sigma^2 \invhessian
+\end{align*}
+
+
+\begin{align*}
+    \EE{y y\TT} &= \EE{(X\beta + \epsilon)(X\beta + \epsilon)\TT} \\
+    &= \EE{X\beta \beta\TT X\TT + X\beta \epsilon\TT + \epsilon\beta\TT X\TT + \epsilon \epsilon\TT} \\
+    &= X\beta \beta\TT X\TT + \II \sigma^2
+\end{align*}
+
+
+% Maybe put this earlier as we use it twice?
