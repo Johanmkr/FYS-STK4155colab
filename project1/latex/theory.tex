@@ -1,68 +1,65 @@
 \section{Theory}\label{sec:theroy}
 
-\hl{*} Presisér indeks-notasjon! \hl{*} 
 
-We assume the data $y_i=f(x_i)+\epsilon_i\in \RR[n]$ where $f(x_i)\in\RR[n]$ is a continous function and $\epsilon_i\in \RR[n] $ is a normally distributed noise. We let $f(x_i)=X_{ij}\beta_{j}$ where $X_{ij}\in \RR[n\cross p]$ is the design matrix s.t.
+We assume the vector $\vec{y} \in \RR[n]$ consisting of observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. The integers $n$ and $p$ represent the number of data points and features, respectively. 
+
+
+
+For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$\footnote{Can also write $X_{ij}\beta_j$, but we try to be consistent with our notation.}. The inner product $\vec{x}_i\TT \svec{\beta}$ is non-stochastic, hence 
 
 \begin{align*}
-    X_{ij} = (x_i)^{j-1}, \quad i = 1, \dots, n \quad j = 1, \dots, p,
+    \EE{\Xbi} = \Xbi
 \end{align*}
 
-and $\beta_j\in \RR[p]$ are the unknown parameters to be determined. The integers $n$ and $p$ represent the number of data points and features, respectively. 
+and since 
 
 \begin{align*}
-    y_i &= f(x_i) + \epsilon_i = X_{ij}\beta_j + \epsilon_i \\
-    \tilde{y}_i &= X_{ij}\hat{\beta}_j 
+    \EE{\epsilon_i} \stackrel{\text{per def.}}{=} 0,
 \end{align*}
 
+we have the expectation value
 
 \begin{align*}
-    \EE{X_{ij}\beta_j} \stackrel{\text{non-stochastic}}{=} X_{ij}\beta_j 
+    \EE{y_i} &= \EE{\Xbi+ \epsilon_i} \\
+    &= \EE{\Xbi} + \EE{\epsilon_i} \\
+    &= \Xbi.
 \end{align*}
 
-\begin{align*}
-    \EE{\epsilon_i} \stackrel{\text{per def.}}{=} 0
-\end{align*}
+To find the variance, we need the expetation value of the outer product $\vec{y}\vec{y}\TT$,
+
+\begin{align}
+    \EE{\vec{y} \vec{y}\TT} &= \EE{(X\svec{\beta} + \svec{\epsilon})(X\svec{\beta} + \svec{\epsilon})\TT} \nonumber\\
+    &= \EE{\Xb \svec{\beta}\TT X\TT + \Xb \svec{\epsilon}\TT + \svec{\epsilon}\svec{\beta}\TT X\TT + \svec{\epsilon} \svec{\epsilon}\TT} \nonumber \\
+    &= \Xb \svec{\beta}\TT X\TT + \II \sigma^2. \label{eq:expectation_yyT}
+\end{align}
+
+The variance becomes
 
 \begin{align*}
-    \EE{y_i} &= \EE{X_{ij}\beta_j + \epsilon_i} \\
-    &= \EE{X_{ij}\beta_j} + \EE{\epsilon_i} \\
-    &= X_{ij}\beta_j
-\end{align*}
-
-
-\begin{align*}
-    \variance{y_i} &= \EE{y_i y_i\TT} -\EE{y_i}\EE{y_i\TT} \\
-    &= \EE{X_{ij}\beta_j\beta_j\TT X_{ij}\TT + X_{ij}\beta_j\epsilon_i\TT + \epsilon_i \beta_j\TT X_{ij}\TT + \epsilon_i \epsilon_i\TT } \\ 
-    & \quad - X_{ij}\beta_j\beta_j\TT X_{ij}\TT \\
-    &= X_{ij}\beta_j\beta_j\TT X_{ij}\TT  + \EE{\epsilon_i \epsilon_i\TT} - X_{ij}\beta_j\beta_j\TT X_{ij}\TT  \\
-    &= \sigma^2
-\end{align*}
-
-\hl{...}
-
-\begin{align*}
-    \EE{\hat{\beta}} &= \EE{\invhessian X\TT y} \\
-    &= \invhessian X\TT \EE{y} \\
-    &= \invhessian \hessian \beta \\
-    &= \beta
-\end{align*}
-
-\begin{align*}
-    \variance{\hat{\beta}} &= \EE{\hat{\beta} \hat{\beta}\TT} -\EE{\hat{\beta}} \EE{\hat{\beta}\TT} \\
-    &= \EE{\invhessian X\TT y y\TT X (\invhessian)\TT} - \beta \beta\TT \\
-    &= \invhessian X\TT \EE{y y\TT } X \invhessian - \beta \beta\TT \\
-    &\stackrel{\text{*}}{=}\invhessian X\TT ( X\beta \beta\TT + \II\sigma^2) X \invhessian \\
-    &= \beta \beta \TT + \invhessian X\TT \sigma^2 X \invhessian - \beta \beta \TT \\
-    &= \sigma^2 \invhessian
+    \variance{y_i} &= \EE{(\vec{y}\vec{y}\TT)_{ii}} -\Big(\EE{y_i}\Big)^2\\
+    &= \Xbi \Xbi + \sigma^2 - \Xbi \Xbi\\
+    &= \sigma^2.
 \end{align*}
 
 
+Taking $\optbeta$ as the Ordinary Least Square (OLS) expression for the optimal parameter, we get the expected value
+
 \begin{align*}
-    \EE{y y\TT} &= \EE{(X\beta + \epsilon)(X\beta + \epsilon)\TT} \\
-    &= \EE{X\beta \beta\TT X\TT + X\beta \epsilon\TT + \epsilon\beta\TT X\TT + \epsilon \epsilon\TT} \\
-    &= X\beta \beta\TT X\TT + \II \sigma^2
+    \EE{\optbeta} &= \EE{\invhessian X\TT \vec{y}} \\
+    &= \invhessian X\TT \EE{\vec{y}} \\
+    &= \invhessian \hessian \svec{\beta} \\
+    &= \svec{\beta}.
+\end{align*}
+
+The variance is then 
+
+\begin{align*}
+    \variance{\optbeta} &= \EE{\optbeta \optbeta\TT} -\EE{\optbeta} \EE{\optbeta\TT} \\
+    &= \EE{\invhessian X\TT  \vec{y} \vec{y}\TT X (\invhessian)\TT} - \svec{\beta} \svec{\beta}\TT \\
+    &= \invhessian X\TT \EE{ \vec{y} \vec{y}\TT } X \invhessian - \svec{\beta} \svec{\beta}\TT \\
+    &\stackrel{\text{\eqref{eq:expectation_yyT}}}{=}\invhessian X\TT ( X\svec{\beta} \svec{\beta}\TT X\TT+ \II\sigma^2) X \invhessian \\
+    &= \svec{\beta} \svec{\beta} \TT + \invhessian X\TT \sigma^2 X \invhessian - \svec{\beta} \svec{\beta} \TT \\
+    &= \sigma^2 \invhessian.
 \end{align*}
 
 
-% Maybe put this earlier as we use it twice?
