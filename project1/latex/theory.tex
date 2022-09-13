@@ -42,7 +42,13 @@ The variance becomes
 \end{align*}
 
 
-Taking $\optbeta$ as the Ordinary Least Square (OLS) expression for the optimal parameter, we get the expected value
+Taking $\optbeta$ as the Ordinary Least Square (OLS) expression for the optimal parameter, i.e.
+
+\begin{align*}
+    \optbeta = \invhessian X\TT \vec{y},
+\end{align*}
+
+we get the expected value
 
 \begin{align*}
     \EE{\optbeta} &= \EE{\invhessian X\TT \vec{y}} \\
