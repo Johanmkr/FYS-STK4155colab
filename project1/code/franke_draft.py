@@ -7,9 +7,12 @@ import numpy as np
 from random import random, seed
 import seaborn as sns
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-plt.rcParams['figure.figsize'] = [14, 9]
+plt.rcParams['figure.figsize'] = [12, 7]
 
+
+scale_mode = 'on'
 
 # Make data.
 x = np.arange(0, 1, 0.05)
@@ -26,6 +29,15 @@ def FrankeFunction(x,y):
 
 
 z = FrankeFunction(x, y)
+
+
+# Subtracting mean value
+if scale_mode.lower().strip() == 'on':
+    #z -= np.mean(z)
+    z /= np.max(z)
+
+
+
 
 def plot_Frankefunction():
     fig = plt.figure()
@@ -45,7 +57,7 @@ def plot_Frankefunction():
     plt.show()
 
 
-#   Own code to fit the Franke-function using OLS and polynomial in x and y up to fifth order. 
+#   Own code to fit the Franke-function using OLS and polynomial in x and y up to fifth order.
 #   Set up design matrix X
 
 def fit_params(n=5):
@@ -55,6 +67,7 @@ def fit_params(n=5):
     N = len(xx)
     l = int((n+1)*(n+2)/2)
     X = np.ones((N,l))
+    print(np.shape(X))
 
     for i in range(1, n+1):
         q = int((i)+(i+1)/2)
@@ -65,10 +78,21 @@ def fit_params(n=5):
     H = X.T @ X
     beta = np.linalg.pinv(H) @ X.T @ z.ravel()
 
-    ztilde = X @ beta 
-    ztilde = np.reshape(ztilde, (20,20))
+    # Split into train and test
+    X_train, X_test, z_train, z_test = train_test_split(X, z.ravel(), test_size=0.2)
+    print(X_train)
+
+    # NEW beta
+    H = X_train.T @ X_train
+    beta = np.linalg.pinv(H) @ X_train.T @ z_train.ravel()
+
+    ztilde = X_train @ beta
+    #ztilde = np.reshape(ztilde, (20,20))
+
+    zpredict = X_test @ beta
+    #zpredict = np.reshape(zpredict, (20,20))
     print(f"Number of elements in beta: {l}")
-    return beta, ztilde
+    return beta, X, ztilde, zpredict, z_train, z_test
 
 
 #   useful functions:
@@ -83,20 +107,23 @@ def R2(data, model):
 
 
 N = 5
-mses = np.zeros(N-1)
-r2s = np.zeros(N-1)
+train_mses = np.zeros(N-1)
+train_r2s = np.zeros(N-1)
+test_mses = np.zeros(N-1)
+test_r2s = np.zeros(N-1)
 ns = np.zeros(N-1)
-beta_list = [] 
+beta_list = []
 i = 0
 for n in range(2,N+1):
     print(f"n={n}")
-    beta, ztilde = fit_params(n)
+    beta, X, ztilde, zpredict, z_train, z_test = fit_params(n)
     beta_list.append(beta)
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    z_all = X @ beta
+    z_all = np.reshape(z_all, (20,20))
+    fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
+    #ax = fig.gca(projection='3d')
     # Plot the surface.
-    surf = ax.plot_surface(x, y, ztilde, cmap=cm.coolwarm,
-                        linewidth=0, antialiased=False)
+    surf = ax.plot_surface(x, y, z_all, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
     # Customize the z axis.
     ax.set_zlim(-0.10, 1.40)
@@ -105,13 +132,17 @@ for n in range(2,N+1):
     fig.suptitle(f"n={n}", fontsize=20)
 
     # Add a color bar which maps values to colors.
+    #ztilde = np.reshape(ztilde, (20,20))
     fig.colorbar(surf, shrink=0.5, aspect=5)
-    mse = MSE(z.ravel(), ztilde.ravel())
-    r2 = R2(z.ravel(), ztilde.ravel())
-    mses[i] = mse 
-    r2s[i] = r2 
+    #mse = MSE(z.ravel(), ztilde.ravel())
+    #r2 = R2(z.ravel(), ztilde.ravel())
+    train_mses[i] = MSE(z_train.ravel(), ztilde.ravel())
+    train_r2s[i] = R2(z_train.ravel(), ztilde.ravel())
+    test_mses[i] =  MSE(z_test.ravel(), zpredict.ravel())
+    test_r2s[i] = R2(z_test.ravel(), zpredict.ravel())
     ns[i] = n
     i+=1
+
 
 
 plt.show()
@@ -129,7 +160,6 @@ df = pd.DataFrame(data=beta_n, index=[i for i in range(2, N+1)], columns=[r'$\be
 
 fig, ax = plt.subplots(figsize=(14,7))
 
-
 sns.heatmap(df, annot=True, ax=ax, cmap='viridis', square=True)
 ax.set_ylabel(r'$n$')
 ax.set_title(r'$\beta$ for different polynomial degrees $n$')
@@ -137,9 +167,13 @@ plt.show()
 
 
 
-fig, ax = plt.subplots()
-plt.plot(ns, mses/mses.max(), label="MSE")
-plt.plot(ns, r2s/r2s.max(), label="R2")
-plt.legend()
-# plt.tight_layout()
+fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True)
+
+ax1.plot(ns, train_mses, label="Train MSE")
+ax1.plot(ns, test_mses, label="Test MSE")
+ax2.plot(ns, train_r2s, label="Train R2")
+ax2.plot(ns, test_r2s, label="Test R2")
+ax1.legend()
+ax2.legend()
+fig.tight_layout()
 plt.show()
