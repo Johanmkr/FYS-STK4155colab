@@ -18,4 +18,3 @@ def FrankeFunction(x, y):
 Nx, Ny = 20, 20
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
-xx, yy = np.meshgrid(x, y)
