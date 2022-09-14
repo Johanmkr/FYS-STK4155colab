@@ -63,11 +63,12 @@ def plot_Frankefunction():
 #   Own code to fit the Franke-function using OLS and polynomial in x and y up to fifth order.
 #   Set up design matrix X
 
-def fit_params(n=5):
+def fit_params(nn=5):
     xx = np.ravel(x)
     yy = np.ravel(y)
 
     N = len(xx)
+    n = 5
     l = int((n+1)*(n+2)/2)
     X = np.ones((N,l))
 
@@ -79,6 +80,9 @@ def fit_params(n=5):
             q = int((i)+(i+1)/2)
             for k in range(i+1):
                 X[:,q+k] = (xx**(i-k))*(yy**k)
+
+    ll = int((nn+1)*(nn+2)/2)
+    X = X[:, :ll]     
 
 
     H = X.T @ X
@@ -112,7 +116,7 @@ def R2(data, model):
     return 1 - np.sum((data - model) ** 2) / np.sum((data - np.mean(data)) ** 2)
 
 
-N = 20
+N = 5
 train_mses = np.zeros(N)
 train_r2s = np.zeros(N)
 test_mses = np.zeros(N)
