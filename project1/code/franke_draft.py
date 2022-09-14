@@ -15,8 +15,11 @@ plt.rcParams['figure.figsize'] = [12, 7]
 scale_mode = 'on'
 
 # Make data.
+Npoints = 20
 x = np.arange(0, 1, 0.05)
 y = np.arange(0, 1, 0.05)
+x = np.linspace(0, 1, Npoints)
+y = np.linspace(0, 1, Npoints)
 x, y = np.meshgrid(x,y)
 
 
@@ -40,21 +43,21 @@ if scale_mode.lower().strip() == 'on':
 
 
 def plot_Frankefunction():
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
     # Plot the surface.
     surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
                         linewidth=0, antialiased=False)
 
     # Customize the z axis.
-    ax.set_zlim(-0.10, 1.40)
+    ax.set_zlim(-0.05, 1.06)
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
-    plt.show()
+    #plt.show()
+
 
 
 #   Own code to fit the Franke-function using OLS and polynomial in x and y up to fifth order.
@@ -67,12 +70,15 @@ def fit_params(n=5):
     N = len(xx)
     l = int((n+1)*(n+2)/2)
     X = np.ones((N,l))
-    print(np.shape(X))
 
-    for i in range(1, n+1):
-        q = int((i)+(i+1)/2)
-        for k in range(i+1):
-            X[:,q+k] = (xx**(i-k))*(yy**k)
+    if n == 1:
+        X[:,1] = xx
+        X[:,2] = yy
+    else:
+        for i in range(1, n+1):
+            q = int((i)+(i+1)/2)
+            for k in range(i+1):
+                X[:,q+k] = (xx**(i-k))*(yy**k)
 
 
     H = X.T @ X
@@ -85,14 +91,14 @@ def fit_params(n=5):
     # NEW beta
     H = X_train.T @ X_train
     beta = np.linalg.pinv(H) @ X_train.T @ z_train.ravel()
-
+    print(np.shape(beta))
     ztilde = X_train @ beta
     #ztilde = np.reshape(ztilde, (20,20))
 
     zpredict = X_test @ beta
     #zpredict = np.reshape(zpredict, (20,20))
     print(f"Number of elements in beta: {l}")
-    return beta, X, ztilde, zpredict, z_train, z_test
+    return beta, X, ztilde, zpredict, z_train, z_test, X_train
 
 
 #   useful functions:
@@ -106,34 +112,42 @@ def R2(data, model):
     return 1 - np.sum((data - model) ** 2) / np.sum((data - np.mean(data)) ** 2)
 
 
-N = 5
-train_mses = np.zeros(N-1)
-train_r2s = np.zeros(N-1)
-test_mses = np.zeros(N-1)
-test_r2s = np.zeros(N-1)
-ns = np.zeros(N-1)
+N = 20
+train_mses = np.zeros(N)
+train_r2s = np.zeros(N)
+test_mses = np.zeros(N)
+test_r2s = np.zeros(N)
+ns = np.zeros(N)
+#biass = np.zeros(N)
 beta_list = []
 i = 0
-for n in range(2,N+1):
+
+for n in range(1,N+1):
     print(f"n={n}")
-    beta, X, ztilde, zpredict, z_train, z_test = fit_params(n)
+    beta, X, ztilde, zpredict, z_train, z_test, X_train = fit_params(n)
     beta_list.append(beta)
     z_all = X @ beta
-    z_all = np.reshape(z_all, (20,20))
-    fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
-    #ax = fig.gca(projection='3d')
-    # Plot the surface.
-    surf = ax.plot_surface(x, y, z_all, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    z_all = np.reshape(z_all, (Npoints,Npoints))
 
-    # Customize the z axis.
-    ax.set_zlim(-0.10, 1.40)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    fig.suptitle(f"n={n}", fontsize=20)
+    ##bias = z -np.mean(z_all)
 
-    # Add a color bar which maps values to colors.
-    #ztilde = np.reshape(ztilde, (20,20))
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    if n in [4, 5, N]:
+        fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
+        #ax = fig.gca(projection='3d')
+        # Plot the surface.
+        surf = ax.plot_surface(x, y, z_all, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+        # Plot points
+        #ax.scatter(X_train[:,0], X_train[:,1], z_train)
+
+        # Customize the z axis.
+        ax.set_zlim(-0.05, 1.05)
+        ax.zaxis.set_major_locator(LinearLocator(10))
+        ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+        fig.suptitle(f"n={n}", fontsize=20)
+
+        # Add a color bar which maps values to colors.
+        #ztilde = np.reshape(ztilde, (20,20))
+        fig.colorbar(surf, shrink=0.5, aspect=5)
     #mse = MSE(z.ravel(), ztilde.ravel())
     #r2 = R2(z.ravel(), ztilde.ravel())
     train_mses[i] = MSE(z_train.ravel(), ztilde.ravel())
@@ -143,7 +157,7 @@ for n in range(2,N+1):
     ns[i] = n
     i+=1
 
-
+plot_Frankefunction()
 
 plt.show()
 
@@ -155,7 +169,7 @@ for i, beta in enumerate(beta_list):
     beta_n[i, len(beta):] = np.nan
 
 
-df = pd.DataFrame(data=beta_n, index=[i for i in range(2, N+1)], columns=[r'$\beta_{%i}$'%j for j in range(max_dim)])
+df = pd.DataFrame(data=beta_n, index=[i for i in range(1, N+1)], columns=[r'$\beta_{%i}$'%j for j in range(max_dim)])
 
 
 fig, ax = plt.subplots(figsize=(14,7))
@@ -167,13 +181,30 @@ plt.show()
 
 
 
-fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True)
+fig, ax = plt.subplots()
+ax.plot(ns, train_mses, label="Train MSE")
+ax.plot(ns, test_mses, label="Test MSE")
+ax.plot(ns, train_r2s,ls='--', label="Train R2")
+ax.plot(ns, test_r2s, ls='--', label="Test R2")
+ax.set_yscale('log')
+ax.legend()
+plt.show()
 
+fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True)
 ax1.plot(ns, train_mses, label="Train MSE")
 ax1.plot(ns, test_mses, label="Test MSE")
 ax2.plot(ns, train_r2s, label="Train R2")
 ax2.plot(ns, test_r2s, label="Test R2")
+ax1.set_yscale('log')
 ax1.legend()
 ax2.legend()
 fig.tight_layout()
 plt.show()
+
+
+
+
+
+""" WITH SKLEARN"""
+
+
