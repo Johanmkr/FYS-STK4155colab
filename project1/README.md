@@ -3,7 +3,7 @@
 ## Plan (Wednesday 14.09)
 
 ### Questions
-* How to properly visualise $\beta$?
+* How to properly visualise $\beta$? OK
 * How to properly scale $z$? Why?
 * How to plot `z_train`-points?
 * Should we stop at polynomial degree $n=5$? (Part c))
