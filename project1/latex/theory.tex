@@ -1,5 +1,22 @@
 \section{Theory}\label{sec:theroy}
 
+\hl{*} DECIDE ON z vs. y
+
+\begin{align}\label{eq:MSE}
+    \MSE{\vec{y}, \tilde{\vec{y}}}= \frac{1}{n}(\vec{y}-\tilde{\vec{y}})^2= \frac{1}{n}\sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2
+\end{align}
+
+\begin{align}\label{eq:R2}
+    \Rtwo {\vec{y}, \tilde{\vec{y}}} =1 - \frac{(\vec{y}-\tilde{\vec{y}})^2}{(\vec{y}(1-\bar{y}))^2}= 1 - \frac{\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2}{\sum_{i=0}^{n-1}(y_i-\bar{y})^2}
+\end{align}
+
+\begin{align*}
+    \bar{y} = \frac{1}{n}\sum_{i=0}^{n-1} y_i
+\end{align*}
+
+
+
+\subsection{Regression}\label{sec:regression}
 
 We assume the vector $\vec{y} \in \RR[n]$ consisting of observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. The integers $n$ and $p$ represent the number of data points and features, respectively. 
 
@@ -69,3 +86,18 @@ The variance is then
 \end{align*}
 
 
+
+\subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
+
+
+\subsubsection{Ridge regression}\label{sec:Ridge}
+
+
+\subsubsection{Lasso regression}\label{sec:Lasso}
+
+
+\subsection{Resampling}\label{sec:resampling}
+
+\subsubsection{Bootstrap method}\label{sec:bootstrap}
+
+\subsubsection{Cross-validation}\label{sec:k_fold}
