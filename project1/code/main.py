@@ -15,12 +15,12 @@ def FrankeFunction(x, y):
 
 
 ###  Create grid
-Nx, Ny = 20, 20
+Nx, Ny = 100, 100
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
 
-noise = lambda a: a*np.random.randn(Ny, Nx)
+noise = lambda eta: eta*np.random.randn(Ny, Nx)
 z = FrankeFunction(x, y) + noise(0.1)
 
 data = Data2D(x, y, z)

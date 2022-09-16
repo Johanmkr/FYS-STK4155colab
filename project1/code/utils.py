@@ -106,10 +106,10 @@ class PolyModel2D:
         self.train.R2_score()
 
         self.test.compute(False)
-        self.test.mean_squared_error()
-        self.test.R2_score()
-        self.test.Bias_squared()
-        self.test.Variance()
+        self.MSE = self.test.mean_squared_error() # set model's MSE to be test MSE 
+        self.R2 = self.test.R2_score() #...
+        self.bias2 = self.test.Bias_squared()
+        self.var = self.test.Variance()
         return self.model
 
     def mean_squared_error(self):
@@ -119,20 +119,25 @@ class PolyModel2D:
         model = self.model.ravel()
         self.MSE = np.mean((data-model)**2)
         #self.MSE = np.sum((data-model)**2)/np.size(data)
+        return self.MSE
 
     def R2_score(self):
-        self.R2 = 1 - np.sum((self.data.ravel()-self.model.ravel())**2) / np.sum((self.data.ravel()-np.mean(self.data.ravel()))**2)
+        data = self.data.ravel()
+        model = self.model.ravel()
+        self.R2 = 1 - np.sum((data-model)**2) / np.sum((data-np.mean(data))**2)
+        return self.R2
 
     def Bias_squared(self):
         data = self.data.ravel()
         model = self.model.ravel()
         #self.bias2 = np.mean((data - np.mean(model, axis=1, keepdims=True))**2)
-        self.bias2 = np.mean((data - np.mean(model))**2)
+        self.bias2 = np.dot((data - np.mean(model)), (data - np.mean(model))) /np.size(data)
+        return self.bias2
 
     def Variance(self):
-        data = self.data.ravel()
         model = self.model.ravel()
         self.var = np.var(model)
+        return self.var
 
 
 class Parts(PolyModel2D):
@@ -146,6 +151,10 @@ class Train(Parts):
     def __init__(self, X, z):
         super().__init__(X, z)
         self.tag = 'train'
+
+    def split(self):
+        # solution for resampling
+        pass
 
     def __str__(self):
         s = 'Train data '
