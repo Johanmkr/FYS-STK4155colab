@@ -14,7 +14,6 @@ def matrixColoumns(polydeg):
 
     return cols
 
-
 def polydeg2features(polydeg):
     """
     Function for finding the length of β for a given polynomial degree in 2 dimensions.
@@ -67,7 +66,7 @@ class DesignMatrix:
         """              
         self.n = polydeg
         self.p = polydeg2features(self.n)
-        
+
     def _set_X(self, X):
         """
         Set X manually. 
@@ -149,3 +148,7 @@ class DesignMatrix:
         s += '-'*l +'\n'
         s += self.Xpd.__str__()
         return s
+
+    def __mul__(self, other):
+        #uncertain about this
+        return self.X @ other.X
