@@ -133,7 +133,6 @@ class DesignMatrix:
         """        
         self.H = self.X.T @ self.X
         self.Hinv = np.linalg.pinv(self.H)
-        return self.H
 
     def __str__(self):
         """

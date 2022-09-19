@@ -6,10 +6,10 @@ import pandas as pd
 
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from designMatrix import DesignMatrix
-from Regression import LeastSquares
+from src.designMatrix import DesignMatrix
+from src.Regression import LeastSquares
 
 
 testSize = 1/5
@@ -24,7 +24,6 @@ dM = DesignMatrix(5)
 dM.create_X(x, y)
 
 
-
 def FrankeFunction(x, y):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
@@ -36,8 +35,8 @@ def FrankeFunction(x, y):
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 z = FrankeFunction(x, y) + noise(0)
 
-reg = LeastSquares()
-reg.split(dM, z)#, scaler='none')
+reg = LeastSquares(z, dM)
+reg.split(scaler='none')
 reg('OLS')
 print(reg.beta)
 

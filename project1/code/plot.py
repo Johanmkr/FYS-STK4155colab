@@ -62,14 +62,32 @@ def surface_plot(ax, x, y, z):
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     return ax, surf
 
+def plot_franke(x, y, z):
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    # Plot the surface.
+    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
+                        linewidth=0, antialiased=False)
 
-def plot_3d_model(data, model, pdf_name='none', show=False):
-    ztilde = model()
+    # Customize the z axis.
+    ax.set_zlim(-0.10, 1.40)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    # fig.suptitle(f"n={n}", fontsize=20)
+    fig.suptitle(f"Franke", fontsize=20)
+
+    # Add a color bar which maps values to colors.
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    fig.tight_layout()
+    plt.show()
+
+
+def plot_3d_model(x, y, z, ztilde, degree, pdf_name='none', show=False):
     fig, (ax0, ax) = plt.subplots(ncols=2, subplot_kw={'projection':'3d'})
-    ax0, surf0 = surface_plot(ax0, data.x, data.y, data.z)
-    ax, surf = surface_plot(ax, data.x, data.y, model.model)
+    ax0, surf0 = surface_plot(ax0, x, y, z)
+    ax, surf = surface_plot(ax, x, y, ztilde)
     ax0.set_title(r"Original data", fontsize=20)
-    ax.set_title(r"Polynomial degree $n=%i$"%(model.polydeg), fontsize=20)
+    ax.set_title(r"Polynomial degree $n=%i$"%(degree), fontsize=20)
     #fig.colorbar(surf, shrink=0.5, aspect=5)
     fig.tight_layout()
 

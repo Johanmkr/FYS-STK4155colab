@@ -8,9 +8,12 @@ class Bootstrap:
     _summary_
     """    
 
-    def __init__(self, no_of_bootstraps):
+    def __init__(self, method, dM, no_of_bootstraps):
         self.n_bootstraps = no_of_bootstraps
-        pass
+        self.dM = dM 
+        self.method = method 
+        
+
 
 
 class CrossValidation:
