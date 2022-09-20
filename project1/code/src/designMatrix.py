@@ -210,5 +210,20 @@ class DesignMatrix:
         return self.X[index]
 
     def __mul__(self, other):
+        """
+        Special method for performing the matrix multiplication 
+            z = Xβ,
+        designed to work with instances of betaParameter.
+
+        Parameters
+        ----------
+        other : betaParameter
+            the object that defines the β-parameter
+
+        Returns
+        -------
+        ndarray
+            matrix-vector product Xβ 
+        """     
         return self.X @ other.beta
 
