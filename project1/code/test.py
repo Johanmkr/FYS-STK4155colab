@@ -45,17 +45,16 @@ reg = LeastSquares(z, dM, mode='skl')
 reg.scale()
 
 trainer, predictor = reg.split()
-
-
-
 trainer.train()
 
-BS = Bootstrap(trainer, predictor)
-BS(comparison_mode=True)
-print(BS.betas)
-print(BS.betas2)
 
-BS.prediction()
+
+BS = Bootstrap(trainer, predictor)
+BS(10)
+#print(BS.betas)
+#print(BS.betas2)
+
+BS.bias_varianceDecomposition()
 
 
 

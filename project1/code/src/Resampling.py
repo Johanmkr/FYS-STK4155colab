@@ -1,10 +1,11 @@
-from hashlib import new
+
 import numpy as np
 from src.betaMatrix import betaCollection
 from src.designMatrix import DesignMatrix
 
 from src.Regression import LeastSquares
 from src.betaMatrix import betaParameter, betaCollection
+
 
 
 class Bootstrap1:
@@ -35,11 +36,11 @@ class Bootstrap:
     def __init__(self, trainer, predictor):
         self.trainer = trainer
         self.predictor = predictor
+        self.polydeg = self.trainer.polydeg
         
 
     def __call__(self, no_bootstraps=100, comparison_mode=False):
         self.nBS = no_bootstraps
-        trainer2 = self.trainer
 
         beta_list = []
         train_list =[]
@@ -62,27 +63,29 @@ class Bootstrap:
 
 
         self.betas = betaCollection(beta_list)
+
     
-    def prediction(self):
+    def bias_varianceDecomposition(self):
         z_test = self.predictor.data.ravel()
         z_pred = np.empty((z_test.shape[0], self.nBS))
-        z_test2 = np.empty((z_test.shape[0], self.nBS))
+        diff = np.zeros_like(z_pred)
+
         for i in range(self.nBS):
-            beta = self.betas[i]
-            self.predictor.setOptimalbeta(beta)
+            self.predictor.setOptimalbeta(self.betas[i])
             z_pred[:,i] = self.predictor.fit()
-            z_test2[:,i] = z_test
-        
-      
-        error = np.mean( np.mean((z_test2 - z_pred)**2, axis=1, keepdims=True) )
-        bias = np.mean( (z_test - np.mean(z_pred, axis=1, keepdims=True))**2 )
-        variance = np.mean( np.var(z_pred, axis=1, keepdims=True) )
-        print(error, bias, variance, bias+variance)
-        
-
-            
+            diff[:,i] = z_test - z_pred[:,i]
 
 
+        Errors = np.mean(diff**2, axis=1, keepdims=True)[:,0]
+        Bias2s = (z_test - np.mean(z_pred, axis=1, keepdims=True)[:,0])**2
+        Vars = np.var(z_pred, axis=1, keepdims=True)[:,0]
+
+        self.MSE = np.mean(Errors)
+        self.bias2 = np.mean(Bias2s)
+        self.var = np.mean(Vars)
+
+        tol = 1e-8
+        assert abs(self.bias2 + self.var - self.MSE) < tol
 
    
         

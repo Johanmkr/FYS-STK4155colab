@@ -33,28 +33,22 @@ def polydeg2features(polydeg):
     p = int((n+1)*(n+2)/2)
     return p
 
-def features2polydeg(features):
-    """
-    Function for finding the order of the 2D polynomial for a given length of β.
 
-    Parameters
-    ----------
-    features : int
-        number of features in model
-
-    Returns
-    -------
-    int
-        order of 2D polynomial
-    """    
-    p = features
-    coeff = [1, 3, 2-2*p]
-    ns = np.roots(coeff)
-    n = int(np.max(ns))
-    return n
 
 
 class DesignMatrix:
+    """
+    Class for gathering properties of the design matrix of a 2D polynomial,
+
+        z = f(x, y)  = c0 + c1*x + c2*y + c3*x^2 + c4*xy + c5*y^2 + ...,
+
+    for a given polynomial degree.
+
+    COMPATIBLE CLASSES:
+        * betaParameter 
+        * LeastSquares (+ subclasses)
+        * Bootstrap
+    """
 
     def __init__(self, polydeg):
         """
@@ -75,11 +69,10 @@ class DesignMatrix:
 
         Returns
         -------
-        np.array(*,p)
-            the design matrix of p features
+        np.array(*,self.p)
+            the design matrix of self.p features
         """        
         return self.X
-
     
     def __call__(self, x, y):
         """
@@ -101,7 +94,7 @@ class DesignMatrix:
 
         Parameters
         ----------
-        X : np.array(*,p) 
+        X : ndarray(*,p) 
             the design matrix of p features
         """        
         self.X = X
@@ -115,9 +108,9 @@ class DesignMatrix:
 
         Parameters
         ----------
-        x : np.array()
+        x : ndarray
             the x-coordinates of the measurement points
-        y : np.array()
+        y : ndarray
             the y-coordinates of the measurement points
         """        
         xx = x.ravel(); yy = y.ravel()
@@ -133,6 +126,14 @@ class DesignMatrix:
         self._setX(X)
 
     def scale(self, scaler=StandardScaler()):
+        """
+        Scale the matrix X, e.g. s.t. X[:,0] = 0.
+
+        Parameters
+        ----------
+        scaler : (not sure), optional
+            scaler from skl?, by default StandardScaler()
+        """        
         scaler = StandardScaler()
         self.X = scaler.fit_transform(self.X)
         self.scaled = True
@@ -143,8 +144,10 @@ class DesignMatrix:
 
         Parameters
         ----------
-        X : np.array(*,self.p)
+        X : ndarray(*,self.p)
             the design matrix as array
+        is_scaled : bool
+            whether X is scaled (=True) or not (=False) and is supposed to be None >> self.scaled, by default None
 
         Returns
         -------
@@ -162,7 +165,7 @@ class DesignMatrix:
 
         Returns
         -------
-        np.array(self.p, self.p) #???
+        ndarray(self.p, self.p)
             the hessian
         """        
         self.H = self.X.T @ self.X
@@ -170,10 +173,15 @@ class DesignMatrix:
 
     def __str__(self):
         """
-        Display design matrix using pandas
-        """
+        Display X in a nice way using pandas. 
+
+        Returns
+        -------
+        str
+            terminal print
+        """   
         l = 40; ind = ' '*5
-        s = '-'*l + '\n'
+        s = '\n' + '-'*l + '\n'
         s += f'design matrix X:\n'
         if self.scaled:
             s += '(scaled)\n'
@@ -181,7 +189,26 @@ class DesignMatrix:
         s += ind + f'number of features p = {self.p:6.0f}\n'
         s += ind + f'number of points   N = {self.Npoints:6.0f}\n'
         s += '-'*l +'\n'
-        s += self.Xpd.__str__()
+        s += self.Xpd.__str__() + '\n'
+        s += '-'*l +'\n'
         return s
 
+    def __getitem__(self, index):
+        """
+        Yield row vector of X.
+
+        Parameters
+        ----------
+        index : int
+            the row number (index) of X
+
+        Returns
+        -------
+        ndarray
+            the row vecotrs(s) of X in question
+        """
+        return self.X[index]
+
+    def __mul__(self, other):
+        return self.X @ other.beta
 
