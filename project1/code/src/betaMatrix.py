@@ -39,4 +39,61 @@ class betaMatrix:
     
 
 
+
+"""
+SUGGESTION:
+"""
+
+
+
+class betaParameter:
+
+    def __init__(self, beta):
+        self.beta = beta
+        self.p = len(beta)
+
+    def getVector(self):
+        return self.beta
+
+    def compVariance(self, data, dM):
+        self.var = np.diag(np.var(data) * dM.Hinv)
+        return self.var
+
+    def __str__(self):
+        betapd = pd.DataFrame(data=self.beta, index=[f'β_{j}' for j in range(len(self.beta))])
+        return betapd.__str__()
+
+
+
+class betaCollection:
+
+    def __init__(self, betas):
+
+        if isinstance(betas, list):
+            self.nbootstraps = len(betas)
+            if isinstance(betas[0], betaParameter):
+                self.p = betas[0].p
+                self.betas = np.zeros((self.p,self.nbootstraps))            
+                for i in range(self.nbootstraps):
+                    self.betas[:,i] = betas[i].getVector()
+            if isinstance(betas[0], np.ndarray):
+                self.p = betas[0].size
+                self.betas = np.zeros((self.p,self.nbootstraps))
+                for i in range(self.nbootstraps):
+                    self.betas[:,i] = betas[i]
+
+        if isinstance(betas, np.ndarray):
+            self.betas = betas
+            self.p, self.nbootstraps = np.shape(self.betas)
+
+        
+    def __str__(self):
+        betaspd = pd.DataFrame(data=self.betas, index=[f'β_{j}' for j in range(self.p)], columns=[f'({i+1})' for i in range(self.nbootstraps)])
+        return betaspd.__str__()
     
+
+    def __getitem__(self, index):
+        return self.betas[:,index]
+
+'''    def getVector(self, index):
+        return self.betas[:,index]'''

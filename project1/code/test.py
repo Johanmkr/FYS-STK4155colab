@@ -1,16 +1,17 @@
-from audioop import bias
 import numpy as np
 import sys
 import os
 import pandas as pd
 
 
-
+print('\nImporting...\n')
 # sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.designMatrix import DesignMatrix
 from src.Regression import LeastSquares
+from src.Resampling import Bootstrap
 
+from src.betaMatrix import betaMatrix
 
 testSize = 1/5
 
@@ -19,9 +20,12 @@ x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
 
+
+print('\ndesign matrix\n')
 dM = DesignMatrix(5)
 
-dM.create_X(x, y)
+print('Creating X\n')
+dM.createX(x, y)
 
 
 def FrankeFunction(x, y):
@@ -33,16 +37,28 @@ def FrankeFunction(x, y):
 
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
-z = FrankeFunction(x, y) + noise(0)
+z = FrankeFunction(x, y) + noise(0.1)
 
-reg = LeastSquares(z, dM)
-reg.split(scaler='none')
-reg('OLS')
-print(reg.beta)
+print('\nregression...\n')
+reg = LeastSquares(z, dM, mode='skl')
 
-reg.changeMode('auto')
-reg('OLS')
-print(reg.beta)
+reg.scale()
+
+trainer, predictor = reg.split()
+
+
+
+trainer.train()
+
+BS = Bootstrap(trainer, predictor)
+BS(comparison_mode=True)
+print(BS.betas)
+print(BS.betas2)
+
+BS.prediction()
+
+
+
 
 sys.exit()
 

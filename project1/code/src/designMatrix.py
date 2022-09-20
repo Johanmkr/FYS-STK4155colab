@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 
 """
@@ -32,7 +33,7 @@ def polydeg2features(polydeg):
     p = int((n+1)*(n+2)/2)
     return p
 
-def feature2polydeg(features):
+def features2polydeg(features):
     """
     Function for finding the order of the 2D polynomial for a given length of β.
 
@@ -66,8 +67,35 @@ class DesignMatrix:
         """              
         self.n = polydeg
         self.p = polydeg2features(self.n)
+        self.scaled = False
 
-    def _set_X(self, X):
+    def getMatrix(self):
+        """
+        Get the actual matrix.
+
+        Returns
+        -------
+        np.array(*,p)
+            the design matrix of p features
+        """        
+        return self.X
+
+    
+    def __call__(self, x, y):
+        """
+        Alias for self.createX(x, y).
+
+        Parameters
+        ----------
+        x : np.array()
+            the x-coordinates of the measurement points
+        y : np.array()
+            the y-coordinates of the measurement points
+        """
+        self.createX()
+        
+
+    def _setX(self, X):
         """
         Set X manually. 
 
@@ -81,7 +109,7 @@ class DesignMatrix:
         self.Xpd = pd.DataFrame(self.X, columns=matrixColoumns(self.n))
         self.Hessian()
 
-    def create_X(self, x, y):
+    def createX(self, x, y):
         """
         Create the design matrix for a set of points.
 
@@ -102,9 +130,14 @@ class DesignMatrix:
                 X[:,j] = (xx**(i-k))*(yy**k)
                 j+=1
 
-        self._set_X(X)
+        self._setX(X)
 
-    def newObject(self, X):
+    def scale(self, scaler=StandardScaler()):
+        scaler = StandardScaler()
+        self.X = scaler.fit_transform(self.X)
+        self.scaled = True
+
+    def newObject(self, X, is_scaled=None):
         """
         Method that lets us create new objects that do not need computing.
 
@@ -119,7 +152,8 @@ class DesignMatrix:
             the design matrix as object of this class
         """        
         newObject = DesignMatrix(self.n)
-        newObject._set_X(X)
+        newObject._setX(X)
+        newObject.scaled = is_scaled or self.scaled
         return newObject
 
     def Hessian(self):
@@ -141,6 +175,8 @@ class DesignMatrix:
         l = 40; ind = ' '*5
         s = '-'*l + '\n'
         s += f'design matrix X:\n'
+        if self.scaled:
+            s += '(scaled)\n'
         s += ind + f'polynomial degree  n = {self.n:6.0f}\n'
         s += ind + f'number of features p = {self.p:6.0f}\n'
         s += ind + f'number of points   N = {self.Npoints:6.0f}\n'
@@ -148,6 +184,4 @@ class DesignMatrix:
         s += self.Xpd.__str__()
         return s
 
-    def __mul__(self, other):
-        #uncertain about this
-        return self.X @ other.X
+
