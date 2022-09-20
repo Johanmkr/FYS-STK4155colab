@@ -7,6 +7,7 @@ import pandas as pd
 from src.designMatrix import DesignMatrix
 from src.Regression import LeastSquares
 from src.betaMatrix import betaMatrix
+from src.Resampling import Bootstrap
 from plot import *
 
 testSize = 1/5
@@ -38,6 +39,18 @@ LS = LeastSquares(z, dM)
 LS.split()
 LS("OLS")
 
+Beta = betaMatrix(z, dM, LS.beta)
+BS = Bootstrap(LS, dM, Beta)
+BS.perform(z, 100) #should be z_train
+print(BS.Beta)
+
+
+
+
+
+
+
+
 # beta_test = betaMatrix(z, dM, LS.beta)
 # # print(beta_test)
 # beta_test.compVariance()
@@ -47,8 +60,8 @@ LS("OLS")
 
 
 # from IPython import embed; embed()
-polynomial_degrees = np.arange(1,2,1)
-models = {}
+# polynomial_degrees = np.arange(1,2,1)
+# models = {}
 
 # for n in polynomial_degrees:
 #     X = DesignMatrix(n)

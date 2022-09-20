@@ -88,8 +88,8 @@ class LeastSquares:
         betaOLS = Hinv @ X.T @ z
 
         self.beta = betaOLS
-        Beta = betaMatrix(z,X,self.beta)
-        from IPython import embed; embed()
+        # Beta = betaMatrix(z,X,self.beta)
+        # from IPython import embed; embed()
 
 
     def _sklRidge(self):

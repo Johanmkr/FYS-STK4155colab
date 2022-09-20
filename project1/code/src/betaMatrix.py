@@ -15,17 +15,22 @@ class betaMatrix:
         # from IPython import embed; embed()
         self.variance = np.diag(np.var(self.z) * self.dM.Hinv)
 
-    def addColumn(self, addBeta):
+    def addColumns(self, addBeta):
+        if len(addBeta.shape) == 1:
+            addcolumns = 1
+            addBeta = addBeta[:,np.newaxis]
+        else:
+            dummy, addcolumns = addBeta.shape
         if len(self.beta.shape) == 1:
-            beta_new = np.zeros((int(len(self.beta)),2))
+            beta_new = np.zeros((int(len(self.beta)),1+addcolumns))
             beta_new[:,0] = self.beta 
-            beta_new[:,1] = addBeta 
+            beta_new[:,1:] = addBeta 
             self.beta = beta_new
         else:
             nrow, ncol = self.beta.shape
-            beta_new = np.zeros((nrow, ncol+1))
+            beta_new = np.zeros((nrow, ncol+addcolumns))
             beta_new[:, :ncol] = self.beta 
-            beta_new[:, ncol] = addBeta
+            beta_new[:, ncol:] = addBeta
             self.beta = beta_new
 
     def __str__(self):
