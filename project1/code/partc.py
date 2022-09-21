@@ -45,8 +45,10 @@ for n in polydegs:
     dM = DesignMatrix(n)
     dM.createX(x, y)
     reg = LeastSquares(z, dM)
-    # reg.scale()
+
     trainer, predictor = reg.split()
+    #trainer.scale()
+    #predictor.scale()
     beta = trainer.train() 
     trainer.fit()
     trainer.computeExpectationValues()

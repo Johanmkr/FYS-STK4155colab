@@ -54,6 +54,8 @@ class LeastSquares:
         self.notTrainer = not isinstance(self, Training)
         self.notPredictor = not isinstance(self, Prediction)
 
+        self.fit_intercept = not self.dM.scaled
+
     def _setMode(self, mode):
         """
         (intended local) Setting 'manual' (own code) or 'auto' (codes from scikit learn).
@@ -222,6 +224,7 @@ class LeastSquares:
             scaler (from skl), by default StandardScaler()
         """        
         self.dM.scale(scaler=scaler)
+        self.fit_intercept = not self.dM.scaled
 
     def _sklOLS(self):
         """
@@ -232,7 +235,7 @@ class LeastSquares:
         ndarray
             the computed β parameter
         """        
-        reg = linear_model.LinearRegression(fit_intercept=not self.dM.scaled)
+        reg = linear_model.LinearRegression(fit_intercept=self.fit_intercept)
         X = self.dM.X
         z = self.data.ravel()
         reg.fit(X, z)
@@ -264,7 +267,7 @@ class LeastSquares:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Ridge(fit_intercept=not self.scaled, alpha=self.lmbda)
+        reg = linear_model.Ridge(fit_intercept=self.fit_intercept, alpha=self.lmbda)
         X = self.dM.X
         z = self.data.ravel()
         reg.fit(X, z)
@@ -297,7 +300,7 @@ class LeastSquares:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Lasso(fit_intercept=not self.scaled, max_iter=int(1e6), alpha=self.lmbda)
+        reg = linear_model.Lasso(fit_intercept=self.fit_intercept, max_iter=int(1e6), alpha=self.lmbda)
         X = self.dM.X
         z = self.data.ravel()
         reg.fit(X, z)
@@ -312,7 +315,10 @@ class LeastSquares:
         -------
         ndarray
             the model
-        """        
+        """
+        if self.dM.scaled:
+            self.dM.scale(reverse=True)
+
         self.model = self.dM * self.beta # see __mul__ and __rmul__ in respective classes
         return self.model.ravel()
 

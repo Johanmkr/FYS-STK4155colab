@@ -5,7 +5,7 @@ import pandas as pd
 
 
 import plot as PLOT
-PLOT.init()
+PLOT.init('on')
 
 from src.designMatrix import DesignMatrix
 from src.Regression import LeastSquares
@@ -39,15 +39,24 @@ noise = lambda eta: eta*np.random.randn(Ny, Nx)
 z = FrankeFunction(x, y) + noise(0)
 polydegs = [1,2,3,4,5]
 
+
+
+
 Trainings = []
 Predictions = [] 
+
+main_polydeg = 5
 
 for j, n in enumerate(polydegs):
     dM = DesignMatrix(n)
     dM.createX(x, y)
+    
+        
     reg = LeastSquares(z, dM)
-    reg.scale()
+    #reg.scale()
     trainer, predictor = reg.split()
+    #trainer.scale()
+    #predictor.scale()
     beta = trainer.train() 
     trainer.fit()
     
@@ -60,7 +69,15 @@ for j, n in enumerate(polydegs):
     Trainings.append(trainer)
     Predictions.append(predictor)
 
+    if n == main_polydeg:
+        beta = reg()
+        reg.setOptimalbeta(beta)
+        reg.fit()
+        REG5 = reg
 
+
+
+PLOT.ptB_franke_funcion(x, y, REG5, show=True)
 
 
 PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)

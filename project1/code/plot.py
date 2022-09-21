@@ -195,10 +195,33 @@ dVAR = {'c':'orange'}
 
 
 
+
 '''
 # Pt. b)
 '''
 
+
+def ptB_franke_funcion(x, y, regression, pdf_name='none', show=False):
+    fig, (ax0, ax1) = plt.subplots(ncols=2, subplot_kw={'projection':'3d'})
+    z = np.reshape(regression.data, np.shape(x))
+    ztilde = np.reshape(regression.model, np.shape(x))
+    ax0, surf0 = surface_plot(ax0, x, y, z)
+    ax1, surf1 = surface_plot(ax1, x, y, ztilde)
+    ax0.set_title(r"Original data")
+    ax1.set_title(r"Polynomial degree $n=%i$"%(regression.polydeg))
+    # Customize the z axis.
+    for ax in [ax0, ax1]:
+        ax.set_zlim(np.min(z), np.max(z))
+        ax.zaxis.set_major_locator(LinearLocator(10))
+        ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    # fig.suptitle(f"n={n}", fontsize=20)
+    fig.suptitle(f"Franke")
+
+    # Add a color bar which maps values to colors.
+    #fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    save_push(fig, pdf_name, show=show)
+    
 
 def ptB_scores(trainings, predictions, pdf_name='none', show=False):
     """
