@@ -214,17 +214,24 @@ class LinearRegression:
             sys.exit()
         return self.TRAINER, self.PREDICTOR
 
-    def scale(self, scaler=StandardScaler()):
+    def scale(self, type=StandardScaler()):
         """
-        Scale the design matrix. CHECK!!!!
+        Scale the design matrix of test and train(???). CHECK!!!!
         
         Parameters
         ----------
         scaler : (not sure), optional
             scaler (from skl), by default StandardScaler()
-        """        
-        self.dM.scale(scaler=scaler)
-        self.fit_intercept = not self.dM.scaled
+        """ 
+        if self.notPredictor and self.notTrainer:
+            scaler = self.TRAINER.dM.buildScaler(type)
+            self.TRAINER.dM.scale(scaler)
+            self.PREDICTOR.dM.scale(scaler)
+            # SCALE DATA! ?????
+            self.fit_intercept = False
+        else:
+            print('Not ok yet')
+            sys.exit()
 
 
     def _sklOLS(self):

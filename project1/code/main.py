@@ -10,21 +10,11 @@ PLOT.init('off')
 
 
 
-testSize = 1/5
 
 Nx, Ny = 20, 20
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
-
-
-def FrankeFunction(x, y):
-    term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
-    term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
-    term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
-    term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-    return term1 + term2 + term3 + term4
-
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
@@ -46,17 +36,16 @@ def ptB():
         dM.createX(x, y)
             
         reg = LinearRegression(z, dM)
-        #reg.scale()
+        #r
         trainer, predictor = reg.split()
-        #trainer.scale()
-        #predictor.scale()
+        #reg.scale()
         beta = trainer.train() 
-        trainer.fit()
+        trainer.computeModel()
         
         trainer.computeExpectationValues()
 
         predictor.setOptimalbeta(beta)
-        predictor.fit()
+        predictor.computeModel()
         predictor.computeExpectationValues()
 
         Trainings.append(trainer)
@@ -65,7 +54,7 @@ def ptB():
         if n == main_polydeg:
             beta = reg()
             reg.setOptimalbeta(beta)
-            reg.fit()
+            reg.computeModel()
             REG5 = reg
 
     PLOT.ptB_franke_funcion(x, y, REG5, show=True)
@@ -91,11 +80,11 @@ def ptC():
         #trainer.scale()
         #predictor.scale()
         beta = trainer.train() 
-        trainer.fit()
+        trainer.computeModel()
         trainer.computeExpectationValues()
 
         predictor.setOptimalbeta(beta)
-        predictor.fit()
+        predictor.computeModel()
         predictor.computeExpectationValues()
 
         Trainings.append(trainer)
@@ -116,9 +105,45 @@ def ptC():
 
 
 
+def ptE():
+    # ....
+    polydegs = range(1,20+1)
+
+    Trainings = []
+    Predictions = [] 
+
+    for n in polydegs:
+        dM = DesignMatrix(n)
+        dM.createX(x, y)
+        reg = LinearRegression(z, dM, 'Ridge')
+
+        trainer, predictor = reg.split()
+        beta = trainer.train(0.1) 
+        trainer.computeModel()
+        trainer.computeExpectationValues()
+
+        predictor.setOptimalbeta(beta)
+        predictor.computeModel()
+        predictor.computeExpectationValues()
+
+        Trainings.append(trainer)
+        Predictions.append(predictor)
 
 
-all_pts = ['B', 'C']
+    Bootstrappings = []
+    for train, test in zip(Trainings, Predictions):
+        BS = Bootstrap(train, test)
+        BS()
+        BS.bias_varianceDecomposition()
+        Bootstrappings.append(BS)
+
+
+
+
+
+
+
+all_pts = ['B', 'C', 'E']
 
 def runparts(parts):
     pts = []

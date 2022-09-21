@@ -105,7 +105,10 @@ class DesignMatrix:
 
         self._setX(X)
 
-    def scale(self, scaler=StandardScaler(), reverse=False):
+    def buildScaler(self, type=StandardScaler()):
+        return type.fit(self.X)
+
+    def scale(self, scaler):
         """
         Scale the matrix X, e.g. s.t. X[:,0] = 0. OBS!
 
@@ -114,13 +117,9 @@ class DesignMatrix:
         scaler : (not sure), optional
             scaler from skl?, by default StandardScaler()
         """        
-        self.scaler = scaler.fit(self.X)
-        if reverse and self.scaled:
-            self.X = self.scaler.inverse_transform(self.X)
-            self.scaled = False
-        else:
-            self.X = self.scaler.transform(self.X)
-            self.scaled = True
+        self.scaler = scaler
+        self.X = self.scaler.transform(self.X)
+        self.scaled = True
 
     def newObject(self, X, is_scaled=None):
         """
