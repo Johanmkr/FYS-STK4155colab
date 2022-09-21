@@ -1,5 +1,5 @@
-import numpy as np
-import pandas as pd
+from src.utils import *
+
 from sklearn.preprocessing import StandardScaler
 
 
@@ -15,26 +15,6 @@ def matrixColoumns(polydeg):
 
     return cols
 
-def polydeg2features(polydeg):
-    """
-    Function for finding the length of β for a given polynomial degree in 2 dimensions.
-
-    Parameters
-    ----------
-    polydeg : int
-        order of 2D polynomial 
-
-    Returns
-    -------
-    int
-        number of features in model
-    """
-    n = polydeg
-    p = int((n+1)*(n+2)/2)
-    return p
-
-
-
 
 class DesignMatrix:
     """
@@ -45,7 +25,7 @@ class DesignMatrix:
     for a given polynomial degree.
 
     COMPATIBLE CLASSES:
-        * betaParameter 
+        * ParameterVector 
         * LeastSquares (+ subclasses)
         * Bootstrap
     """
@@ -217,11 +197,11 @@ class DesignMatrix:
         """
         Special method for performing the matrix multiplication 
             z = Xβ,
-        designed to work with instances of betaParameter.
+        designed to work with instances of ParameterVector.
 
         Parameters
         ----------
-        other : betaParameter
+        other : ParameterVector
             the object that defines the β-parameter
 
         Returns

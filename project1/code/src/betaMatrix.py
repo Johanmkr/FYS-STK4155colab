@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from src.parameterVector import ParameterVector
 class betaMatrix:
 
     def __init__(self, z, dM, beta='none'):
@@ -92,6 +93,8 @@ class betaParameter:
             self.beta = beta.getVector()
         self.p = len(self.beta)
         self.n = features2polydeg(self.p)
+
+        self.stdv = None # standard deviation, to be calculated
 
     def getVector(self):
         """
@@ -203,7 +206,7 @@ class betaCollection:
 
         if isinstance(betas, list):
             self.nbootstraps = len(betas)
-            if isinstance(betas[0], betaParameter):
+            if isinstance(betas[0], (betaParameter, ParameterVector)):
                 self.p = betas[0].p
                 self.betas = np.zeros((self.p,self.nbootstraps))            
                 for i in range(self.nbootstraps):

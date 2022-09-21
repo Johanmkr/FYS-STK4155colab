@@ -1,23 +1,18 @@
-import numpy as np
-import sys
-import os
-import pandas as pd
+from src.utils import *
 
 from src.designMatrix import DesignMatrix
-from src.Regression import LeastSquares
+from src.parameterVector import ParameterVector
+from src.Regression import LinearRegression
 from src.Resampling import Bootstrap
-from src.betaMatrix import betaParameter, betaCollection
 
 import plot as PLOT
 PLOT.init('off')
 
 
-seed = 7132
-np.random.seed(seed)
+
 testSize = 1/5
 
-
-Nx, Ny = 60, 60
+Nx, Ny = 20, 20
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
@@ -33,8 +28,8 @@ def FrankeFunction(x, y):
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
-eta = 0.2
-z = FrankeFunction(x, y) + noise(0.2)
+eta = 0.01
+z = FrankeFunction(x, y) + noise(eta)
 
 print(f'\n   Franke function z with noise of stdv. {eta}.\n')
 
@@ -50,7 +45,7 @@ def ptB():
         dM = DesignMatrix(n)
         dM.createX(x, y)
             
-        reg = LeastSquares(z, dM)
+        reg = LinearRegression(z, dM)
         #reg.scale()
         trainer, predictor = reg.split()
         #trainer.scale()
@@ -90,7 +85,7 @@ def ptC():
     for n in polydegs:
         dM = DesignMatrix(n)
         dM.createX(x, y)
-        reg = LeastSquares(z, dM)
+        reg = LinearRegression(z, dM)
 
         trainer, predictor = reg.split()
         #trainer.scale()
@@ -133,6 +128,7 @@ def runparts(parts):
             pts = all_pts
             break
         else:
+            assert pt in all_pts
             pts.append(pt)
 
     for pt in pts:
@@ -142,7 +138,6 @@ try:
     dummy = sys.argv[1]
     parts = sys.argv[1:]
 except IndexError:
-    parts = list(input('What parts? '))
-
+    parts = input('What parts? ').replace(',', ' ').split()
 
 runparts(parts)

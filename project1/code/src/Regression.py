@@ -1,12 +1,12 @@
-import sys
-import numpy as np
+from src.utils import *
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
 
 
-from src.betaMatrix import betaParameter
+from src.parameterVector import ParameterVector
+
 
 
 
@@ -16,15 +16,15 @@ from src.betaMatrix import betaParameter
 manualModes = ['manual', 'MANUAL', 'Manual', 'own'] # own scripts
 autoModes = ['auto', 'skl', 'SKL', 'sklearn', 'scikit'] # sklearn methods
 
-olsMethods = ['ols', 'OLS', 'OrdinaryLeastSquares'] # OLS method
+olsMethods = ['ols', 'OLS', 'OrdinaryLinearRegression'] # OLS method
 ridgeMethods = ['ridge', 'Ridge', 'RidgeRegression'] # Ridge method
 lassoMethods = ['lasso', 'Lasso', 'LassoRegression'] # Lasso method
 
 
-class LeastSquares:
+class LinearRegression:
 
     """
-    Class for performin least squares fitting.
+    Class for performing linear regression fitting.
     """    
 
     def __init__(self, data, design_matrix, method='ols', mode='manual'):
@@ -144,7 +144,7 @@ class LeastSquares:
 
         Returns
         -------
-        betaParameter
+        ParameterVector
             the resulting beta from the least squares fitting
         """        
         assert self.notPredictor
@@ -164,7 +164,7 @@ class LeastSquares:
         
         self.lmbda = lmbda
 
-        self.beta_current = betaParameter(eval(f'self.{pre}{post}()'))
+        self.beta_current = ParameterVector(eval(f'self.{pre}{post}()'))
 
         return self.beta_current
 
@@ -174,10 +174,10 @@ class LeastSquares:
 
         Parameters
         ----------
-        beta : betaParameter/ndarray/list
+        beta : ParameterVector/ndarray/list
             the β-parameter
         """        
-        self.beta = betaParameter(beta)
+        self.beta = ParameterVector(beta)
         # self.beta.computeVariance(self) # Check this!
 
     def split(self, test_size=0.2):
@@ -197,7 +197,7 @@ class LeastSquares:
 
         assert self.notPredictor
         if self.notTrainer and test_size!=0:
-            X_train, X_test, z_train, z_test = train_test_split(self.dM.X, self.data.ravel(), test_size=test_size)
+            X_train, X_test, z_train, z_test = train_test_split(self.dM.X, self.data.ravel(), test_size=test_size, random_state=randomState)
 
             dM_train = self.dM.newObject(X_train)
             dM_test = self.dM.newObject(X_test)
@@ -336,7 +336,7 @@ class LeastSquares:
 
 
 
-class Training(LeastSquares):
+class Training(LinearRegression):
     """
     Subclass as an extension specific for handling training data.
     """    
@@ -347,7 +347,7 @@ class Training(LeastSquares):
 
         Parameters
         ----------
-        regressor : LeastSquares
+        regressor : LinearRegression
             the regressor for the original data for inheritance of information
         training_data : ndarray
             the z-points in the training set
@@ -368,7 +368,7 @@ class Training(LeastSquares):
 
         Returns
         -------
-        betaParameter
+        ParameterVector
             the computed β-parameter
         """        
         super().__call__(lmbda)
@@ -395,7 +395,7 @@ class Training(LeastSquares):
 
 
 
-class Prediction(LeastSquares):
+class Prediction(LinearRegression):
     """
     Subclass as an extension specific for handling test data.
     """
@@ -405,7 +405,7 @@ class Prediction(LeastSquares):
 
         Parameters
         ----------
-        regressor : LeastSquares
+        regressor : LinearRegression
             the regressor for the original data for inheritance of information
         test_data : ndarray
             the z-points in the prediction set

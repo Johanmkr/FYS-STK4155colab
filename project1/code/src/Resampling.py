@@ -1,12 +1,8 @@
+from src.utils import *
 
-import numpy as np
 from src.betaMatrix import betaCollection
 from src.designMatrix import DesignMatrix
-
-from src.Regression import LeastSquares, Training, Prediction
-from src.betaMatrix import betaParameter, betaCollection
-
-
+from src.Regression import LinearRegression, Training, Prediction
 
 
 class Bootstrap1:
@@ -26,7 +22,7 @@ class Bootstrap1:
         for i in range(no_bootstrap):
             idx = np.random.randint(0,len(data), len(data))
             newdata = data[idx]
-            LS = LeastSquares(newdata, self.dM, self.method)
+            LS = LinearRegression(newdata, self.dM, self.method)
             newbeta = LS()
             newbeta[:,i] = newbeta.getVector()
         self.Beta.addColumns(newbeta)
