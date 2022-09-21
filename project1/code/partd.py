@@ -8,7 +8,7 @@ from plot import *
 
 from src.designMatrix import DesignMatrix
 from src.Regression import LeastSquares
-from src.Resampling import Bootstrap
+from src.Resampling import Bootstrap, CrossValidation
 from src.betaMatrix import betaParameter, betaCollection
 
 
@@ -31,3 +31,41 @@ def FrankeFunction(x, y):
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
+z = FrankeFunction(x, y) + noise(0)
+polydegs = range(1,20+1)
+
+mse_train = []
+mse_cv = []
+r2_train = []
+r2_cv = []
+var_cv = []
+bias_cv = []
+
+
+
+for n in polydegs:
+    dM = DesignMatrix(n)
+    dM.createX(x, y) 
+    reg = LeastSquares(x, dM)
+    CV = CrossValidation(reg)
+    list_w_stuff = CV(k_folds=10)
+    for i, nrlist in enumerate([mse_train, mse_cv, r2_train, r2_cv, var_cv, bias_cv]):
+        nrlist.append(list_w_stuff[i])
+
+plt.figure()
+plt.plot(polydegs, mse_train, ls="-", label='train MSE')
+plt.plot(polydegs, mse_cv, ls="--", label='test MSE')
+plt.legend()
+
+plt.figure()
+plt.plot(polydegs, r2_train,  ls="-", label='train $R^2$')
+plt.plot(polydegs, r2_cv,  ls="--", label='test $R^2$')
+plt.legend()
+
+plt.figure()
+plt.plot(polydegs, mse_cv, label="mse")
+plt.plot(polydegs, var_cv, label="var")
+plt.plot(polydegs, bias_cv, label="bias")
+plt.legend()
+
+plt.show()

@@ -3,7 +3,7 @@ import numpy as np
 from src.betaMatrix import betaCollection
 from src.designMatrix import DesignMatrix
 
-from src.Regression import LeastSquares
+from src.Regression import LeastSquares, Training, Prediction
 from src.betaMatrix import betaParameter, betaCollection
 
 
@@ -94,5 +94,54 @@ class Bootstrap:
 
 class CrossValidation:
 
-    def __init__(self):
-        pass
+    def __init__(self, regressor):
+        self.reg = regressor
+        self.data = regressor.data
+        self.dM = regressor.dM
+        self.trainings = []
+        self.predictions = []
+        self.MSE_train = []
+        self.MSE_cv = []
+        self.R2_train = []
+        self.R2_cv = []
+        self.var_cv = []
+        self.bias_cv = []
+
+    def __call__(self, k_folds=5):
+        rav_data = self.data.ravel()
+        all_idx = np.arange(0, len(rav_data), 1)
+        k_size = int(rav_data.size / k_folds)
+        for i in range(k_folds): 
+            test_idx = slice(i*k_size,(i+1)*k_size)
+            train_idx = np.delete(all_idx, test_idx)
+
+    
+            z_train = rav_data[train_idx]
+            z_test = rav_data[test_idx]
+            X_train = self.dM[train_idx,:]
+            X_test = self.dM[test_idx, :]
+
+
+            trainer = Training(self.reg, z_train, self.dM.newObject(X_train))
+            predictor = Prediction(self.reg, z_test, self.dM.newObject(X_test))
+
+            beta = trainer.train()
+            trainer.fit()
+            trainer.computeExpectationValues()
+            
+            predictor.setOptimalbeta(beta)
+            predictor.fit()
+            predictor.computeExpectationValues()
+
+            self.MSE_train.append(trainer.MSE)
+            self.MSE_cv.append(predictor.MSE)
+            self.R2_train.append(trainer.R2)
+            self.R2_cv.append(predictor.R2)
+            self.var_cv.append(np.var(predictor.model.ravel()))
+            self.bias_cv.append((predictor.data.ravel() - np.mean(predictor.model.ravel())**2))
+
+            self.trainings.append(trainer)
+            self.predictions.append(predictor)
+        return [np.mean(self.MSE_train), np.mean(self.MSE_cv), np.mean(self.R2_train), np.mean(self.R2_cv), np.mean(self.var_cv), np.mean(self.bias_cv)]
+        # from IPython import embed; embed()
+        

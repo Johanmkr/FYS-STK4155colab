@@ -15,7 +15,7 @@ from src.betaMatrix import betaParameter, betaCollection
 
 
 
-testSize = 1/5
+# testSize = 1/5
 
 Nx, Ny = 50, 50
 x = np.linspace(0, 1, Nx)
