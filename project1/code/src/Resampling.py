@@ -70,10 +70,12 @@ class Bootstrap:
         z_pred = np.empty((z_test.shape[0], self.nBS))
         diff = np.zeros_like(z_pred)
 
+
         for i in range(self.nBS):
             self.predictor.setOptimalbeta(self.betas[i])
             z_pred[:,i] = self.predictor.fit()
             diff[:,i] = z_test - z_pred[:,i]
+
 
 
         Errors = np.mean(diff**2, axis=1, keepdims=True)[:,0]
@@ -100,14 +102,16 @@ class CrossValidation:
         self.dM = regressor.dM
         self.trainings = []
         self.predictions = []
-        self.MSE_train = []
-        self.MSE_cv = []
-        self.R2_train = []
-        self.R2_cv = []
-        self.var_cv = []
-        self.bias_cv = []
+
+        # self.MSE_train = []
+        # self.MSE_cv = []
+        # self.R2_train = []
+        # self.R2_cv = []
+        # self.var_cv = []
+        # self.bias_cv = []
 
     def __call__(self, k_folds=5):
+        beta_list = []
         rav_data = self.data.ravel()
         all_idx = np.arange(0, len(rav_data), 1)
         k_size = int(rav_data.size / k_folds)
@@ -115,12 +119,10 @@ class CrossValidation:
             test_idx = slice(i*k_size,(i+1)*k_size)
             train_idx = np.delete(all_idx, test_idx)
 
-    
             z_train = rav_data[train_idx]
             z_test = rav_data[test_idx]
             X_train = self.dM[train_idx,:]
             X_test = self.dM[test_idx, :]
-
 
             trainer = Training(self.reg, z_train, self.dM.newObject(X_train))
             predictor = Prediction(self.reg, z_test, self.dM.newObject(X_test))
@@ -133,15 +135,21 @@ class CrossValidation:
             predictor.fit()
             predictor.computeExpectationValues()
 
-            self.MSE_train.append(trainer.MSE)
-            self.MSE_cv.append(predictor.MSE)
-            self.R2_train.append(trainer.R2)
-            self.R2_cv.append(predictor.R2)
-            self.var_cv.append(np.var(predictor.model.ravel()))
-            self.bias_cv.append((predictor.data.ravel() - np.mean(predictor.model.ravel())**2))
+            # self.MSE_train.append(trainer.MSE)
+            # self.MSE_cv.append(predictor.MSE)
+            # self.R2_train.append(trainer.R2)
+            # self.R2_cv.append(predictor.R2)
+            # self.var_cv.append(np.var(predictor.model.ravel()))
+            # self.bias_cv.append((predictor.data.ravel() - np.mean(predictor.model.ravel())**2))
+
+            z_test = self.predictor.data.ravel()
+
 
             self.trainings.append(trainer)
             self.predictions.append(predictor)
-        return [np.mean(self.MSE_train), np.mean(self.MSE_cv), np.mean(self.R2_train), np.mean(self.R2_cv), np.mean(self.var_cv), np.mean(self.bias_cv)]
-        # from IPython import embed; embed()
+            beta_list.append(beta)
+        self.betas = betaCollection(beta_list)
         
+        return [np.mean(self.MSE_train), np.mean(self.MSE_cv), np.mean(self.R2_train), np.mean(self.R2_cv), np.mean(self.var_cv), np.mean(self.bias_cv)]
+        
+

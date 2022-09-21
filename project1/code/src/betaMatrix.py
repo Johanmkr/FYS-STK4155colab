@@ -115,8 +115,13 @@ class betaParameter:
         """        
         z = regressor.data.ravel()
         HInv = regressor.dM.Hinv
+
         self.var = np.diag(np.var(z) * HInv)
-        # self.var = np.diag(1 * HInv)
+
+        # z_tilde = regressor.model.ravel()
+        # N, p = regressor.dM.X.shape
+        # sigma2 = 1 / (N-p-1) * np.sum((z-z_tilde)**2)
+        # self.var = np.diag(HInv) * sigma2
         self.stdv = self.var**(1/2)
 
     def __str__(self):

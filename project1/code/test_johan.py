@@ -31,6 +31,7 @@ def FrankeFunction(x, y):
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 z = FrankeFunction(x, y) + noise(.1)
+
 # z = FrankeFunction(x, y)
 
 # plot_franke(x, y, z)

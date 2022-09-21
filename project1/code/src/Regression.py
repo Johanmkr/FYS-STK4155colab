@@ -178,7 +178,7 @@ class LeastSquares:
             the β-parameter
         """        
         self.beta = betaParameter(beta)
-        self.beta.computeVariance(self) # Check this!
+        # self.beta.computeVariance(self) # Check this!
 
     def split(self, test_size=0.2):
         """

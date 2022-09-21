@@ -59,7 +59,9 @@ for j, n in enumerate(polydegs):
     #trainer.scale()
     #predictor.scale()
     beta = trainer.train() 
+    trainer.setOptimalbeta(beta)
     trainer.fit()
+    trainer.beta.computeVariance(trainer)
     
     trainer.computeExpectationValues()
 
@@ -78,10 +80,10 @@ for j, n in enumerate(polydegs):
 
 
 
-PLOT.ptB_franke_funcion(x, y, REG5, show=True)
+# PLOT.ptB_franke_funcion(x, y, REG5, show=True)
 
 
-PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
+# PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
 
 PLOT.ptB_beta_params(Trainings, pdf_name='betas', show=True)
 
