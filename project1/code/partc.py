@@ -61,13 +61,13 @@ for n in polydegs:
     Predictions.append(predictor)
 
 
-PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
+# PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
 
 
 Bootstrappings = []
 for train, test in zip(Trainings, Predictions):
     BS = Bootstrap(train, test)
-    BS()
+    BS(no_bootstraps=1000)
     BS.bias_varianceDecomposition()
     Bootstrappings.append(BS)
 
