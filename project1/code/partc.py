@@ -17,7 +17,7 @@ seed = 7132
 np.random.seed(seed)
 # testSize = 1/5
 
-Nx, Ny = 60, 60
+Nx, Ny = 20, 20
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)

@@ -13,7 +13,7 @@ PLOT.init('off')
 
 
 seed = 7132
-np.random(seed)
+np.random.seed(seed)
 testSize = 1/5
 
 
@@ -33,7 +33,116 @@ def FrankeFunction(x, y):
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
+eta = 0.2
+z = FrankeFunction(x, y) + noise(0.2)
 
-z = FrankeFunction(x, y) + noise(0)
+print(f'\n   Franke function z with noise of stdv. {eta}.\n')
+
+def ptB():
+
+    polydegs = range(1,5+1) 
+    Trainings = []
+    Predictions = [] 
+
+    main_polydeg = 5
+
+    for j, n in enumerate(polydegs):
+        dM = DesignMatrix(n)
+        dM.createX(x, y)
+            
+        reg = LeastSquares(z, dM)
+        #reg.scale()
+        trainer, predictor = reg.split()
+        #trainer.scale()
+        #predictor.scale()
+        beta = trainer.train() 
+        trainer.fit()
+        
+        trainer.computeExpectationValues()
+
+        predictor.setOptimalbeta(beta)
+        predictor.fit()
+        predictor.computeExpectationValues()
+
+        Trainings.append(trainer)
+        Predictions.append(predictor)
+
+        if n == main_polydeg:
+            beta = reg()
+            reg.setOptimalbeta(beta)
+            reg.fit()
+            REG5 = reg
+
+    PLOT.ptB_franke_funcion(x, y, REG5, show=True)
+
+    PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
+
+    PLOT.ptB_beta_params(Trainings, pdf_name='betas', show=True)
 
 
+def ptC():
+
+    polydegs = range(1,20+1)
+
+    Trainings = []
+    Predictions = [] 
+
+    for n in polydegs:
+        dM = DesignMatrix(n)
+        dM.createX(x, y)
+        reg = LeastSquares(z, dM)
+
+        trainer, predictor = reg.split()
+        #trainer.scale()
+        #predictor.scale()
+        beta = trainer.train() 
+        trainer.fit()
+        trainer.computeExpectationValues()
+
+        predictor.setOptimalbeta(beta)
+        predictor.fit()
+        predictor.computeExpectationValues()
+
+        Trainings.append(trainer)
+        Predictions.append(predictor)
+
+
+    PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
+
+
+    Bootstrappings = []
+    for train, test in zip(Trainings, Predictions):
+        BS = Bootstrap(train, test)
+        BS()
+        BS.bias_varianceDecomposition()
+        Bootstrappings.append(BS)
+
+    PLOT.ptC_tradeoff(Bootstrappings, pdf_name='tradeoff', show=True)
+
+
+
+
+
+all_pts = ['B', 'C']
+
+def runparts(parts):
+    pts = []
+    for part in parts:
+        pt = part.strip().upper().replace('PT', '')
+        if pt == 'ALL':
+            pts = all_pts
+            break
+        else:
+            pts.append(pt)
+
+    for pt in pts:
+        eval(f'pt{pt}()')
+
+try:
+    dummy = sys.argv[1]
+    parts = sys.argv[1:]
+except IndexError:
+    parts = list(input('What parts? '))
+
+
+runparts(parts)
