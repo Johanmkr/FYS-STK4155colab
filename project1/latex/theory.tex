@@ -1,5 +1,8 @@
 \section{Theory}\label{sec:theroy}
 
+
+
+
 \hl{*} DECIDE ON z vs. y
 
 \begin{align}\label{eq:MSE}
@@ -16,13 +19,13 @@
 
 
 
-\subsection{Regression}\label{sec:regression}
+\subsection{Linear regression}\label{sec:regression}
 
-We assume the vector $\vec{y} \in \RR[n]$ consisting of observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. The integers $n$ and $p$ represent the number of data points and features, respectively. 
+There are several possible estimation techniques when fitting a linear regression model. We will discuss three common approaches, one least squares estimation (\Sec{OLS}) and two forms of penalized estimation (\Sec{Ridge} and \Sec{Lasso}).
 
+We assume the vector $\vec{y} \in \RR[n]$ consisting of $n$ observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise of standard deviation $\sigma$. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. That is, we assume a \textit{linear} relationship between $X$ and$\vec{y}$. The integers $n$ and $p$ then represent the number of data points and features, respectively. 
 
-
-For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$\footnote{Can also write $X_{ij}\beta_j$, but we try to be consistent with our notation.}. The inner product $\vec{x}_i\TT \svec{\beta}$ is non-stochastic, hence 
+For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$. The inner product $\Xbi$ is non-stochastic, hence 
 
 \begin{align*}
     \EE{\Xbi} = \Xbi
@@ -34,7 +37,7 @@ and since
     \EE{\epsilon_i} \stackrel{\text{per def.}}{=} 0,
 \end{align*}
 
-we have the expectation value
+we have the expectation value of the response variable
 
 \begin{align*}
     \EE{y_i} &= \EE{\Xbi+ \epsilon_i} \\
@@ -42,7 +45,7 @@ we have the expectation value
     &= \Xbi.
 \end{align*}
 
-To find the variance, we need the expetation value of the outer product $\vec{y}\vec{y}\TT$,
+To find the variance of this dependent variable, we need the expetation value of the outer product $\vec{y}\vec{y}\TT$,
 
 \begin{align}
     \EE{\vec{y} \vec{y}\TT} &= \EE{(X\svec{\beta} + \svec{\epsilon})(X\svec{\beta} + \svec{\epsilon})\TT} \nonumber\\
@@ -59,13 +62,29 @@ The variance becomes
 \end{align*}
 
 
-Taking $\optbeta$ as the Ordinary Least Square (OLS) expression for the optimal parameter, i.e.
+The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, is in principle obtained by minimizing the cost function $C(\svec{\beta})$, and said function is determined by the method we choose. That is,
+
+\begin{align}\label{eq:general_LS}
+    \pdv{C(\svec{\beta})}{\svec{\beta}}\Bigg|_{\svec{\beta}=\optbeta} = 0.
+\end{align}
+
+\subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
+
+The ordinary least squares (OLS) method assumes the cost function
 
 \begin{align*}
-    \optbeta = \invhessian X\TT \vec{y},
+    C^\text{OLS}(\svec{\beta}) = \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
 \end{align*}
 
-we get the expected value
+where the subscript "2" implies the \lnorm{2}. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
+
+\begin{align*}
+    \optbeta^\text{OLS} = \invhessian X\TT \vec{y} = H^{-1} X\TT \vec{y},
+\end{align*}
+
+where $H = \hessian$ is the Hessian matrix.
+
+Letting $\optbeta = \optbeta^\text{OLS}$ we get the expected value 
 
 \begin{align*}
     \EE{\optbeta} &= \EE{\invhessian X\TT \vec{y}} \\
@@ -87,14 +106,37 @@ The variance is then
 
 
 
-\subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
+\dots
+
 
 
 \subsubsection{Ridge regression}\label{sec:Ridge}
 
+Let $\lambda \in \RR$ be some small number such that $\lambda >0$. If we add a penalty term $\lambda \norm{\svec{\beta}}_2^2$ to the OLS cost function, we get the cost function of Ridge regression,
+
+\begin{align*}
+    C^\text{Ridge}(\svec{\beta}) &=  C^\text{OLS}(\svec{\beta}) + \lambda \norm{\svec{\beta}}_2^2 \\
+    &=\norm{\vec{y}-\tilde{\vec{y}}}_2^{2}  + \lambda \norm{\svec{\beta}}_2^2 \\
+    &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_2^2 
+\end{align*}
+
+\begin{align*}
+    \optbeta^\text{Ridge} = \big(\hessian + \lambda \II\big)^{-1} \vec{y} = \big(H + \lambda \II\big)^{-1} \vec{y}
+\end{align*}
+
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
 
+If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm{1}, to the OLS cost function, we are left with the Lasso regression's cost function,
+\begin{align*}
+    C^\text{Lasso}(\svec{\beta})  &= C^\text{OLS}(\svec{\beta}) + \lambda \norm{\svec{\beta}}_1 \\
+    &= \norm{\vec{y}-\tilde{\vec{y}}}_2^{2}  + \lambda \norm{\svec{\beta}}_{1} \\
+    &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_{1}
+\end{align*}
+
+\begin{align*}
+    \optbeta^\text{Lasso} = \dots
+\end{align*}
 
 \subsection{Resampling}\label{sec:resampling}
 

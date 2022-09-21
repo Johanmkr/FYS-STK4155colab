@@ -5,7 +5,7 @@ import pandas as pd
 
 
 import plot as PLOT
-PLOT.init('on')
+PLOT.init('off')
 
 from src.designMatrix import DesignMatrix
 from src.Regression import LeastSquares
@@ -13,7 +13,8 @@ from src.Resampling import Bootstrap
 from src.betaMatrix import betaParameter, betaCollection
 
 
-
+seed = 7132
+np.random.seed(seed)
 testSize = 1/5
 
 Nx, Ny = 60, 60

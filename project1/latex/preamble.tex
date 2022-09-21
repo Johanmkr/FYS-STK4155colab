@@ -22,6 +22,7 @@
 \usepackage{mathrsfs}
 \usepackage{nicefrac}
 \usepackage[caption=false]{subfig}
+\usepackage{bbold}
 
 \graphicspath{{../output/figures}}
 
@@ -81,13 +82,15 @@
 
 \newcommand{\TT}{^\intercal} % transpose
 \newcommand{\RR}[1][]{\mathbb{R}^{#1}} %real numbers
-\newcommand{\II}[1][]{\mathbb{I}^{#1}} %identity matrix
+\newcommand{\II}[1][]{\mathbb{1}_{#1}} %identity matrix
 
 \newcommand{\optbeta}{\hat{\boldsymbol{\beta}}} % bold beta hat
 \newcommand{\Xb}{X\svec{\beta}} % X beta
 \newcommand{\Xbi}[1][i]{(X\svec{\beta})_{#1}} % ith element of Xb
 \newcommand{\MSE}[1]{\text{MSE}\big(#1\big)} % mean squared error
 \newcommand{\Rtwo}[1]{R^2\big(#1\big)} % r2 score
+
+\newcommand{\lnorm}[1]{$\ell^{#1}$-norm} % l1/l2 norm
 
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 
 
 import plot as PLOT
-PLOT.init('on')
+PLOT.init('off')
 
 
 from src.designMatrix import DesignMatrix
@@ -13,11 +13,11 @@ from src.Regression import LeastSquares
 from src.Resampling import Bootstrap
 from src.betaMatrix import betaParameter, betaCollection
 
-
-
+seed = 7132
+np.random.seed(seed)
 # testSize = 1/5
 
-Nx, Ny = 50, 50
+Nx, Ny = 60, 60
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
