@@ -116,6 +116,7 @@ class betaParameter:
         z = regressor.data.ravel()
         HInv = regressor.dM.Hinv
         self.var = np.diag(np.var(z) * HInv)
+        # self.var = np.diag(1 * HInv)
         self.stdv = self.var**(1/2)
 
     def __str__(self):

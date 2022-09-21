@@ -8,6 +8,7 @@ from src.betaMatrix import betaParameter, betaCollection
 
 
 
+
 class Bootstrap1:
 
     """
@@ -38,7 +39,6 @@ class Bootstrap:
         self.predictor = predictor
         self.polydeg = self.trainer.polydeg
         
-
     def __call__(self, no_bootstraps=100, comparison_mode=False):
         self.nBS = no_bootstraps
 
@@ -64,7 +64,7 @@ class Bootstrap:
 
         self.betas = betaCollection(beta_list)
 
-    
+    # dont touch this
     def bias_varianceDecomposition(self):
         z_test = self.predictor.data.ravel()
         z_pred = np.empty((z_test.shape[0], self.nBS))

@@ -17,7 +17,7 @@ from src.betaMatrix import betaParameter, betaCollection
 
 testSize = 1/5
 
-Nx, Ny = 60, 60
+Nx, Ny = 50, 50
 x = np.linspace(0, 1, Nx)
 y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
@@ -35,7 +35,7 @@ noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
 
 
-z = FrankeFunction(x, y) + noise(0)
+z = FrankeFunction(x, y) + noise(.2)
 polydegs = range(1,20+1)
 
 Trainings = []
@@ -45,7 +45,7 @@ for n in polydegs:
     dM = DesignMatrix(n)
     dM.createX(x, y)
     reg = LeastSquares(z, dM)
-    reg.scale()
+    # reg.scale()
     trainer, predictor = reg.split()
     beta = trainer.train() 
     trainer.fit()

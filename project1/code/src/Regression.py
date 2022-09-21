@@ -215,7 +215,7 @@ class LeastSquares:
     def scale(self, scaler=StandardScaler()):
         """
         Scale the design matrix. CHECK!!!!
-
+        
         Parameters
         ----------
         scaler : (not sure), optional

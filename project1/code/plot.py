@@ -321,6 +321,6 @@ def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
     ax.set_xticks(list(n))
     ax.set_xticklabels([f'{ni:.0f}' for ni in n])
 
-    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', title='Bias-variance tradeoff', xlim=(n[0], n[-1]), ylim=(0,0.3))
+    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', title='Bias-variance tradeoff', xlim=(n[0], n[-1]))#, ylim=(0,0.3))
     pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
     save_push(fig, pdfname, show=show)
