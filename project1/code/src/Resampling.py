@@ -69,7 +69,7 @@ class Bootstrap:
 
         for i in range(self.nBS):
             self.predictor.setOptimalbeta(self.betas[i])
-            z_pred[:,i] = self.predictor.fit()
+            z_pred[:,i] = self.predictor.computeModel()
             diff[:,i] = z_test - z_pred[:,i]
 
 
@@ -124,11 +124,11 @@ class CrossValidation:
             predictor = Prediction(self.reg, z_test, self.dM.newObject(X_test))
 
             beta = trainer.train()
-            trainer.fit()
+            trainer.computeModel()
             trainer.computeExpectationValues()
             
             predictor.setOptimalbeta(beta)
-            predictor.fit()
+            predictor.computeModel()
             predictor.computeExpectationValues()
 
             # self.MSE_train.append(trainer.MSE)

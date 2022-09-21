@@ -5,9 +5,9 @@ import pandas as pd
 
 from sklearn.utils import check_random_state
 
-seed = 7132
-np.random.seed(seed)
-randomState = check_random_state(seed)
+ourSeed = 7132
+np.random.seed(ourSeed)
+randomState = check_random_state(ourSeed)
 
 
 def polydeg2features(polydeg):

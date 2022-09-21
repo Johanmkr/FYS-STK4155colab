@@ -160,7 +160,6 @@ class LinearRegression:
             post = f'Ridge'
         elif self.method in lassoMethods:
             post = f'Lasso'
-            pre = '_skl' # OBS! Have no manual setting for this
         
         self.lmbda = lmbda
 
@@ -208,6 +207,7 @@ class LinearRegression:
         elif self.notTrainer and test_size == 0:
             self.TRAINER = Training(self, self.data, self.dM)
             #self.PREDICTOR = Prediction(self, z_test, dM_test)
+            self.PREDICTOR = None
 
         else: 
             print('Not yet implemented for splitting training data')
@@ -225,6 +225,7 @@ class LinearRegression:
         """        
         self.dM.scale(scaler=scaler)
         self.fit_intercept = not self.dM.scaled
+
 
     def _sklOLS(self):
         """
@@ -307,7 +308,7 @@ class LinearRegression:
         beta = reg.coef_
         beta[0] = reg.intercept_
 
-    def fit(self):
+    def computeModel(self):
         """
         Computes the model.
 
@@ -316,8 +317,6 @@ class LinearRegression:
         ndarray
             the model
         """
-        if self.dM.scaled:
-            self.dM.scale(reverse=True)
 
         self.model = self.dM * self.beta # see __mul__ and __rmul__ in respective classes
         return self.model.ravel()
@@ -375,7 +374,7 @@ class Training(LinearRegression):
         self.setOptimalbeta(self.beta_current)
         return self.beta_current
 
-    def randomShuffle(self):
+    def randomShuffle(self, without_seed=True):
         """
         Resample data with replacement.
 
@@ -386,7 +385,10 @@ class Training(LinearRegression):
         """        
         z = self.data.ravel()
         X = self.dM.X
+        if without_seed:
+            np.random.seed()
         idx = np.random.randint(0, len(z), len(z))
+        np.random.seed(ourSeed)
         zstar = z[idx]
         Xstar = X[idx]
         dMstar = self.dM.newObject(Xstar)
