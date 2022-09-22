@@ -11,7 +11,7 @@ class ParameterVector:
         * Bootstrap
     """
 
-    def __init__(self, beta):
+    def __init__(self, beta, intercept=True):
         """
         Constructur for the β-parameter.
 
@@ -25,9 +25,21 @@ class ParameterVector:
         elif isinstance(beta, ParameterVector):
             self.beta = beta.getVector()
         self.p = len(self.beta)
-        self.n = features2polydeg(self.p)
+        self.intercept = intercept
+        if self.intercept:
+            self.n = features2polydeg(self.p)
+        else:
+            self.n = features2polydeg(self.p+1)
 
         self.stdv = None # standard deviation, to be calculated
+
+        if self.intercept:
+            self.idx = [f'β_{j}' for j in range(len(self.beta))]
+            self.idx_tex = [r'\beta_{%i}$'%j for j in range(len(self.beta))]
+        else:
+            self.idx = [f'β_{j}' for j in range(1, len(self.beta)+1)]
+            self.idx_tex = [r'$\beta_{%i}$'%j for j in range(1, len(self.beta)+1)]
+        
 
     def getVector(self):
         """
@@ -68,15 +80,16 @@ class ParameterVector:
         -------
         str
             terminal print
-        """        
+        """       
+        
         try:
             sigma = self.stdv
             data = np.zeros((self.p, 2))
             data[:,0] = self.beta
             data[:,1] = sigma
-            betapd = pd.DataFrame(data=data, index=[f'β_{j}' for j in range(len(self.beta))], columns=['β', 'Δβ'])
+            betapd = pd.DataFrame(data=data, index=self.idx, columns=['β', 'Δβ'])
         except AttributeError:
-            betapd = pd.DataFrame(data=self.beta, index=[f'β_{j}' for j in range(len(self.beta))])
+            betapd = pd.DataFrame(data=self.beta, index=self.idx)
         l = 40; ind = ' '*5
         s = '\n' + '-'*l + '\n'
         s += f'β parameter:\n'

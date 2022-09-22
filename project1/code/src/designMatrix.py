@@ -1,5 +1,5 @@
-from src.utils import *
 
+from src.utils import *
 from sklearn.preprocessing import StandardScaler
 
 
@@ -76,10 +76,22 @@ class DesignMatrix:
         ----------
         X : ndarray(*,p) 
             the design matrix of p features
-        """        
-        self.X = X
-        self.Npoints = np.shape(self.X)[0]
-        self.Xpd = pd.DataFrame(self.X, columns=matrixColoumns(self.n))
+        """  
+        self.X_org = X
+        
+        if np.all(np.isnan(X[:,0])) or np.all(np.abs(X[:,0])<1e-18):  
+            self.X = X[:,1:]  # remove intercept coloumn
+            self.interceptColoumn = False
+            self.scaled = True # ? 
+            cols = matrixColoumns(self.n)[1:]
+        elif not self.interceptColoumn:
+            self.X = X
+            cols = matrixColoumns(self.n)[1:]
+        else:
+            self.X = X
+            cols = matrixColoumns(self.n)
+        self.Npoints, self.p = np.shape(self.X)
+        self.Xpd = pd.DataFrame(self.X, columns=cols)
         self.Hessian()
 
     def createX(self, x, y):
@@ -102,26 +114,10 @@ class DesignMatrix:
             for k in range(i+1):
                 X[:,j] = (xx**(i-k))*(yy**k)
                 j+=1
-
+        self.interceptColoumn = True
         self._setX(X)
-
-    def buildScaler(self, type=StandardScaler()):
-        return type.fit(self.X)
-
-    def scale(self, scaler):
-        """
-        Scale the matrix X, e.g. s.t. X[:,0] = 0. OBS!
-
-        Parameters
-        ----------
-        scaler : (not sure), optional
-            scaler from skl?, by default StandardScaler()
-        """        
-        self.scaler = scaler
-        self.X = self.scaler.transform(self.X)
-        self.scaled = True
-
-    def newObject(self, X, is_scaled=None):
+ 
+    def newObject(self, X, is_scaled=None, no_intercept=None):
         """
         Method that lets us create new objects that do not need computing.
 
@@ -138,8 +134,9 @@ class DesignMatrix:
             the design matrix as object of this class
         """        
         newObject = DesignMatrix(self.n)
-        newObject._setX(X)
         newObject.scaled = is_scaled or self.scaled
+        newObject.interceptColoumn = not no_intercept or self.interceptColoumn
+        newObject._setX(X)
         return newObject
 
     def Hessian(self):
@@ -150,7 +147,7 @@ class DesignMatrix:
         -------
         ndarray(self.p, self.p)
             the hessian
-        """        
+        """
         self.H = self.X.T @ self.X
         self.Hinv = np.linalg.pinv(self.H)
 
@@ -168,6 +165,8 @@ class DesignMatrix:
         s += f'design matrix X:\n'
         if self.scaled:
             s += '(scaled)\n'
+        if not self.interceptColoumn:
+            s += '(intercept coloumn removed)\n'
         s += ind + f'polynomial degree  n = {self.n:6.0f}\n'
         s += ind + f'number of features p = {self.p:6.0f}\n'
         s += ind + f'number of points   N = {self.Npoints:6.0f}\n'

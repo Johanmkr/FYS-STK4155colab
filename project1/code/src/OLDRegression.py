@@ -1,4 +1,3 @@
-from cgi import test
 from src.utils import *
 
 from sklearn.model_selection import train_test_split
@@ -6,10 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
 
 
-
 from src.parameterVector import ParameterVector
-from src.targetVector import TargetVector
-from src.designMatrix import DesignMatrix
+
 
 
 
@@ -30,15 +27,15 @@ class LinearRegression:
     Class for performing linear regression fitting.
     """    
 
-    def __init__(self, target_vector, design_matrix, method='ols', mode='manual'):
+    def __init__(self, data, design_matrix, method='ols', mode='manual'):
         """
         Constructor that holds information necessary to the regression (or something of the sort...). 
 
         Parameters
         ----------
-        target_vector : TargetVector
+        data : ndarray
             the (input) data points 
-        design_matrix : DesignMatrix
+        design_matrix : designMatrix
             the design/feature matrix
         method : str, optional
             the method (in (global) olsMethods, ridgeMethods or lassoMethods) with which to perform the least squares fitting, by default 'ols'
@@ -48,17 +45,8 @@ class LinearRegression:
         self._setMode(mode)
         self._setMethod(method)
             
-        if isinstance(design_matrix, DesignMatrix):
-            self.dM = design_matrix
-        else:
-            self.dM = DesignMatrix(design_matrix)
-          
-        if isinstance(target_vector, TargetVector):
-            self.tV = target_vector
-        else:
-            self.tV = TargetVector(target_vector)
-        
-        self.data = self.tV.data
+        self.dM = design_matrix
+        self.data = data
 
         self.polydeg = self.dM.n
         self.features = self.dM.p
@@ -175,9 +163,9 @@ class LinearRegression:
         
         self.lmbda = lmbda
 
-        self.pV = ParameterVector(eval(f'self.{pre}{post}()'), intercept=self.fit_intercept)
+        self.beta_current = ParameterVector(eval(f'self.{pre}{post}()'))
 
-        return self.pV
+        return self.beta_current
 
     def setOptimalbeta(self, beta):
         """
@@ -188,10 +176,10 @@ class LinearRegression:
         beta : ParameterVector/ndarray/list
             the β-parameter
         """        
-        self.pV = ParameterVector(beta, intercept=self.fit_intercept)
+        self.beta = ParameterVector(beta)
         # self.beta.computeVariance(self) # Check this!
 
-    def split(self, test_size=0.2, scale=True):
+    def split(self, test_size=0.2):
         """
         Split the data and design matrix in training set and test set. OBS! Under construction.
 
@@ -207,24 +195,44 @@ class LinearRegression:
         """        
 
         assert self.notPredictor
-        data = DataHandler(self.tV, self.dM)
-        shuffled_data = data.shuffle()
-        train_data, test_data = data.split(test_size)
+        if self.notTrainer and test_size!=0:
+            X_train, X_test, z_train, z_test = train_test_split(self.dM.X, self.data.ravel(), test_size=test_size, random_state=randomState)
 
-        data = DataHandler(self.tV, self.dM)
+            dM_train = self.dM.newObject(X_train)
+            dM_test = self.dM.newObject(X_test)
 
-        if scale:
-            ref_data = train_data
-            test_data = test_data.standardScaling(ref_data)
-            train_data = train_data.standardScaling(ref_data)
+            self.TRAINER = Training(self, z_train, dM_train)
+            self.PREDICTOR = Prediction(self, z_test, dM_test)
+
+        elif self.notTrainer and test_size == 0:
+            self.TRAINER = Training(self, self.data, self.dM)
+            #self.PREDICTOR = Prediction(self, z_test, dM_test)
+            self.PREDICTOR = None
+
+        else: 
+            print('Not yet implemented for splitting training data')
+            sys.exit()
+        return self.TRAINER, self.PREDICTOR.
+
+
+    def scale(self, type=StandardScaler()):
+        """
+        Scale the design matrix of test and train(???). CHECK!!!!
+        
+        Parameters
+        ----------
+        scaler : (not sure), optional
+            scaler (from skl), by default StandardScaler()
+        """ 
+        if self.notPredictor and self.notTrainer:
+            scaler = self.TRAINER.dM.buildScaler(type)
+            self.TRAINER.dM.scale(scaler)
+            self.PREDICTOR.dM.scale(scaler)
+            # SCALE DATA! ?????
             self.fit_intercept = False
-
-        self.TRAINER = Training(self, train_data) 
-        self.PREDICTOR = Prediction(self, test_data)
-        self.TRAINER.scaled = not self.fit_intercept
-        self.PREDICTOR.scaled = not self.fit_intercept
-    
-        return self.TRAINER, self.PREDICTOR
+        else:
+            print('Not ok yet')
+            sys.exit()
 
 
     def _sklOLS(self):
@@ -238,11 +246,10 @@ class LinearRegression:
         """        
         reg = linear_model.LinearRegression(fit_intercept=self.fit_intercept)
         X = self.dM.X
-        z = self.tV.z
+        z = self.data.ravel()
         reg.fit(X, z)
         beta = reg.coef_
-        if self.fit_intercept:
-            beta[0] = reg.intercept_
+        beta[0] = reg.intercept_
         return beta
 
     def _manOLS(self):
@@ -256,7 +263,7 @@ class LinearRegression:
         """   
         HInv = self.dM.Hinv
         X = self.dM.X
-        z = self.tV.z
+        z = self.data.ravel()
         beta = HInv @ X.T @ z
         return beta
     
@@ -271,11 +278,10 @@ class LinearRegression:
         """   
         reg = linear_model.Ridge(fit_intercept=self.fit_intercept, alpha=self.lmbda)
         X = self.dM.X
-        z = self.tV.z
+        z = self.data.ravel()
         reg.fit(X, z)
         beta = reg.coef_
-        if self.fit_intercept:
-            beta[0] = reg.intercept_
+        beta[0] = reg.intercept_
         return beta
 
     def _manRidge(self):
@@ -289,7 +295,7 @@ class LinearRegression:
         """   
         HInv = self.dM.Hinv
         X = self.dM.X
-        z = self.tV.z
+        z = self.data.ravel()
         I = np.eye(self.p)
         beta = (HInv  + 1/self.lmbda * I) @ X.T @ z
         return beta
@@ -305,11 +311,10 @@ class LinearRegression:
         """   
         reg = linear_model.Lasso(fit_intercept=self.fit_intercept, max_iter=int(1e6), alpha=self.lmbda)
         X = self.dM.X
-        z = self.tV.z
+        z = self.data.ravel()
         reg.fit(X, z)
         beta = reg.coef_
-        if self.fit_intercept:
-            beta[0] = reg.intercept_
+        beta[0] = reg.intercept_
 
     def computeModel(self):
         """
@@ -321,14 +326,14 @@ class LinearRegression:
             the model
         """
 
-        self.model = self.dM * self.pV # see __mul__ and __rmul__ in respective classes
+        self.model = self.dM * self.beta # see __mul__ and __rmul__ in respective classes
         return self.model.ravel()
 
     def computeExpectationValues(self):
         """
         Finds the mean squared error and the R2 score.
         """        
-        z = self.tV.z
+        z = self.data.ravel()
         ztilde = self.model.ravel()
 
         self.MSE = np.sum((z - ztilde)**2)/z.size
@@ -343,7 +348,7 @@ class Training(LinearRegression):
     Subclass as an extension specific for handling training data.
     """    
 
-    def __init__(self, regressor, train_target_vector, train_design_matrix=None):
+    def __init__(self, regressor, training_data, training_design_matrix):
         """
         Constructs a training set. 
 
@@ -351,19 +356,13 @@ class Training(LinearRegression):
         ----------
         regressor : LinearRegression
             the regressor for the original data for inheritance of information
-        training_target_vector : TargetVector
+        training_data : ndarray
             the z-points in the training set
         training_design_matrix : DesignMatrix
             the design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring...)
         """        
         self.reg = regressor
-        if isinstance(train_target_vector, DataHandler):
-            tV = train_target_vector.tV
-            dM = train_target_vector.dM
-        else:
-            tV = train_target_vector
-            dM = train_design_matrix
-        super().__init__(tV, dM, regressor.method, regressor.mode)
+        super().__init__(training_data, training_design_matrix, regressor.method, regressor.mode)
 
     def train(self, lmbda=0):
         """
@@ -380,8 +379,8 @@ class Training(LinearRegression):
             the computed β-parameter
         """        
         super().__call__(lmbda)
-        self.setOptimalbeta(self.pV)
-        return self.pV
+        self.setOptimalbeta(self.beta_current)
+        return self.beta_current
 
     def randomShuffle(self, without_seed=True):
         """
@@ -392,10 +391,16 @@ class Training(LinearRegression):
         Training
             new object with reshuffeled data and corresponding design matrix
         """        
-        data = DataHandler(self.tV, self.dM)
-        shuffled_data = data.shuffle()
-
-        newtrainer = Training(self, shuffled_data)
+        z = self.data.ravel()
+        X = self.dM.X
+        if without_seed:
+            np.random.seed()
+        idx = np.random.randint(0, len(z), len(z))
+        np.random.seed(ourSeed)
+        zstar = z[idx]
+        Xstar = X[idx]
+        dMstar = self.dM.newObject(Xstar)
+        newtrainer = Training(self, zstar, dMstar)
         return newtrainer
 
 
@@ -404,7 +409,7 @@ class Prediction(LinearRegression):
     """
     Subclass as an extension specific for handling test data.
     """
-    def __init__(self, regressor, test_target_vector, test_design_matrix=None):
+    def __init__(self, regressor, test_data, test_design_matrix):
         """
         Constructs a prediction set.
 
@@ -412,96 +417,12 @@ class Prediction(LinearRegression):
         ----------
         regressor : LinearRegression
             the regressor for the original data for inheritance of information
-        test_target_vector : TargetVector
+        test_data : ndarray
             the z-points in the prediction set
         test_design_matrix : DesignMatrix
             the design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring her også, gitt...)
         """        
         self.reg = regressor
-        if isinstance(test_target_vector, DataHandler):
-            tV = test_target_vector.tV
-            dM = test_target_vector.dM
-        else:
-            tV = test_target_vector
-            dM = test_design_matrix
-        super().__init__(tV, dM, regressor.method, regressor.mode)
-
-
-    def predict(self):
-        return super().computeModel()
-
-
-
-
-
-
-
-class DataHandler:
-    def __init__(self, target_vector, design_matrix):
-        self.dM = design_matrix
-        self.tV = target_vector
-
-        self.z = self.tV.getVector()
-        self.X = self.dM.getMatrix()
-
-        #self.dM_org = self.dM.copy()
-        #elf.tV_org = self.tV.copy()
-
-    def shuffle(self):
-        idx = np.random.randint(0, len(self.tV), len(self.tV))
-        tV_ = self.tV.newObject(self.z[idx], is_scaled=self.tV.scaled)
-        dM_ = self.dM.newObject(self.X[idx], is_scaled=self.dM.scaled, no_intercept=not self.dM.interceptColoumn)
-        
-        self.z = tV_.getVector()
-        self.X = dM_.getMatrix()
-        shuffled_data = DataHandler(tV_, dM_)
-
-        self.tV = tV_
-        self.dM = dM_
-        
-        return shuffled_data
-
-    def standardScaling(self, reference_data=None):
-        ref_data = reference_data or self
-        zmean = np.mean(ref_data.z)
-        zstd = np.mean(ref_data.z)
-        self.z_org = self.z.copy() # save original z
-        self.z -= zmean
-        self.z /= zstd
-
-        Xmean = np.mean(ref_data.X, axis=0, keepdims=True) 
-        Xstd = np.mean(ref_data.X, axis=0, keepdims=True) 
-        self.X_org = self.X.copy() # save original X  
-        self.X -= Xmean
-        self.X /= Xstd
-
-        self.scaled = True
-
-        tV_ = self.tV.newObject(self.z, is_scaled=True)
-        dM_ = self.dM.newObject(self.X, is_scaled=True)
-
-        scaled_data = DataHandler(tV_, dM_)
-
-        self.tV = tV_
-        self.dM = dM_
-
-        return scaled_data
-
-    def split(self, test_size=0.2):
-
-        s = int(test_size*len(self.tV))
-
-        # train set
-        tV_train = self.tV.newObject(self.z[s:])
-        dM_train = self.dM.newObject(self.X[s:])
-        train_data = DataHandler(tV_train, dM_train)
-
-        # test set
-        tV_test = self.tV.newObject(self.z[:s])
-        dM_test = self.dM.newObject(self.X[:s])
-        test_data = DataHandler(tV_test, dM_test)
-
-        return train_data, test_data
-
+        super().__init__(test_data, test_design_matrix, regressor.method, regressor.mode)
 
 

@@ -271,12 +271,13 @@ def ptB_beta_params(trainings, pdf_name='none', show=False):
 
 
     for train in trainings:
-        beta = train.beta
+        beta = train.pV
         ax.errorbar(range(train.features), beta[:], beta.stdv, fmt='o', ms='10',  ls='', label=r'$n=%i$'%train.polydeg)
 
     B = train.features # max
     ax.set_xticks(range(B))
-    ax.set_xticklabels([r'$\beta_{%i}$'%i for i in range(B)])
+    #ax.set_xticklabels([r'$\beta_{%i}$'%i for i in range(B)])
+    ax.set_xticklabels(train.pV.idx_tex)
 
 
     set_axes_2d(ax, title=r'$\beta$ for various polynomial degrees $n$', xlim=(0,B-1))

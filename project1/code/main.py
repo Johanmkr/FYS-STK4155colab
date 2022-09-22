@@ -36,16 +36,13 @@ def ptB():
         dM.createX(x, y)
             
         reg = LinearRegression(z, dM)
-        #r
         trainer, predictor = reg.split()
-        #reg.scale()
         beta = trainer.train() 
         trainer.computeModel()
-        
         trainer.computeExpectationValues()
 
         predictor.setOptimalbeta(beta)
-        predictor.computeModel()
+        predictor.predict()
         predictor.computeExpectationValues()
 
         Trainings.append(trainer)
@@ -66,7 +63,7 @@ def ptB():
 
 def ptC():
 
-    polydegs = range(1,20+1)
+    polydegs = range(1,13+1)
 
     Trainings = []
     Predictions = [] 
@@ -77,8 +74,7 @@ def ptC():
         reg = LinearRegression(z, dM)
 
         trainer, predictor = reg.split()
-        #trainer.scale()
-        #predictor.scale()
+
         beta = trainer.train() 
         trainer.computeModel()
         trainer.computeExpectationValues()
@@ -89,6 +85,9 @@ def ptC():
 
         Trainings.append(trainer)
         Predictions.append(predictor)
+
+
+    # HUSK BOOTSTRAP I HASTIE
 
 
     PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)

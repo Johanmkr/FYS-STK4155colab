@@ -36,11 +36,11 @@ class Bootstrap:
         self.polydeg = self.trainer.polydeg
         
     def __call__(self, no_bootstraps=100, comparison_mode=False):
-        self.nBS = no_bootstraps
+        self.B = no_bootstraps
 
         beta_list = []
         train_list =[]
-        for i in range(self.nBS):
+        for i in range(self.B):
             newtrainer = self.trainer.randomShuffle()
             betastar = newtrainer.train()
             beta_list.append(betastar)
@@ -48,7 +48,7 @@ class Bootstrap:
 
         if comparison_mode:
             beta_list2 = []
-            for i in range(self.nBS):
+            for i in range(self.B):
                 newtrainer = train_list[i]
                 newtrainer.changeMode()
                 betastar = newtrainer.train()
@@ -63,11 +63,11 @@ class Bootstrap:
     # dont touch this
     def bias_varianceDecomposition(self):
         z_test = self.predictor.data.ravel()
-        z_pred = np.empty((z_test.shape[0], self.nBS))
+        z_pred = np.empty((z_test.shape[0], self.B))
         diff = np.zeros_like(z_pred)
 
 
-        for i in range(self.nBS):
+        for i in range(self.B):
             self.predictor.setOptimalbeta(self.betas[i])
             z_pred[:,i] = self.predictor.computeModel()
             diff[:,i] = z_test - z_pred[:,i]
