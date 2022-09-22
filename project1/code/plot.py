@@ -3,6 +3,7 @@ import seaborn as sns
 import os
 import sys
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
@@ -347,3 +348,30 @@ def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
     set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', title='Bias-variance tradeoff', xlim=(n[0], n[-1]))#, ylim=(0,0.3))
     pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
     save_push(fig, pdfname, show=show)
+
+
+    # by no means finished yet
+def ptC_bootstrap_hist(bootstrappings, pdf_name='none', show=False):
+    fig, ax = plt.subplots()
+
+    N = len(bootstrappings)
+    n = np.zeros(N)
+    MSE = np.zeros(N)
+    bias2 = np.zeros(N)
+    var = np.zeros(N)
+
+    i = 0
+    for bs in bootstrappings:
+        n[i] = bs.polydeg
+        if n[i] % 2 == 0:
+            print(n[i])
+
+            betas = bs.betas
+            beta_means = np.mean(betas.betas, axis=0)
+            n_counts, binsboot = np.histogram(beta_means, 50)
+            y = norm.pdf(binsboot, np.mean(beta_means), np.std(beta_means))
+            ax.plot(binsboot, y, label=f"n: {int(n[i])}")
+            # from IPython import embed; embed()
+        i += 1
+    ax.legend()
+    plt.show()

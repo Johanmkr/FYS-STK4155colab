@@ -5,11 +5,11 @@ import pandas as pd
 
 
 import plot as PLOT
-PLOT.init('off')
+PLOT.init('on')
 
 
 from src.designMatrix import DesignMatrix
-from src.Regression import LeastSquares
+from src.Regression import LinearRegression
 from src.Resampling import Bootstrap
 from src.betaMatrix import betaParameter, betaCollection
 
@@ -17,9 +17,11 @@ seed = 7132
 np.random.seed(seed)
 # testSize = 1/5
 
-Nx, Ny = 20, 20
-x = np.linspace(0, 1, Nx)
-y = np.linspace(0, 1, Ny)
+Nx, Ny = 40, 40
+# x = np.linspace(0, 1, Nx)
+# y = np.linspace(0, 1, Ny)
+x = np.random.uniform(0,1, Nx)
+y = np.random.uniform(0,1, Ny)
 x, y = np.meshgrid(x, y)
 
 
@@ -35,7 +37,7 @@ noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
 
 
-z = FrankeFunction(x, y) + noise(.2)
+z = FrankeFunction(x, y) + noise(.5)
 polydegs = range(1,20+1)
 
 Trainings = []
@@ -44,17 +46,17 @@ Predictions = []
 for n in polydegs:
     dM = DesignMatrix(n)
     dM.createX(x, y)
-    reg = LeastSquares(z, dM)
+    reg = LinearRegression(z, dM)
 
     trainer, predictor = reg.split()
     #trainer.scale()
     #predictor.scale()
     beta = trainer.train() 
-    trainer.fit()
+    trainer.computeModel()
     trainer.computeExpectationValues()
 
     predictor.setOptimalbeta(beta)
-    predictor.fit()
+    predictor.computeModel()
     predictor.computeExpectationValues()
 
     Trainings.append(trainer)
@@ -67,8 +69,12 @@ for n in polydegs:
 Bootstrappings = []
 for train, test in zip(Trainings, Predictions):
     BS = Bootstrap(train, test)
-    BS(no_bootstraps=1000)
+    BS(no_bootstraps=50)
     BS.bias_varianceDecomposition()
     Bootstrappings.append(BS)
 
+
+
 PLOT.ptC_tradeoff(Bootstrappings, pdf_name='tradeoff', show=True)
+
+# PLOT.ptC_bootstrap_hist(Bootstrappings, show=True)

@@ -73,7 +73,7 @@ class Bootstrap:
             diff[:,i] = z_test - z_pred[:,i]
 
 
-
+        # from IPython import embed; embed()
         Errors = np.mean(diff**2, axis=1, keepdims=True)[:,0]
         Bias2s = (z_test - np.mean(z_pred, axis=1, keepdims=True)[:,0])**2
         Vars = np.var(z_pred, axis=1, keepdims=True)[:,0]
