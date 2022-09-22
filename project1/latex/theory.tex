@@ -5,6 +5,9 @@
 
 \hl{*} DECIDE ON z vs. y
 
+Throughout this project we concern ourselves with some observed values $\vec{y}$ for which we seek to obtain an approximation $\tilde{\vec{y}}$ which predicts the true value. Once we have created a model $\tilde{\vec{y}}$ we need to determine its accuracy somehow. There are numerous way of doing this, we will mostly use the Mean Squared Error (MSE)\footnote{Describe MSE briefly} described in \Eq{MSE}, and the R2-score\footnote{describe R2-score briefly}, described in \Eq{R2}.
+
+
 \begin{align}\label{eq:MSE}
     \MSE{\vec{y}, \tilde{\vec{y}}}= \frac{1}{n}(\vec{y}-\tilde{\vec{y}})^2= \frac{1}{n}\sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2
 \end{align}
@@ -12,7 +15,7 @@
 \begin{align}\label{eq:R2}
     \Rtwo {\vec{y}, \tilde{\vec{y}}} =1 - \frac{(\vec{y}-\tilde{\vec{y}})^2}{(\vec{y}(1-\bar{y}))^2}= 1 - \frac{\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2}{\sum_{i=0}^{n-1}(y_i-\bar{y})^2}
 \end{align}
-
+where the mean of the observed values $\vec{y}$ is given by:
 \begin{align*}
     \bar{y} = \frac{1}{n}\sum_{i=0}^{n-1} y_i
 \end{align*}
@@ -20,10 +23,10 @@
 
 
 \subsection{Linear regression}\label{sec:regression}
-
+We will attempt to create a model $\tilde{\vec{y}}$ by the means of linear regression. 
 There are several possible estimation techniques when fitting a linear regression model. We will discuss three common approaches, one least squares estimation (\Sec{OLS}) and two forms of penalized estimation (\Sec{Ridge} and \Sec{Lasso}).
 
-We assume the vector $\vec{y} \in \RR[n]$ consisting of $n$ observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise of standard deviation $\sigma$. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. That is, we assume a \textit{linear} relationship between $X$ and$\vec{y}$. The integers $n$ and $p$ then represent the number of data points and features, respectively. 
+We assume the vector $\vec{y} \in \RR[n]$ consisting of $n$ observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise of standard deviation $\sigma$. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. That is, we assume a \textit{linear} relationship between $X$ and $\vec{y}$. The integers $n$ and $p$ then represent the number of data points and features, respectively. 
 
 For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$. The inner product $\Xbi$ is non-stochastic, hence 
 
@@ -62,7 +65,7 @@ The variance becomes
 \end{align*}
 
 
-The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, is in principle obtained by minimizing the cost function $C(\svec{\beta})$, and said function is determined by the method we choose. That is,
+The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, is in principle obtained by minimizing the cost function $C(\svec{\beta})$. The cost function is a measure of how badly our model deviates from the observed values, and the method we choose is defined from its cost function. By minimizing it we obtain $\optbeta$, that is:
 
 \begin{align}\label{eq:general_LS}
     \pdv{C(\svec{\beta})}{\svec{\beta}}\Bigg|_{\svec{\beta}=\optbeta} = 0.
@@ -73,10 +76,11 @@ The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, 
 The ordinary least squares (OLS) method assumes the cost function
 
 \begin{align*}
-    C^\text{OLS}(\svec{\beta}) = \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
+    C^\text{OLS}(\svec{\beta}) = \sum_{i=0}^{n-1}(y_i - \tilde{y}_i)^2 =  \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
 \end{align*}
 
-where the subscript "2" implies the \lnorm{2}. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
+where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
+\footnotetext{Euclidian norm (\lnorm{2}) is defined as $\norm{\vec{a}}_2 = \sqrt{\sum_ia_i^2}$}
 
 \begin{align*}
     \optbeta^\text{OLS} = \invhessian X\TT \vec{y} = H^{-1} X\TT \vec{y},
@@ -127,7 +131,9 @@ Let $\lambda \in \RR$ be some small number such that $\lambda >0$. If we add a p
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
 
-If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm{1}, to the OLS cost function, we are left with the Lasso regression's cost function,
+If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm{1}\footnotemark, to the OLS cost function, we are left with the Lasso regression's cost function,
+\footnotetext{Manhatten norm (\lnorm{1}) is defined as $\norm{\vec{a}}_1 = \sum_i\abs{a_i}$}
+
 \begin{align*}
     C^\text{Lasso}(\svec{\beta})  &= C^\text{OLS}(\svec{\beta}) + \lambda \norm{\svec{\beta}}_1 \\
     &= \norm{\vec{y}-\tilde{\vec{y}}}_2^{2}  + \lambda \norm{\svec{\beta}}_{1} \\
@@ -139,7 +145,10 @@ If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm
 \end{align*}
 
 \subsection{Resampling}\label{sec:resampling}
+Having obtained some optimal parameters $\optbeta$ from either OLS, Ridge regression or Lasso regression it is of interest to determine how good of a prediction $\optbeta$ yields. Data is often limited and thus we resample the data in clever ways in order to test it for larger samples. We will consider two way of resampling data, the Bootstrap and Cross Validation. 
 
 \subsubsection{Bootstrap method}\label{sec:bootstrap}
+We assume $\optbeta$ to be a random variable and it can thus be described a probability density function $p(\vec{t})$. The goal of the Bootstrap is to estimate $p(\vec{t})$. 
+
 
 \subsubsection{Cross-validation}\label{sec:k_fold}
