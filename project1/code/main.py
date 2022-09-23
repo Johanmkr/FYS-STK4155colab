@@ -12,16 +12,22 @@ PLOT.init('off')
 
 
 Nx, Ny = 20, 20
-x = np.linspace(0, 1, Nx)
-y = np.linspace(0, 1, Ny)
+
+x =np.sort( np.random.rand(Nx))
+y =np.sort( np.random.rand(Ny))
+
+
+#x = np.linspace(0, 1, Nx)
+#y = np.linspace(0, 1, Ny)
 x, y = np.meshgrid(x, y)
+
 
 noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
 eta = 0.01
 z = FrankeFunction(x, y) + noise(eta)
 
-print(f'\n   Franke function z with noise of stdv. {eta}.\n')
+print(f'\n   Franke function z with noise of stdv. {1}.\n')
 
 def ptB():
 
@@ -51,7 +57,7 @@ def ptB():
         if n == main_polydeg:
             # FIX THIS WITH SCALING
             #FIXME
-            trainer, predictor = reg.split(scale=True)
+            trainer, predictor = reg.split(scale=False)
             beta = trainer.train() 
 
             reg.setOptimalbeta(beta)

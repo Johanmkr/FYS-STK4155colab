@@ -214,9 +214,9 @@ class LinearRegression:
         data = DataHandler(self.tV, self.dM)
 
         if scale:
-            ref_data = train_data
-            test_data = test_data.standardScaling(ref_data)
-            train_data = train_data.standardScaling(ref_data)
+            self.ref_data = train_data # save for later
+            test_data = test_data.standardScaling(self.ref_data)
+            train_data = train_data.standardScaling(self.ref_data)
             self.fit_intercept = False
 
         self.TRAINER = Training(self, train_data) 
@@ -320,6 +320,8 @@ class LinearRegression:
         ndarray
             the model
         """
+
+        #unscale data?
 
         self.model = self.dM * self.pV # see __mul__ and __rmul__ in respective classes
         return self.model.ravel()
@@ -486,6 +488,39 @@ class DataHandler:
         self.dM = dM_
 
         return scaled_data
+
+    def standardRescaling(self, reference_data=None):
+        ref_data = reference_data
+
+        zmean = np.mean(ref_data.z)
+        zstd = np.std(ref_data.z)
+
+        self.z *= zstd
+        self.z += zmean
+
+        Xmean = np.mean(ref_data.X, axis=0, keepdims=True) 
+        Xstd = np.std(ref_data.X, axis=0, keepdims=True) 
+
+        self.X *= Xstd
+        self.X += Xmean
+
+
+        # add intercept coloumn ? 
+        X = np.ones((np.shape(self.X)[0]+1,np.shape(self.X)[1]))
+        X[:,1:] = self.X
+        self.X = X
+
+        tV_ = self.tV.newObject(self.z, is_scaled=False)
+        dM_ = self.dM.newObject(self.X, is_scaled=False)
+
+        unscaled_data = DataHandler(tV_, dM_)
+
+        self.tV = tV_
+        self.dM = dM_
+
+        return unscaled_data
+
+
 
     def split(self, test_size=0.2):
 
