@@ -464,13 +464,13 @@ class DataHandler:
     def standardScaling(self, reference_data=None):
         ref_data = reference_data or self
         zmean = np.mean(ref_data.z)
-        zstd = np.mean(ref_data.z)
+        zstd = np.std(ref_data.z)
         self.z_org = self.z.copy() # save original z
         self.z -= zmean
         self.z /= zstd
 
         Xmean = np.mean(ref_data.X, axis=0, keepdims=True) 
-        Xstd = np.mean(ref_data.X, axis=0, keepdims=True) 
+        Xstd = np.std(ref_data.X, axis=0, keepdims=True) 
         self.X_org = self.X.copy() # save original X  
         self.X -= Xmean
         self.X /= Xstd

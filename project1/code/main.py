@@ -49,7 +49,11 @@ def ptB():
         Predictions.append(predictor)
 
         if n == main_polydeg:
-            beta = reg()
+            # FIX THIS WITH SCALING
+            #FIXME
+            trainer, predictor = reg.split(scale=True)
+            beta = trainer.train() 
+
             reg.setOptimalbeta(beta)
             reg.computeModel()
             REG5 = reg
@@ -66,7 +70,7 @@ def ptC():
     polydegs = range(1,13+1)
 
     Trainings = []
-    Predictions = [] 
+    Predictions = []
 
     for n in polydegs:
         dM = DesignMatrix(n)
@@ -87,11 +91,6 @@ def ptC():
         Predictions.append(predictor)
 
 
-    # HUSK BOOTSTRAP I HASTIE
-
-
-    PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
-
 
     Bootstrappings = []
     for train, test in zip(Trainings, Predictions):
@@ -99,6 +98,11 @@ def ptC():
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
+
+    # HUSK BOOTSTRAP I HASTIE
+
+
+    PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
 
     PLOT.ptC_tradeoff(Bootstrappings, pdf_name='tradeoff', show=True)
 

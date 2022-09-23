@@ -325,7 +325,7 @@ def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
 
     N = len(bootstrappings)
     n = np.zeros(N)
-    MSE = np.zeros(N)
+    error = np.zeros(N)
     bias2 = np.zeros(N)
     var = np.zeros(N)
 
@@ -333,14 +333,14 @@ def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
     for bs in bootstrappings:
         n[i] = bs.polydeg
 
-        MSE[i] = bs.MSE
+        error[i] = bs.error
         bias2[i] = bs.bias2
         var[i] = bs.var
 
         i += 1
     
-    ax.plot(n, MSE,   ls=dTEST['ls'], c=dMSE['c'],  label='error')
-    ax.plot(n, bias2, ls=dTEST['ls'], c=dBIAS['c'], label='bias$^2$')
+    ax.plot(n, error,   ls=dTEST['ls'], c=dMSE['c'],  label='error')
+    ax.plot(error, bias2, ls=dTEST['ls'], c=dBIAS['c'], label='bias$^2$')
     ax.plot(n, var,   ls=dTEST['ls'], c=dVAR['c'],  label='variance')
 
     ax.set_xticks(list(n))

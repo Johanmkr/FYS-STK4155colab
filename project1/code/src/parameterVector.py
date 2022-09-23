@@ -35,7 +35,7 @@ class ParameterVector:
 
         if self.intercept:
             self.idx = [f'β_{j}' for j in range(len(self.beta))]
-            self.idx_tex = [r'\beta_{%i}$'%j for j in range(len(self.beta))]
+            self.idx_tex = [r'$\beta_{%i}$'%j for j in range(len(self.beta))]
         else:
             self.idx = [f'β_{j}' for j in range(1, len(self.beta)+1)]
             self.idx_tex = [r'$\beta_{%i}$'%j for j in range(1, len(self.beta)+1)]
@@ -133,3 +133,68 @@ class ParameterVector:
             matrix-vector product Xβ 
         """        
         return other.X @ self.beta
+        
+        
+class betaCollection:
+    """
+    Meant as an extension of betaParamter to easily handle several β's when doing e.g. Bootstap.
+    """
+
+    def __init__(self, betas):
+        """
+        Constructs the collection of β-parameters.
+
+        Parameters
+        ----------
+        betas : list/ndarray of ndarrays/ParameterVectors
+            all β to collect
+        """        
+
+        if isinstance(betas, list):
+            self.nbootstraps = len(betas)
+            if isinstance(betas[0], (ParameterVector, ParameterVector)):
+                self.p = betas[0].p
+                self.betas = np.zeros((self.p,self.nbootstraps))            
+                for i in range(self.nbootstraps):
+                    self.betas[:,i] = betas[i].getVector()
+            if isinstance(betas[0], np.ndarray):
+                self.p = betas[0].size
+                self.betas = np.zeros((self.p,self.nbootstraps))
+                for i in range(self.nbootstraps):
+                    self.betas[:,i] = betas[i]
+
+        elif isinstance(betas, np.ndarray):
+            self.betas = betas
+            self.p, self.nbootstraps = np.shape(self.betas)
+        
+    def __str__(self):
+        """
+        Presents the collection nicely using pandas.
+
+        Returns
+        -------
+        str
+            terminal print
+        """        
+        betaspd = pd.DataFrame(data=self.betas, index=[f'β_{j}' for j in range(self.p)], columns=[f'({i+1})' for i in range(self.nbootstraps)])
+        return betaspd.__str__()
+    
+    def __getitem__(self, index):
+        """
+        Get β-parameter from collection.
+
+        Parameters
+        ----------
+        index : int
+            the β-parameter number
+
+        Returns
+        -------
+        ndarray
+            the β-parameter number(s) [index]
+        """        
+        return self.betas[:,index]
+
+
+
+
