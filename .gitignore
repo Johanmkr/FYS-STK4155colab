@@ -1044,3 +1044,7 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/vim,c++,julia,macos,python,pycharm,visualstudio,visualstudiocode,tex
+
+
+# Ignore playground
+**/playground
