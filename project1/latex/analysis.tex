@@ -1,1 +1,47 @@
 \section{Analysis}\label{sec:analysis}
+
+    \subsection{Data and noise}\label{sec:data}
+        The function, onto which we are trying to fit a model, is the Franke Function(cite this). It is defined as follows:
+        \begin{align}\label{eq:francefunc}
+            f(x,y) &= \frac{3}{4}\exp{-\frac{(9x-2)^2}{4}-\frac{(9y-2)^2}{4}} \nonumber\\
+            &+ \frac{3}{4}\exp{-\frac{(9x+1)^2}{49}-\frac{(9y+1)}{10}} \nonumber\\
+            &+ \frac{1}{2}\exp{-\frac{(9x-7)^2}{4}-\frac{(9y-3)^2}{4}} \nonumber\\
+            &-\frac{1}{5}\exp{-(9x-4)^2-(9y-7)^2}.
+        \end{align}
+        In order to generate a dataset we will use $N$ uniformly distributed values of $x,y\in[0,1]$. We will also add some normally distributed noise $\epsilon = \eta\mathcal{N}(\mu,\sigma^2) = \eta\mathcal{N}(0,1)$ to $f(x,y)$, where $\eta$ is a strength parameter controlling the amplitude of the added noise. The full description of our data then become:
+        \begin{align}\label{eq:datadescription}
+            \vec{y} &= f(x,y) + \eta\mathcal{N}(0,1) \nonumber \\
+            &= f(\vec{x}) + \epsilon
+        \end{align}
+        where $\vec{x} = (x,y)$. From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
+
+    \subsection{Data splitting}\label{sec:splitting}
+        In order to test our estimate of $\hat{\svec{\beta}}$ we reserve some of the data for testing. We thus divide our data set into a part for testing a part for training. We select 80 \% of the data for training and the remaining 20 \% for testing the data. The data is split at random. 
+
+    \subsection{Model and design matrix}\label{sec:model}
+        The design matrix $X$ has dimensionality ($n\cross p$) where $n$ represents the data points and $p$ the features of the model. We have already split the data set into training and testing, and must therefore create two design matrices: $X_{train}$ and $X_{test}$. 
+        \\
+        We want our model to be a two-dimensional polynomial of order $d$:
+        \begin{align*}
+            P_d(x,y) = \beta_0 + \sum_{l=1}^d\sum_{k=0}^{l} \beta_jx^{l-k}y^k
+        \end{align*}
+        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)//2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms (THIS IS WRONG; CORRECT THIS):
+        \begin{align}\label{eq:designmatrixequation}
+            X_{ij} = \sum_{l=1}^d\sum_{k=0}^{l} x^{l-k}y^k
+        \end{align}
+        The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
+    \subsection{Scaling}\label{sec:scaling}
+    WHY DO WE SCALE NANNA? To give the same emphasize to the data? and terms in the design matrix? To not favour some degree term or some data values?
+    We INSERT FORMULA
+
+    \subsection{Regression analysis}\label{sec:reganalysis}
+
+        \subsubsection{OLS}\label{sec:olsanalysis}
+
+        \subsubsection{Ridge}\label{sec:rigdeanalysis}
+
+        \subsubsection{Lasso}\label{sec:lassoanalysis}
+
+    \subsection{Applying best fit model}\label{sec:applybestmodel}
+
+    \subsection{Real terrain data}\label{sec:realdata}
