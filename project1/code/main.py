@@ -9,41 +9,41 @@ import plot as PLOT
 PLOT.init('off')
 
 
-
-
-Nx, Ny = 20, 20
-
-x =np.sort( np.random.rand(Nx))
-y =np.sort( np.random.rand(Ny))
-
-
 #x = np.linspace(0, 1, Nx)
 #y = np.linspace(0, 1, Ny)
-x, y = np.meshgrid(x, y)
 
 
-noise = lambda eta: eta*np.random.randn(Ny, Nx)
 
-eta = 0.01
-z = FrankeFunction(x, y) + noise(eta)
 
-print(f'\n   Franke function z with noise of stdv. {1}.\n')
+
+def datapoints(eta=.01, N=40):
+    x = np.sort( np.random.rand(N))
+    y = np.sort( np.random.rand(N))
+    x, y = np.meshgrid(x, y)
+    noise = lambda eta: eta*np.random.randn(N, N)
+    z = FrankeFunction(x, y) + noise(eta)
+    return x, y, z
+
+x, y, z = datapoints(eta=0)
+
+# print(f'\n   Franke function z with noise of stdv. {1}.\n')
 
 def ptB():
-
-    polydegs = range(1,5+1) 
+    x, y, z = datapoints(eta=.1)
+    polydegs = range(1,5+1)
     Trainings = []
     Predictions = [] 
 
     main_polydeg = 5
-
+    
     for j, n in enumerate(polydegs):
         dM = DesignMatrix(n)
         dM.createX(x, y)
             
         reg = LinearRegression(z, dM)
         trainer, predictor = reg.split()
-        beta = trainer.train() 
+        beta = trainer.train()
+        beta.computeVariance(reg) 
         trainer.computeModel()
         trainer.computeExpectationValues()
 
@@ -64,11 +64,15 @@ def ptB():
             reg.computeModel()
             REG5 = reg
 
-    PLOT.ptB_franke_funcion(x, y, REG5, show=True)
+    # PLOT.ptB_franke_funcion(x, y, REG5, show=True)
+
+    PLOT.ptB_franke_funcion_only(*datapoints(eta=0, N=40), pdf_name="franke", show=True)
+
+    PLOT.ptB_franke_funcion_only(*datapoints(eta=.1, N=40), pdf_name="franke_noise", show=True)
 
     PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
 
-    PLOT.ptB_beta_params(Trainings, pdf_name='betas', show=True)
+    PLOT.ptB_beta_params(Trainings[::-1], pdf_name='betas', show=True)
 
 
 def ptC():

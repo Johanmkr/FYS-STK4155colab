@@ -15,9 +15,12 @@ plt.rc('font', family='DejaVu Sans')
 
 # other rc parameters
 plt.rc('figure', figsize=(12,7))
-SMALL_SIZE = 16
-MEDIUM_SIZE = 20
-BIGGER_SIZE = 24
+# SMALL_SIZE = 16
+# MEDIUM_SIZE = 20
+# BIGGER_SIZE = 24
+SMALL_SIZE = 24
+MEDIUM_SIZE = 24
+BIGGER_SIZE = 30
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
 plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
@@ -63,7 +66,7 @@ def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
     else:
         if save and pdf_name != 'none':
             print(f'Saving plot: {file}')
-            fig.savefig(file)
+            fig.savefig(file, bbox_inches="tight")
         if push and pdf_name != 'none':
             os.system(f"git add {file}")
             os.system("git commit -m 'upload plot'")
@@ -221,8 +224,25 @@ def ptB_franke_funcion(x, y, regression, pdf_name='none', show=False):
     # Add a color bar which maps values to colors.
     #fig.colorbar(surf, shrink=0.5, aspect=5)
 
+
     save_push(fig, pdf_name, show=show)
     
+
+def ptB_franke_funcion_only(x, y, z, pdf_name='none', show=False):
+    fig, ax = plt.subplots(ncols=1, subplot_kw={'projection':'3d'})
+    ax, surf = surface_plot(ax, x, y, z)
+    # ax.set_title(r"Franke function for $x,y\in[0,1]$, $N=40$, $\eta=%.1f$"%eta)
+    # Customize the z axis.
+    ax.set_zlim(np.min(z), np.max(z))
+    ax.zaxis.set_major_locator(LinearLocator(5))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    plt.tight_layout()
+
+    save_push(fig, pdf_name, show=show)
 
 def ptB_scores(trainings, predictions, pdf_name='none', show=False):
     """
@@ -272,15 +292,18 @@ def ptB_beta_params(trainings, pdf_name='none', show=False):
 
     for train in trainings:
         beta = train.pV
-        ax.errorbar(range(train.features), beta[:], beta.stdv, fmt='o', ms='10',  ls='', label=r'$n=%i$'%train.polydeg)
+        # from IPython import embed; embed()
+        ax.errorbar(range(train.features), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', label=r'$d=%i$'%train.polydeg)
 
-    B = train.features # max
+    B = trainings[0].features # max when reversed order
+    # B = train.features #max when correct order
     ax.set_xticks(range(B))
     #ax.set_xticklabels([r'$\beta_{%i}$'%i for i in range(B)])
-    ax.set_xticklabels(train.pV.idx_tex)
+    # ax.set_xticklabels(train.pV.idx_tex)
+    ax.set_xticklabels(trainings[0].pV.idx_tex)
 
 
-    set_axes_2d(ax, title=r'$\beta$ for various polynomial degrees $n$', xlim=(0,B-1))
+    set_axes_2d(ax, title=r'$\beta$ for various polynomial degrees $d$', xlim=(0,B-1))
 
     pdfname = 'ptB_' + pdf_name.strip().replace('ptB_', '') 
     save_push(fig, pdfname, show=show)

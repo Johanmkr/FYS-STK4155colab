@@ -62,9 +62,10 @@ class ParameterVector:
             the regressor (trainer, predictor or the combiniation) that contains the data and the design matrix
         """        
         z = regressor.data.ravel()
-        HInv = regressor.dM.Hinv
+        HInv = regressor.dM.Hinv #DUMMY SCALING SHOULD PROBABLY DO THIS DIFFERENTLY #FIXME
 
-        self.var = np.diag(np.var(z) * HInv)
+        # self.var = np.diag(np.var(z) * HInv)[1:]
+        self.var = np.diag(HInv)[1:]
 
         # z_tilde = regressor.model.ravel()
         # N, p = regressor.dM.X.shape
