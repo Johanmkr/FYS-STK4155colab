@@ -71,6 +71,8 @@ The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, 
     \pdv{C(\svec{\beta})}{\svec{\beta}}\Bigg|_{\svec{\beta}=\optbeta} = 0.
 \end{align}
 
+
+
 \subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
 
 The ordinary least squares (OLS) method assumes the cost function
@@ -82,9 +84,9 @@ The ordinary least squares (OLS) method assumes the cost function
 where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
 \footnotetext{Euclidian norm (\lnorm{2}) is defined as $\norm{\vec{a}}_2 = \sqrt{\sum_ia_i^2}$}
 
-\begin{align*}
+\begin{align}\label{eq:optimal_beta_ols}
     \optbeta^\text{OLS} = \invhessian X\TT \vec{y} = H^{-1} X\TT \vec{y},
-\end{align*}
+\end{align}
 
 where $H = \hessian$ is the Hessian matrix.
 
@@ -99,14 +101,14 @@ Letting $\optbeta = \optbeta^\text{OLS}$ we get the expected value
 
 The variance is then 
 
-\begin{align*}
-    \variance{\optbeta} &= \EE{\optbeta \optbeta\TT} -\EE{\optbeta} \EE{\optbeta\TT} \\
-    &= \EE{\invhessian X\TT  \vec{y} \vec{y}\TT X (\invhessian)\TT} - \svec{\beta} \svec{\beta}\TT \\
-    &= \invhessian X\TT \EE{ \vec{y} \vec{y}\TT } X \invhessian - \svec{\beta} \svec{\beta}\TT \\
-    &\stackrel{\text{\eqref{eq:expectation_yyT}}}{=}\invhessian X\TT ( X\svec{\beta} \svec{\beta}\TT X\TT+ \II\sigma^2) X \invhessian \\
-    &= \svec{\beta} \svec{\beta} \TT + \invhessian X\TT \sigma^2 X \invhessian - \svec{\beta} \svec{\beta} \TT \\
+\begin{align}\label{eq:variance_of_optimal_beta_ols}\nonumber 
+    \variance{\optbeta} &= \EE{\optbeta \optbeta\TT} -\EE{\optbeta} \EE{\optbeta\TT} \nonumber \\
+    &= \EE{\invhessian X\TT  \vec{y} \vec{y}\TT X (\invhessian)\TT} - \svec{\beta} \svec{\beta}\TT \nonumber \\
+    &= \invhessian X\TT \EE{ \vec{y} \vec{y}\TT } X \invhessian - \svec{\beta} \svec{\beta}\TT \nonumber \\
+    &\stackrel{\text{\eqref{eq:expectation_yyT}}}{=}\invhessian X\TT ( X\svec{\beta} \svec{\beta}\TT X\TT+ \II\sigma^2) X \invhessian \nonumber \\
+    &= \svec{\beta} \svec{\beta} \TT + \invhessian X\TT \sigma^2 X \invhessian - \svec{\beta} \svec{\beta} \TT \nonumber \\
     &= \sigma^2 \invhessian.
-\end{align*}
+\end{align}
 
 
 

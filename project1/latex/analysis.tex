@@ -13,30 +13,66 @@
             \vec{y} &= f(x,y) + \eta\mathcal{N}(0,1) \nonumber \\
             &= f(\vec{x}) + \epsilon
         \end{align}
-        where $\vec{x} = (x,y)$. From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
+        where $\vec{x} = (x,y)$. 
+        NECESSARY?From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
+
+        We visualise the data both with and without noise. Figure \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=40$. Figure \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{franke.pdf}
+            \caption{The Franke function plotted on a grid where $N=40$ and $\eta=0$}
+            \label{fig:franke_function}
+        \end{figure}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{franke_noise.pdf}
+            \caption{The Franke function with added noise plotted on a grid where $N=40$ and $\eta=0.1$}
+            \label{fig:franke_function_noise}
+        \end{figure}
 
     \subsection{Data splitting}\label{sec:splitting}
         In order to test our estimate of $\hat{\svec{\beta}}$ we reserve some of the data for testing. We thus divide our data set into a part for testing a part for training. We select 80 \% of the data for training and the remaining 20 \% for testing the data. The data is split at random. 
 
     \subsection{Model and design matrix}\label{sec:model}
-        The design matrix $X$ has dimensionality ($n\cross p$) where $n$ represents the data points and $p$ the features of the model. We have already split the data set into training and testing, and must therefore create two design matrices: $X_{train}$ and $X_{test}$. 
+        The design matrix $X$ has dimensionality ($n\cross p$) where $n$ represents the data points and $p$ the features of the model. We have already split the data set into training and testing, and must therefore create two design matrices: $X_{\text{train}}$ and $X_{\text{test}}$. 
         \\
         We want our model to be a two-dimensional polynomial of order $d$:
         \begin{align*}
             P_d(x,y) = \beta_0 + \sum_{l=1}^d\sum_{k=0}^{l} \beta_jx^{l-k}y^k
         \end{align*}
-        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)//2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms (THIS IS WRONG; CORRECT THIS):
+        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)/2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms (THIS IS WRONG; CORRECT THIS):
         \begin{align}\label{eq:designmatrixequation}
             X_{ij} = \sum_{l=1}^d\sum_{k=0}^{l} x^{l-k}y^k
         \end{align}
         The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
     \subsection{Scaling}\label{sec:scaling}
     WHY DO WE SCALE NANNA? To give the same emphasize to the data? and terms in the design matrix? To not favour some degree term or some data values?
-    We INSERT FORMULA
+    We INSERT FORMULAd
 
     \subsection{Regression analysis}\label{sec:reganalysis}
 
         \subsubsection{OLS}\label{sec:olsanalysis}
+            We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
+
+            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. COMMENT ON PLOT
+
+            \begin{figure}
+                \includegraphics[width=\linewidth]{ptB_betas.pdf}
+                \caption{Numerical value of the feature parameters $\beta$, with 1$\sigma$ error bars, for polynomials up to order $d=5$.}
+                \label{fig:beta_with_standard_deviation}
+            \end{figure}
+
+            Having found the optimal parameter $\optbeta^{\text{OLS}}$ we can make predictions by computing $\tilde{\vec{y}} = X\optbeta^{\text{OLS}}$ for both the training data and the test data. In order to say something about the quality of these predictions we compute the mean square error and the $R^2$ score from equations \Eq{MSE} and \Eq{R2} respectively. The result of this is shown in \Fig{mse_and_r2_for_order5}. COMMENT ON PLOT
+            \begin{figure}
+                \includegraphics[width=\linewidth]{ptB_scores.pdf}
+                \caption{SCORES}
+                \label{fig:mse_and_r2_for_order5}
+            \end{figure}
+
+            COULD BE NICE TO CHOOSE ONE DEGREE AND PLOT THE MSE AND R2 AS FUNCTION OF NOISE: $\eta$ between 0 and 1
+
+
+        
 
         \subsubsection{Ridge}\label{sec:rigdeanalysis}
 
