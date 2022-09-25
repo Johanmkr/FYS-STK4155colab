@@ -189,8 +189,8 @@ def OLDplot_bias_variance_tradeoff(models, pdf_name='none', show=False):
 ### define styles:
 ## believe I will change this...
 
-dTRAIN = {'ls':'--'}
-dTEST = {'ls':'-'}
+dTRAIN = {'ls':'--', 'c':'b'}
+dTEST = {'ls':'-',  'c':'r'}
 
 dMSE = {'c':'firebrick'}
 dR2 = {'c':'olive'}
@@ -316,29 +316,33 @@ Pt. c)
 """
 
 
-def ptC_Hastie(trainings, predictions, pdf_name='none', show=False):
+def ptC_Hastie(bootstrappings, pdf_name='none', show=False):
     fig, ax = plt.subplots()
 
-    N = len(trainings)
+    N = len(bootstrappings)
     n = np.zeros(N)
-    MSE = np.zeros((2,N))
+    B = bootstrappings[0].B
+    trainMSE = np.zeros((N,B))
+    testMSE = np.zeros((N,B))
 
     i = 0
-    for train, test in zip(trainings, predictions):
-        n[i] = train.polydeg
-
-        MSE[0,i] = train.MSE
-        MSE[1,i] = test.MSE
-
-        i += 1
+    for bs in bootstrappings:
+        n[i] = bs.polydeg
+        trainMSE[i], testMSE[i] = bs.mean_squared_error()
+        i+=1
     
-    ax.plot(n, MSE[0], ls=dTRAIN['ls'],c=dMSE['c'], label='train MSE')
-    ax.plot(n, MSE[1], ls=dTEST['ls'], c=dMSE['c'], label='test MSE')
+    ax.plot(n, trainMSE, lw=0.3, c=dTRAIN['c'], alpha=0.3)
+    ax.plot(n, testMSE,  lw=0.3, c=dTEST['c'],  alpha=0.3)
+
+    ax.errorbar(n, np.mean(trainMSE, axis=1), np.std(trainMSE, axis=1), c=dTRAIN['c'], capsize=2, fmt='.', ls='-', lw=1.1, alpha=0.9, label='train MSE')
+    ax.errorbar(n, np.mean(testMSE, axis=1),  np.std(testMSE, axis=1),  c=dTEST['c'],  capsize=2, fmt='.', ls='-', lw=1.1, alpha=0.9, label='test MSE')
 
     ax.set_xticks(list(n))
     ax.set_xticklabels([f'{ni:.0f}' for ni in n])
 
-    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', title='Mean squared error', xlim=(n[0], n[-1]))
+    ymax = np.min([0.5, np.max(testMSE), np.max(trainMSE)])
+
+    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', title='Mean squared error', xlim=(n[0], n[-1]), ylim=(0,ymax))
     pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
     save_push(fig, pdfname, show=show)
 
@@ -355,15 +359,14 @@ def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
     i = 0
     for bs in bootstrappings:
         n[i] = bs.polydeg
-
         error[i] = bs.error
         bias2[i] = bs.bias2
         var[i] = bs.var
 
         i += 1
     
-    ax.plot(n, error,   ls=dTEST['ls'], c=dMSE['c'],  label='error')
-    ax.plot(error, bias2, ls=dTEST['ls'], c=dBIAS['c'], label='bias$^2$')
+    ax.plot(n, error, ls=dTEST['ls'], c=dMSE['c'],  label='error')
+    ax.plot(n, bias2, ls=dTEST['ls'], c=dBIAS['c'], label='bias$^2$')
     ax.plot(n, var,   ls=dTEST['ls'], c=dVAR['c'],  label='variance')
 
     ax.set_xticks(list(n))

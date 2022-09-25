@@ -9,12 +9,6 @@ import plot as PLOT
 PLOT.init('off')
 
 
-#x = np.linspace(0, 1, Nx)
-#y = np.linspace(0, 1, Ny)
-
-
-
-
 
 def datapoints(eta=.01, N=40):
     x = np.sort( np.random.rand(N))
@@ -24,12 +18,12 @@ def datapoints(eta=.01, N=40):
     z = FrankeFunction(x, y) + noise(eta)
     return x, y, z
 
-x, y, z = datapoints(eta=0)
+x, y, z = datapoints(eta=0, N=20)
 
 # print(f'\n   Franke function z with noise of stdv. {1}.\n')
 
 def ptB():
-    x, y, z = datapoints(eta=.1)
+    x, y, z = datapoints(eta=.1, N=40)
     polydegs = range(1,5+1)
     Trainings = []
     Predictions = [] 
@@ -76,8 +70,9 @@ def ptB():
 
 
 def ptC():
+    x, y, z = datapoints(eta=0.01, N=20)
 
-    polydegs = range(1,13+1)
+    polydegs = range(1,18+1)
 
     Trainings = []
     Predictions = []
@@ -89,17 +84,8 @@ def ptC():
 
         trainer, predictor = reg.split()
 
-        beta = trainer.train() 
-        trainer.computeModel()
-        trainer.computeExpectationValues()
-
-        predictor.setOptimalbeta(beta)
-        predictor.computeModel()
-        predictor.computeExpectationValues()
-
         Trainings.append(trainer)
         Predictions.append(predictor)
-
 
 
     Bootstrappings = []
@@ -109,10 +95,8 @@ def ptC():
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
 
-    # HUSK BOOTSTRAP I HASTIE
 
-
-    PLOT.ptC_Hastie(Trainings, Predictions, pdf_name='Hastie', show=True)
+    PLOT.ptC_Hastie(Bootstrappings,  pdf_name='Hastie', show=True)
 
     PLOT.ptC_tradeoff(Bootstrappings, pdf_name='tradeoff', show=True)
 

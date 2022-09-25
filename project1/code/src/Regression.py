@@ -336,6 +336,21 @@ class LinearRegression:
         self.MSE = np.sum((z - ztilde)**2)/z.size
         self.R2 = 1 - np.sum((z - ztilde)**2) / np.sum((z - np.mean(z))**2)
 
+    
+
+    def copy(self):
+        LR = LinearRegression(self.tV, self.dM, self.method, self.mode)
+
+        if hasattr(self, "pV"):
+            LR.pV = self.pV
+        if hasattr(self, "model"):
+            LR.model = self.model
+        if hasattr(self, "MSE"):
+            LR.MSE = self.MSE
+            LR.R2 = self.R2
+
+        return LR
+
 
 
 
@@ -400,6 +415,21 @@ class Training(LinearRegression):
         newtrainer = Training(self, shuffled_data)
         return newtrainer
 
+    def copy(self):
+
+        T = Training(self.reg, self.tV, self.dM)
+
+        if hasattr(self, "pV"):
+            T.pV = self.pV
+        if hasattr(self, "model"):
+            T.model = self.model
+        if hasattr(self, "MSE"):
+            T.MSE = self.MSE
+            T.R2 = self.R2
+
+        return T
+
+
 
 
 class Prediction(LinearRegression):
@@ -431,6 +461,21 @@ class Prediction(LinearRegression):
 
     def predict(self):
         return super().computeModel()
+
+
+    def copy(self):
+
+        T = Prediction(self.reg, self.tV, self.dM)
+
+        if hasattr(self, "pV"):
+            T.pV = self.pV
+        if hasattr(self, "model"):
+            T.model = self.model
+        if hasattr(self, "MSE"):
+            T.MSE = self.MSE
+            T.R2 = self.R2
+
+        return T
 
 
 

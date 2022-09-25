@@ -29,35 +29,43 @@ class Bootstrap1:
 
 class Bootstrap:
 
-    def __init__(self, trainer, predictor):
+    def __init__(self, trainer, predictor, no_bootstraps=100):
         self.trainer = trainer
         self.predictor = predictor
         self.polydeg = self.trainer.polydeg
-        
-    def __call__(self, no_bootstraps=100, comparison_mode=False):
-        self.B = no_bootstraps
 
+        self.B = no_bootstraps
+        
+    def __call__(self, no_bootstraps=None):
+        self.B = no_bootstraps or self.B
         beta_list = []
-        train_list =[]
+        
+        trainings = []
+        predictions = []
         for i in range(self.B):
             newtrainer = self.trainer.randomShuffle()
             betastar = newtrainer.train()
             beta_list.append(betastar)
-            train_list.append(newtrainer)
 
-        if comparison_mode:
-            beta_list2 = []
-            for i in range(self.B):
-                newtrainer = train_list[i]
-                newtrainer.changeMode()
-                betastar = newtrainer.train()
-                beta_list2.append(betastar)
+            tr = self.trainer.copy()
+            tr.setOptimalbeta(betastar)
+            tr.computeModel()
+            tr.computeExpectationValues()
 
-            self.betas2 = betaCollection(beta_list2)
+            pr = self.predictor.copy()
+            pr.setOptimalbeta(betastar)
+            pr.predict()
+            pr.computeExpectationValues()
 
-
+            trainings.append(tr)
+            predictions.append(pr)
 
         self.betas = betaCollection(beta_list)
+
+        self.trainings = trainings
+        self.predictions = predictions
+
+        return self.trainings, self.predictions
 
     # dont touch this
     def bias_varianceDecomposition(self):
@@ -65,14 +73,10 @@ class Bootstrap:
         z_pred = np.empty((z_test.shape[0], self.B))
         diff = np.zeros_like(z_pred)
 
-
         for i in range(self.B):
-            self.predictor.setOptimalbeta(self.betas[i])
-            z_pred[:,i] = self.predictor.computeModel()
+            z_pred[:,i] = self.predictions[i].model.ravel()
             diff[:,i] = z_test - z_pred[:,i]
 
-
-        # from IPython import embed; embed()
         Errors = np.mean(diff**2, axis=1, keepdims=True)[:,0]
         Bias2s = (z_test - np.mean(z_pred, axis=1, keepdims=True)[:,0])**2
         Vars = np.var(z_pred, axis=1, keepdims=True)[:,0]
@@ -83,6 +87,16 @@ class Bootstrap:
 
         tol = 1e-8
         assert abs(self.bias2 + self.var - self.error) < tol
+
+    def mean_squared_error(self):
+
+        MSEs = np.zeros((2, self.B)) # (train, test)
+        for i in range(self.B):
+            MSEs[0, i] = self.trainings[i].MSE
+            MSEs[1, i] = self.predictions[i].MSE
+  
+      
+        return MSEs
 
    
         
