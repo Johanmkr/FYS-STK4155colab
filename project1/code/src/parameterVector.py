@@ -27,9 +27,11 @@ class ParameterVector:
         self.p = len(self.beta)
         self.intercept = intercept
         if self.intercept:
-            self.n = features2polydeg(self.p)
+            self.deg = features2polydeg(self.p)
         else:
-            self.n = features2polydeg(self.p+1)
+            self.deg = features2polydeg(self.p+1)
+
+        self.n = self.deg
 
         self.stdv = None # standard deviation, to be calculated
 
@@ -134,6 +136,40 @@ class ParameterVector:
             matrix-vector product Xβ 
         """        
         return other.X @ self.beta
+
+
+    def group(self):
+
+        if self.intercept:
+            polydegs = range(self.deg+1)
+            beta_amp = np.zeros(self.deg+1)
+            i = 0
+            for d in range(self.deg):
+                p = polydeg2features(d)
+                beta_amp[d] = np.mean(self.beta[i:p])
+                i = p
+            beta_amp[d+1] = np.mean(self.beta[i:])
+        
+        else:
+            polydegs = range(1, self.deg+1)
+            beta_amp = np.zeros(self.deg)
+            i = 0
+            for d in range(1, self.deg):
+                p = polydeg2features(d) - 1
+                print(i, p-i)
+                print(len(self.beta[i:p]))
+                beta_amp[d-1] = np.mean(self.beta[i:p])
+                i = p
+            beta_amp[d] = np.mean(self.beta[i:])
+        
+        self.amp_betapd = pd.DataFrame(beta_amp, index=[f'β^({d})' for d in polydegs], columns=['β'])
+
+        return self.amp_betapd
+        
+
+
+
+
         
         
 class betaCollection:

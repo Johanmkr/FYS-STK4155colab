@@ -69,6 +69,9 @@ class LinearRegression:
         self.fit_intercept = not self.dM.scaled
         self.fit_intercept = True
 
+        if self.notPredictor and self.notPredictor:
+            self.xy_points = self.dM.xy_points()
+
     def _setMode(self, mode):
         """
         (intended local) Setting 'manual' (own code) or 'auto' (codes from scikit learn).
@@ -212,6 +215,9 @@ class LinearRegression:
         shuffled_data = data.shuffle()
         train_data, test_data = data.split(test_size)
 
+        test_xy = test_data.dM.xy_points()
+        train_xy = train_data.dM.xy_points()
+
         data = DataHandler(self.tV, self.dM)
         self.ref_data = train_data.copy() 
         
@@ -230,6 +236,9 @@ class LinearRegression:
         self.PREDICTOR.fit_intercept = self.fit_intercept
         self.TRAINER.ref_data =  self.ref_data
         self.PREDICTOR.ref_data =  self.ref_data
+
+        self.TRAINER.xy_points = train_xy
+        self.PREDICTOR.xy_points = test_xy
     
         return self.TRAINER, self.PREDICTOR
 
@@ -294,11 +303,12 @@ class LinearRegression:
         ndarray
             the computed β parameter
         """   
-        HInv = self.dM.Hinv
+        H = self.dM.H
         X = self.dM.X
         z = self.tV.z
-        I = np.eye(self.p)
-        beta = (HInv  + 1/self.lmbda * I) @ X.T @ z
+        p = np.shape(X)[1]
+        I = np.eye(p)
+        beta = np.linalg.pinv(H+self.lmbda*I) @ X.T @ z
         return beta
 
     def _sklLasso(self):
@@ -364,6 +374,29 @@ class LinearRegression:
             LR.R2 = self.R2
 
         return LR
+
+    def _interpolate(self, z):
+        x, y = self.xy_points
+        from scipy import interpolate
+        f = interpolate.interp2d(x, y, z, kind='linear')
+        z_interp = np.zeros_like(x)
+        i = 0
+        for xi, yi in zip(x, y):
+            z_interp[i] = f(xi, yi)[0]
+            i+=1
+        return z_interp
+
+    def griddata(self):
+        f = self._interpolate(self.data)
+        x, y = self.xy_points
+        return x, y, f
+
+    def gridmodel(self):
+        f = self._interpolate(self.model)
+        x, y = self.xy_points
+        return x, y, f
+
+
 
 
 

@@ -15,9 +15,6 @@ plt.rc('font', family='DejaVu Sans')
 
 # other rc parameters
 plt.rc('figure', figsize=(12,7))
-# SMALL_SIZE = 16
-# MEDIUM_SIZE = 20
-# BIGGER_SIZE = 24
 SMALL_SIZE = 24
 MEDIUM_SIZE = 24
 BIGGER_SIZE = 30

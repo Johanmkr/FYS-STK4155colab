@@ -1,4 +1,5 @@
 
+from code import interact
 from src.utils import *
 from sklearn.preprocessing import StandardScaler
 
@@ -78,20 +79,24 @@ class DesignMatrix:
             the design matrix of p features
         """  
         self.X_org = X
+        self.Npoints = np.shape(X)[0]
         
         if np.all(np.isnan(X[:,0])) or np.all(np.abs(X[:,0])<1e-18):  
             self.X = X[:,1:]  # remove intercept coloumn
             self.interceptColoumn = False
             self.scaled = True # ? 
             cols = matrixColoumns(self.n)[1:]
+            idx = [f"({self.X[i,0]:.3f}, {self.X[i,1]:.3f})" for i in range(self.Npoints)]
         elif not self.interceptColoumn:
             self.X = X
             cols = matrixColoumns(self.n)[1:]
+            idx = [f"({self.X[i,0]:.3f}, {self.X[i,1]:.3f})" for i in range(self.Npoints)]
         else:
             self.X = X
             cols = matrixColoumns(self.n)
+            idx = [f"({self.X[i,1]:.3f}, {self.X[i,2]:.3f})" for i in range(self.Npoints)]
         self.Npoints, self.p = np.shape(self.X)
-        self.Xpd = pd.DataFrame(self.X, columns=cols)
+        self.Xpd = pd.DataFrame(self.X, columns=cols, index=idx)
         self.Hessian()
 
     def createX(self, x, y):
@@ -208,4 +213,18 @@ class DesignMatrix:
             matrix-vector product Xβ 
         """     
         return self.X @ other.beta
+
+    def xy_points(self):
+        if self.interceptColoumn:
+            x = self.X[:,1]
+            y = self.X[:,2]
+        else:
+            x = self.X[:,0]
+            y = self.X[:,1]
+        return x, y
+
+    def xy_mesh(self):
+        x, y = self.xy_points()
+        x, y = np.meshgrid(x, y)
+        return x, y
 
