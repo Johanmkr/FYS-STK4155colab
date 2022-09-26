@@ -67,6 +67,7 @@ class LinearRegression:
         self.notPredictor = not isinstance(self, Prediction)
 
         self.fit_intercept = not self.dM.scaled
+        self.fit_intercept = True
 
     def _setMode(self, mode):
         """
@@ -212,17 +213,23 @@ class LinearRegression:
         train_data, test_data = data.split(test_size)
 
         data = DataHandler(self.tV, self.dM)
+        self.ref_data = train_data.copy() 
+        
 
         if scale:
-            self.ref_data = train_data # save for later
+            #self.ref_data = train_data.copy() # save for later
             test_data = test_data.standardScaling(self.ref_data)
             train_data = train_data.standardScaling(self.ref_data)
             self.fit_intercept = False
 
         self.TRAINER = Training(self, train_data) 
         self.PREDICTOR = Prediction(self, test_data)
-        self.TRAINER.scaled = not self.fit_intercept
-        self.PREDICTOR.scaled = not self.fit_intercept
+        self.TRAINER.scaled = scale
+        self.PREDICTOR.scaled = scale
+        self.TRAINER.fit_intercept = self.fit_intercept
+        self.PREDICTOR.fit_intercept = self.fit_intercept
+        self.TRAINER.ref_data =  self.ref_data
+        self.PREDICTOR.ref_data =  self.ref_data
     
         return self.TRAINER, self.PREDICTOR
 
@@ -321,22 +328,29 @@ class LinearRegression:
             the model
         """
 
-        #unscale data?
+        if self.scaled:
+            zmean = np.mean(self.ref_data.z)
+            zstd = np.std(self.ref_data.z)
+        else:
+            zmean = 0
+            zstd = 1
 
-        self.model = self.dM * self.pV # see __mul__ and __rmul__ in respective classes
-        return self.model.ravel()
+
+        model = self.dM * self.pV # see __mul__ and __rmul__ in respective classes
+        self.model = model.ravel()*zstd + zmean
+        
+        return self.model
 
     def computeExpectationValues(self):
         """
         Finds the mean squared error and the R2 score.
-        """        
-        z = self.tV.z
-        ztilde = self.model.ravel()
+        """   
+        z = self.data
+        ztilde = self.model
 
         self.MSE = np.sum((z - ztilde)**2)/z.size
         self.R2 = 1 - np.sum((z - ztilde)**2) / np.sum((z - np.mean(z))**2)
 
-    
 
     def copy(self):
         LR = LinearRegression(self.tV, self.dM, self.method, self.mode)
@@ -426,6 +440,8 @@ class Training(LinearRegression):
         if hasattr(self, "MSE"):
             T.MSE = self.MSE
             T.R2 = self.R2
+        if hasattr(self, "ref_data"):
+            T.ref_data = self.ref_data
 
         return T
 
@@ -474,6 +490,8 @@ class Prediction(LinearRegression):
         if hasattr(self, "MSE"):
             T.MSE = self.MSE
             T.R2 = self.R2
+        if hasattr(self, "ref_data"):
+            T.ref_data = self.ref_data
 
         return T
 
@@ -534,7 +552,7 @@ class DataHandler:
 
         return scaled_data
 
-    def standardRescaling(self, reference_data=None):
+    def OLDstandardRescaling(self, reference_data=None):
         ref_data = reference_data
 
         zmean = np.mean(ref_data.z)
@@ -565,6 +583,27 @@ class DataHandler:
 
         return unscaled_data
 
+    
+    def standardRescaling(self, reference_data=None):
+        ref_data = reference_data
+
+        zmean = np.mean(ref_data.z)
+        zstd = np.std(ref_data.z)
+
+        self.z *= zstd
+        self.z += zmean
+
+
+        tV_ = self.tV.newObject(self.z, is_scaled=False)
+        dM_ = self.dM.newObject(self.X, is_scaled=True)
+
+        unscaled_data = DataHandler(tV_, dM_)
+
+        self.tV = tV_
+        self.dM = dM_
+
+        return unscaled_data
+
 
 
     def split(self, test_size=0.2):
@@ -582,6 +621,12 @@ class DataHandler:
         test_data = DataHandler(tV_test, dM_test)
 
         return train_data, test_data
+
+
+    def copy(self):
+        DH = DataHandler(self.tV, self.dM)
+        return DH
+
 
 
 
