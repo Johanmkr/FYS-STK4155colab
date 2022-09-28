@@ -6,7 +6,7 @@ from src.Regression import LinearRegression
 from src.Resampling import Bootstrap
 
 import plot as PLOT
-PLOT.init('off')
+PLOT.init('on')
 
 
 
@@ -23,7 +23,7 @@ x, y, z = datapoints(eta=0, N=20)
 # print(f'\n   Franke function z with noise of stdv. {1}.\n')
 
 def ptB():
-    x, y, z = datapoints(eta=.1, N=40)
+    x, y, z = datapoints(eta=1, N=40)
     polydegs = range(1,5+1)
     Trainings = []
     Predictions = [] 
@@ -35,9 +35,9 @@ def ptB():
         dM.createX(x, y)
             
         reg = LinearRegression(z, dM)
-        trainer, predictor = reg.split()
+        trainer, predictor = reg.split(scale=True)
         beta = trainer.train()
-        beta.computeVariance(reg) 
+        beta.computeVariance(trainer) 
         trainer.computeModel()
         trainer.computeExpectationValues()
 
@@ -60,11 +60,11 @@ def ptB():
 
     # PLOT.ptB_franke_funcion(x, y, REG5, show=True)
 
-    PLOT.ptB_franke_funcion_only(*datapoints(eta=0, N=40), pdf_name="franke", show=True)
+    # PLOT.ptB_franke_funcion_only(*datapoints(eta=0, N=40), pdf_name="franke", show=True)
 
-    PLOT.ptB_franke_funcion_only(*datapoints(eta=.1, N=40), pdf_name="franke_noise", show=True)
+    # PLOT.ptB_franke_funcion_only(*datapoints(eta=.1, N=40), pdf_name="franke_noise", show=True)
 
-    PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
+    # PLOT.ptB_scores(Trainings, Predictions, pdf_name='scores', show=True)
 
     PLOT.ptB_beta_params(Trainings[::-1], pdf_name='betas', show=True)
 

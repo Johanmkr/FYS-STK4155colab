@@ -236,7 +236,7 @@ def ptB_franke_funcion_only(x, y, z, pdf_name='none', show=False):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    # fig.colorbar(surf, shrink=0.5, aspect=5)
     plt.tight_layout()
 
     save_push(fig, pdf_name, show=show)
@@ -273,8 +273,8 @@ def ptB_scores(trainings, predictions, pdf_name='none', show=False):
     ax2.set_xticks(list(n))
     ax2.set_xticklabels([f'{ni:.0f}' for ni in n])
 
-    set_axes_2d(ax1, ylabel='score', title='Mean squared error')
-    set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', title='$R^2$-score', xlim=(n[0], n[-1]))
+    set_axes_2d(ax1, ylabel='score')#, title='Mean squared error')
+    set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(n[0], n[-1]))
 
     pdfname = 'ptB_' + pdf_name.strip().replace('ptB_', '') 
     save_push(fig, pdfname, show=show)
@@ -290,7 +290,9 @@ def ptB_beta_params(trainings, pdf_name='none', show=False):
     for train in trainings:
         beta = train.pV
         # from IPython import embed; embed()
-        ax.errorbar(range(train.features), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', label=r'$d=%i$'%train.polydeg)
+        markers, caps, bars = ax.errorbar(range(train.features), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', label=r'$d=%i$'%train.polydeg, capsize=5, capthick=2)
+        [bar.set_alpha(0.5) for bar in bars]
+        [cap.set_alpha(0.9) for cap in caps]
 
     B = trainings[0].features # max when reversed order
     # B = train.features #max when correct order
@@ -299,8 +301,8 @@ def ptB_beta_params(trainings, pdf_name='none', show=False):
     # ax.set_xticklabels(train.pV.idx_tex)
     ax.set_xticklabels(trainings[0].pV.idx_tex)
 
-
-    set_axes_2d(ax, title=r'$\beta$ for various polynomial degrees $d$', xlim=(0,B-1))
+    #title=r'$\beta$ for various polynomial degrees $d$'
+    set_axes_2d(ax, xlim=(0-1/2,B-1/2))#, ylim=(-50,50))
 
     pdfname = 'ptB_' + pdf_name.strip().replace('ptB_', '') 
     save_push(fig, pdfname, show=show)
