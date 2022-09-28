@@ -66,8 +66,11 @@ class ParameterVector:
         z = regressor.data.ravel()
         HInv = regressor.dM.Hinv #DUMMY SCALING SHOULD PROBABLY DO THIS DIFFERENTLY #FIXME
 
+        HInv = np.linalg.pinv(regressor.dM.X.T @ regressor.dM.X)
         # self.var = np.diag(np.var(z) * HInv)[1:]
-        self.var = np.diag(HInv)[1:]
+        # self.var = np.diag(HInv)
+        print(f"Var(z): {np.var(z)}")
+        self.var = np.diag(np.var(z) * HInv)
 
         # z_tilde = regressor.model.ravel()
         # N, p = regressor.dM.X.shape

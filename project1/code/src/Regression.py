@@ -69,6 +69,8 @@ class LinearRegression:
         self.fit_intercept = not self.dM.scaled
         self.fit_intercept = True
 
+        self.scaled = False
+
         if self.notPredictor and self.notPredictor:
             self.xy_points = self.dM.xy_points()
 
