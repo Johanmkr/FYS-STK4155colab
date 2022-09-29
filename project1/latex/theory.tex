@@ -144,10 +144,26 @@ If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm
 \end{align*}
 
 \subsection{Resampling}\label{sec:resampling}
-Having obtained some optimal parameters $\optbeta$ from either OLS, Ridge regression or Lasso regression it is of interest to determine how good of a prediction $\optbeta$ yields. Data is often limited and thus we resample the data in clever ways in order to test it for larger samples. We will consider two way of resampling data, the Bootstrap and Cross Validation. 
+Having obtained some optimal parameters $\optbeta$ from either OLS, Ridge regression or Lasso regression it is of interest to determine how good of a prediction $\optbeta$ yields. Data is often limited and thus we resample the data in clever ways in order to test it for larger samples. We will consider two ways of resampling data, the Bootstrap and Cross Validation. 
 
 \subsubsection{Bootstrap method}\label{sec:bootstrap}
-We assume $\optbeta$ to be a random variable and it can thus be described a probability density function $p(\vec{t})$. The goal of the Bootstrap is to estimate $p(\vec{t})$. 
-
+Suppose we have some set of data $\vec{y}$ from which we have estimated $\optbeta$. We think of $\svec{\beta}$ as a random variable (since $\svec{\beta}=\svec{\beta}(X)$) with an unknown probability distribution $p(\vec{\svec{\beta}})$, that we want to estimate. We then have that $\optbeta$ is the $\svec{\beta}$ that has the highest probability. We do the following:
+\begin{enumerate}
+    \item From the data $\vec{y}$ we draw with replacement as many numbers as there are in $\vec{y}$ and create a new dataset $\vec{y}^*$.
+    \item We then estimate $\svec{\beta}^*$ by using the data in $\vec{y}^*$. 
+    \item Repeat this $k$ times and we are left with a set of vectors $B = (\svec{\beta}^*_1, \svec{\beta}^*_2, \dots, \svec{\beta}^*_k)$ The relative frequency of vectors $\svec{\beta}^*$ in $B$ is our approximation of $p(\svec{\beta})$. 
+\end{enumerate}
+We now have a collection of $k$ $\svec{\beta}$ parameters. If we assume $y$ to be independent and identically distributed variables, the central limit theorem tells us that the distribution of $\svec{\beta}$ parameters should approach a normal distribution when $k$ is sufficiently large. Thus, $\optbeta$, which is the beta with the highest probability should approach the expectation value of the above distribution, which for a normal distribution is just the mean values. We therefore write:
+\begin{align*}
+    \optbeta^* = \EE{\svec{\beta^*}} = \bar{B}
+\end{align*}
+which is out estimate of the optimal parameter $\optbeta^*$ after bootstrapping. 
 
 \subsubsection{Cross-validation}\label{sec:k_fold}
+Another resampling technique is the cross-validation. Suppose we have the data set $\vec{y}$ which we split into $k$ smaller datasets equal in size. Then:
+\begin{enumerate}
+    \item Decide on one (or more) of the sets to be the testing test. The remaining sets will be considered the training set.
+    \item Fit some model to the training set. Evaluate this model by finding the desired test scores. This could be the $MSE$ and/or $R^2$ scores. Save these values on discard the model. 
+    \item Repeat $k$ times, or until all the data have been used as test data. 
+\end{enumerate}
+We use the retained scores for all the testing sets in our assessment of the model. 

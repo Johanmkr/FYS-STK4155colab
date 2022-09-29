@@ -46,8 +46,22 @@
         \end{align}
         The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
     \subsection{Scaling}\label{sec:scaling}
-    WHY DO WE SCALE NANNA? To give the same emphasize to the data? and terms in the design matrix? To not favour some degree term or some data values?
-    We INSERT FORMULAd
+    We want to scale both our data and the design matrices because the data obtained from either the Franke function, or from some other source often vary a great deal in magnitude. Since the design matrices are set up in order to fit data to a polynomial of degree $d$ in two dimensions, we want to be sure that no term is given more emphasis than the others. In addition, when working with multi-dimensional data and design matrices we want to standardize the features as much as possible to ensure equal (relative) emphasize and treatment of the dimensions. We use the scaling technique \textit{standardization} or \textit{Z-score normalization} which makes the mean of each feature equal to zero, and the their variances to be of unit length. For our observed data $\vec{y}$ this mean:
+    \begin{align*}
+        \vec{y}' = \frac{\vec{y}-\bar{\vec{y}}}{\sigma_{\vec{y}}}
+    \end{align*}
+    where $\vec{y}'$ is now our scaled data. For the design matrices, this must be done for each feature, i.e. for each column.  Mathematically, if $X_j$ is column $j$ of the original design matrix $X$, $j\in[0,p]$:
+    \begin{align*}
+        X_j' = \frac{X_j-\bar{X_j}}{\sigma_{X_j}}.
+    \end{align*}
+    We do this for all the columns and end up with the scaled design matrix $X'$. Since $\optbeta$ is a function of the design matrix $X$ and the data $\vec{y}$,
+    
+    MORE ON WHY EVERYTHING NEED TO BE SCALED WRT TRAIN Data
+
+    \begin{align*}
+        \optbeta' = \optbeta\frac{\sigma_X}{\sigma_{\vec{y}}} \implies \optbeta = \optbeta'\frac{\sigma_{\vec{y}}}{\sigma_X}
+    \end{align*}
+
 
     \subsection{Regression analysis}\label{sec:reganalysis}
 
