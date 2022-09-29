@@ -1,5 +1,3 @@
-
-from code import interact
 from src.utils import *
 from sklearn.preprocessing import StandardScaler
 
@@ -78,7 +76,6 @@ class DesignMatrix:
         X : ndarray(*,p) 
             the design matrix of p features
         """  
-        self.X_org = X
         self.Npoints = np.shape(X)[0]
         
         if np.all(np.isnan(X[:,0])) or np.all(np.abs(X[:,0])<1e-18):  
@@ -143,6 +140,14 @@ class DesignMatrix:
         newObject.interceptColoumn = not no_intercept or self.interceptColoumn
         newObject._setX(X)
         return newObject
+
+    def adjust(self, remove_intercept=False):
+        if remove_intercept:
+            if self.interceptColoumn:
+                self.X[:,0] = 0
+            else:
+                pass
+        self._setX(self.X)
 
     def Hessian(self):
         """
@@ -227,4 +232,15 @@ class DesignMatrix:
         x, y = self.xy_points()
         x, y = np.meshgrid(x, y)
         return x, y
+
+
+    def getScalingParameters(self):
+
+        if not self.scaled and self.interceptColoumn:
+            self.mu = np.mean(self.X[:,1], axis=0, keepdims=True)[0]
+            self.sigma = np.std(self.X[:,1], axis=0, keepdims=True)[0]
+            return self.mu, self.sigma
+
+        else:
+            return None, None
 

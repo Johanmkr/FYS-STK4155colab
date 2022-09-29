@@ -1,4 +1,3 @@
-from cgi import test
 from src.utils import *
 
 from sklearn.model_selection import train_test_split
@@ -193,7 +192,8 @@ class LinearRegression:
         ----------
         beta : ParameterVector/ndarray/list
             the β-parameter
-        """        
+        """  
+        
         self.pV = ParameterVector(beta, intercept=self.fit_intercept)
         # self.beta.computeVariance(self) # Check this!
 
@@ -222,16 +222,18 @@ class LinearRegression:
 
         data = DataHandler(self.tV, self.dM)
         self.ref_data = train_data.copy() 
+
+        self.mu_z, self.sigma_z, self.mu_X, self.sigma_X = train_data.getScalingParams()
         
 
         if scale:
             #self.ref_data = train_data.copy() # save for later
-            test_data = test_data.standardScaling(self.ref_data)
-            train_data = train_data.standardScaling(self.ref_data)
+            test_data_ = test_data.standardScaling(self.ref_data)
+            train_data_ = train_data.standardScaling(self.ref_data)
             self.fit_intercept = False
 
-        self.TRAINER = Training(self, train_data) 
-        self.PREDICTOR = Prediction(self, test_data)
+        self.TRAINER = Training(self, train_data_) 
+        self.PREDICTOR = Prediction(self, test_data_)
         self.TRAINER.scaled = scale
         self.PREDICTOR.scaled = scale
         self.TRAINER.fit_intercept = self.fit_intercept
@@ -431,6 +433,12 @@ class Training(LinearRegression):
             dM = train_design_matrix
         super().__init__(tV, dM, regressor.method, regressor.mode)
 
+
+        # only works if unscaled input
+        '''self.mu_z, self.sigma_z = self.tV.getScalingParameters()
+        self.mu_X, self.sigma_X = self.dM.getScalingParameters()
+        self.features = np.shape(self.dM.p)'''
+
     def train(self, lmbda=0):
         """
         Alias for the motherclass's __call__-method.
@@ -448,6 +456,13 @@ class Training(LinearRegression):
         super().__call__(lmbda)
         self.setOptimalbeta(self.pV)
         return self.pV
+
+    def rescaleParameter(self, beta):
+        
+        if isinstance(beta, ParameterVector):
+            beta = beta.getVector()
+
+        beta *= self.sigma_z/self.sigma_X 
 
     def randomShuffle(self, without_seed=True):
         """
@@ -548,7 +563,8 @@ class DataHandler:
         #elf.tV_org = self.tV.copy()
 
     def shuffle(self):
-        idx = np.random.randint(0, len(self.tV), len(self.tV))
+        #idx = np.random.randint(0, len(self.tV), len(self.tV))
+        idx = np.random.permutation(len(self.tV))
         tV_ = self.tV.newObject(self.z[idx], is_scaled=self.tV.scaled)
         dM_ = self.dM.newObject(self.X[idx], is_scaled=self.dM.scaled, no_intercept=not self.dM.interceptColoumn)
         
@@ -584,6 +600,8 @@ class DataHandler:
 
         self.tV = tV_
         self.dM = dM_
+
+        self.beta_fac = zstd*Xstd[:,1:]**(-1)
 
         return scaled_data
 
@@ -634,10 +652,25 @@ class DataHandler:
 
         unscaled_data = DataHandler(tV_, dM_)
 
+        Xstd = np.mean(ref_data.X, axis=0, keepdims=True) 
+
         self.tV = tV_
         self.dM = dM_
 
+        
+
         return unscaled_data
+
+
+    def getScalingParams(self):
+        zmean = np.mean(self.z)
+        zstd = np.std(self.z)
+
+        Xmean = np.mean(self.X[:,1:], axis=0, keepdims=True) 
+        Xstd = np.std(self.X[:,1:], axis=0, keepdims=True) 
+
+        return zmean, zstd, Xmean, Xstd
+    
 
 
 
@@ -663,5 +696,195 @@ class DataHandler:
         return DH
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SplitScale:
+
+    def __init__(self, target_vector, design_matrix=None):
+
+        if isinstance(target_vector, LinearRegression):
+            self.tV = target_vector.tV
+            self.dM = target_vector.dM
+
+        elif isinstance(target_vector, np.ndarray):
+            self.tV = TargetVector(target_vector)
+        
+        elif isinstance(target_vector, TargetVector):
+            self.tV = target_vector
+        
+        else:
+            raise ValueError('Argument target_vector not accepted')
+
+        if isinstance(design_matrix, np.ndarray):
+            #FIXME
+            raise ValueError('Argument design_matrix not accepted')
+
+        elif isinstance(design_matrix, DesignMatrix):
+            self.dM = design_matrix
+
+        self.shuffled = False
+        self.scaled = False
+        self.scaling_params = False
+
+        self.train_scaled = False
+        self.test_scaled = False
+        self.org_scaled = False
+
+
+    def reshuffle(self):
+
+        self.idx = np.random.permutation(len(self.tV))
+
+
+        z = self.tV[self.idx]
+        self.tV = self.tV.newObject(z)
+
+        X = self.dM[self.idx]
+        self.dM = self.dM.newObject(X)
+
+
+        self.shuffled = True
+
+    
+    def update_designMatrix(self, design_matrix, unshuffled=True, unscaled=True):
+        if unshuffled:
+            X = design_matrix[self.idx]
+            self.dM = design_matrix.newObject(X)
+        else:
+            self.dM = design_matrix
+
+        if self.splitted:
+            self.dM_train = self.dM.newObject(self.dM[self.s:])
+            self.dM_test = self.dM.newObject(self.dM[:self.s])
+
+            if self.scaling_params:
+                self.mu_X, self.sigma_X = self.dM_train.getScalingParameters()
+
+            if unscaled and self.scaled:
+                if self.train_scaled:
+                    self._scaleMatrix(self.dM_train)
+                if self.test_scaled:
+                    self._scaleMatrix(self.dM_test)
+                if self.org_scaled:
+                    self._scaleMatrix(self.dM)
+
+
+
+    def split(self, test_size=0.2, reshuffle=False):
+
+        s = int(test_size*len(self.tV))
+        if reshuffle:
+            self.reshuffle()
+
+        # train set
+        self.tV_train = self.tV.newObject(self.tV[s:])
+        self.dM_train = self.dM.newObject(self.dM[s:])
+        # test set
+        self.tV_test = self.tV.newObject(self.tV[:s])
+        self.dM_test = self.dM.newObject(self.dM[:s])
+
+        self.s = s
+        self.splitted = True
+
+    def initiateStandardScaling(self):
+        self.mu_z, self.sigma_z = self.tV_train.getScalingParameters()
+        self.mu_X, self.sigma_X = self.dM_train.getScalingParameters()
+        self.scaling_params = True
+
+    def _scaleVector(self, tV):
+        tV.z -= self.mu_z
+        tV.z /= self.sigma_z
+        tV.scaled = True
+
+    def _scaleMatrix(self, dM):
+        dM.adjust(remove_intercept=True)
+        dM.X -= self.mu_X
+        dM.X /= self.sigma_X
+        dM.adjust()
+        dM.scaled = True
+
+    def scale(self, train=True, test=True, original=False):
+        
+        if train:
+            self._scaleVector(self.tV_train)
+            self._scaleMatrix(self.dM_train)
+            self.train_scaled = True
+        
+        if test:
+            self._scaleVector(self.tV_test)
+            self._scaleMatrix(self.dM_test)
+            self.test_scaled = True
+
+        if original:
+            self._scaleVector(self.tV)
+            self._scaleMatrix(self.dM)
+            self.org_scaled = True
+
+        self.scaled = True
+
+
+
+
+
+    
+
+class SplitScale2:
+    def __init__(self, target_vector):
+        # unscaled data
+        if isinstance(target_vector, LinearRegression):
+            self.tV = target_vector.tV
+
+        elif isinstance(target_vector, np.ndarray):
+            self.tV = TargetVector(target_vector)
+        
+        elif isinstance(target_vector, TargetVector):
+            self.tV = target_vector
+        
+        else:
+            raise ValueError('Argument target_vector not accepted')
+
+        self.mu_z, self.sigma_z = self.tV.getScalingParameters()
+
+    def reshuffle(self):
+        self.idx = np.random.permutation(len(self.tV))
+        z = self.tV[self.idx]
+        self.tV = self.tV.newObject(z)
+        self.shuffled = True
+
+    def split(self, test_size=0.2):
+        s = int(test_size*len(self.tV))
+        # train set
+        self.tV_train = self.tV.newObject(self.tV[s:])
+        # test set
+        self.tV_test = self.tV.newObject(self.tV[:s])
+
+        self.s = s
+        self.splitted = True
+
+    def __call__(self, design_matrix):
+        pass
 
 

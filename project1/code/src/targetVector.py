@@ -28,3 +28,16 @@ class TargetVector:
         newobject = TargetVector(z)
         newobject.scaled = is_scaled or self.scaled
         return newobject
+
+    def __getitem__(self,i):
+        return self.z[i]
+
+    def getScalingParameters(self):
+
+        if not self.scaled:
+            self.mu = np.mean(self.z)
+            self.sigma = np.std(self.z)
+            return self.mu, self.sigma
+
+        else:
+            return None, None

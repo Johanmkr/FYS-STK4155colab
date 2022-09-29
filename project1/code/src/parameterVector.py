@@ -159,8 +159,6 @@ class ParameterVector:
             i = 0
             for d in range(1, self.deg):
                 p = polydeg2features(d) - 1
-                print(i, p-i)
-                print(len(self.beta[i:p]))
                 beta_amp[d-1] = np.mean(self.beta[i:p])
                 i = p
             beta_amp[d] = np.mean(self.beta[i:])

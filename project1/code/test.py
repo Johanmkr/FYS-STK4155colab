@@ -1,8 +1,7 @@
-from tarfile import TarError
 from src.utils import *
 
 from src.designMatrix import DesignMatrix
-from src.Regression import LinearRegression
+from src.Regression import LinearRegression, SplitScale
 from src.Resampling import Bootstrap
 from src.parameterVector import ParameterVector
 from src.targetVector import TargetVector
@@ -12,23 +11,93 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-def datapoints(eta=.01, N=20):
+def datapoints(eta=.01, N=40):
     x = np.sort( np.random.rand(N))
     y = np.sort( np.random.rand(N))
     x, y = np.meshgrid(x, y)
-    noise = lambda eta: eta*np.random.randn(N, N)
-    z = FrankeFunction(x, y) + noise(eta)
+    noise = eta*np.random.randn(N, N)
+    z = FrankeFunction(x, y) + noise
     return x, y, z
 
 
-x, y, z = datapoints()
+x, y, z = datapoints(0.1)
 
 
 dM = DesignMatrix(5)
-
 dM.createX(x, y)
-print(dM)
+Xc = dM.X[:,1:].copy()
+
+
 tV = TargetVector(z)
+zc = tV.z.copy()
+
+reg = LinearRegression(tV, dM, mode='own', method='OLS')
+trainer, predictor = reg.split(scale=True)
+beta = trainer.train()
+amp_beta = beta.group()
+
+
+fac = (reg.sigma_z)/(reg.sigma_X)
+betac = beta.beta* fac#+ reg.mu_z/reg.mu_X
+betac = betac[0]#+ reg.mu_z/reg.mu_X [0]
+print(betac)
+
+zhat = Xc@betac  + reg.mu_z 
+
+print((Xc-reg.mu_X))
+zhat = (Xc-reg.mu_X)*reg.sigma_X[0]**(-1) @ beta.beta *reg.sigma_z + reg.mu_z * reg.sigma_X[0]
+print(zhat.shape)
+error =  zhat - zc
+print(np.mean(error**2))
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from matplotlib import cm
+
+def surface_plot(ax, x, y, z, tri=True):
+    if tri:
+        surf = ax.plot_trisurf(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    else:
+        surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.set_zlim(-0.05, 1.05)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    return ax, surf
+
+fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
+
+zhat = np.reshape(zhat, np.shape(z))
+surface_plot(ax, x, y, zhat, False)
+ax.scatter(x, y, z, color='r')
+
+
+plt.show()
+
+
+sys.exit()
+SS = SplitScale(tV, dM)
+
+SS.reshuffle()
+
+SS.split()
+SS.initiateStandardScaling()
+SS.scale()
+polydegs = range(1, 8+1)
+
+for n in polydegs:
+    dM = DesignMatrix(n)
+    dM.createX(x, y)
+    SS.update_designMatrix(dM)
+
+
+
+
+
+
+
+
+
+sys.exit()
 lmbda = 1
 reg = LinearRegression(tV, dM, mode='own', method='OLS')
 trainer, predictor = reg.split(scale=True)
