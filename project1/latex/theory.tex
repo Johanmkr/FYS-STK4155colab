@@ -6,11 +6,11 @@ Throughout this project we concern ourselves with some observed values $\vec{y}$
 
 
 \begin{align}\label{eq:MSE}
-    \MSE{\vec{y}, \tilde{\vec{y}}}= \frac{1}{n}(\vec{y}-\tilde{\vec{y}})^2= \frac{1}{n}\sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2
+    \MSE{\vec{y}, \tilde{\vec{y}}}= \frac{1}{n}\sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2
 \end{align}
 
 \begin{align}\label{eq:R2}
-    \Rtwo {\vec{y}, \tilde{\vec{y}}} =1 - \frac{(\vec{y}-\tilde{\vec{y}})^2}{(\vec{y}(1-\bar{y}))^2}= 1 - \frac{\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2}{\sum_{i=0}^{n-1}(y_i-\bar{y})^2}
+    \Rtwo {\vec{y}, \tilde{\vec{y}}} = 1 - \frac{\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2}{\sum_{i=0}^{n-1}(y_i-\bar{y})^2}
 \end{align}
 where the mean of the observed values $\vec{y}$ is given by:
 \begin{align*}
@@ -18,14 +18,30 @@ where the mean of the observed values $\vec{y}$ is given by:
 \end{align*}
 
 
+Before we delve into the various methods, lets have a look at some mathematical concepts that will be of great use in the further discussion. 
+
+\subsection{Singular value decomposition}\label{sec:SVD}
+    The singular value decomposition is a result from linear algebra that states that an arbitrary matrix $A$ of rank $r$ and size $n\cross p$ can be decomposed into the following\cite{svd}:
+    \begin{align}\label{eq:svd}
+        A = U\Sigma V\TT,
+    \end{align}
+    where $\Sigma$ is a $n\cross p$ diagonal matrix with the singular values of $A$ as diagonal elements in descending order: $\sigma_1\geq\sigma_2\geq\sigma_3\geq\dots\geq\sigma_r\geq 0$. $V$ is a $p\cross p$ square matrix whose columns are the eigenvectors of $A\TT A$, and thus is an orthonormal basis spanning $\RR[p]$.  $U$ is a $n\cross n$ square matrix whose columns also form an orthonormal basis set that spans $\RR[n]$. 
+
+\subsection{Principal component analysis}\label{sec:principal_comp}
+DO THIS LINALG P445.  
 
 \subsection{Linear regression}\label{sec:regression}
 We will attempt to create a model $\tilde{\vec{y}}$ by the means of linear regression. 
 There are several possible estimation techniques when fitting a linear regression model. We will discuss three common approaches, one least squares estimation (\Sec{OLS}) and two forms of penalized estimation (\Sec{Ridge} and \Sec{Lasso}).
 
-We assume the vector $\vec{y} \in \RR[n]$ consisting of $n$ observed values $y_i$ to take the form $\vec{y}=f(\vec{x})+\svec{\epsilon}$ where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}\in \RR[n] $ is a normally distributed noise of standard deviation $\sigma$. We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is the design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. That is, we assume a \textit{linear} relationship between $X$ and $\vec{y}$. The integers $n$ and $p$ then represent the number of data points and features, respectively. 
+We assume the vector $\vec{y} \in \RR[n]$ consisting of $n$ observed values $y_i$ to take the form:
+\begin{align*}
+    \vec{y}=f(\vec{x})+\svec{\epsilon}
+\end{align*} where $f(\vec{x})\in\RR[n]$ is a continous function and $\svec{\epsilon}=\eta\mathcal{N}(\mu,\sigma)\in \RR[n] $ is a normally distributed noise of mean $\mu=0$ and standard deviation $\sigma$ and with an amplitude tuning parameter $\eta$. 
 
-For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$. The inner product $\Xbi$ is non-stochastic, hence 
+We approximate $f$ by $\tilde{\vec{y}}=X\svec{\beta}$, where $X\in \RR[n\cross p]$ is a design matrix of $n$ row vectors $\vec{x}_i\in \RR[p]$, and $\svec{\beta}\in \RR[p]$ are the unknown parameters to be determined. That is, we assume a \textit{linear} relationship between $X$ and $\vec{y}$. The integers $n$ and $p$ then represent the number of data points and features, respectively. 
+
+For an observed value $y_i$ we have $y_i = \vec{x}_i\TT \svec{\beta} + \epsilon_i = \Xbi+ \epsilon_i$. The inner product $\Xbi$ is non-stochastic, hence its expectation value is:
 
 \begin{align*}
     \EE{\Xbi} = \Xbi
@@ -37,7 +53,7 @@ and since
     \EE{\epsilon_i} \stackrel{\text{per def.}}{=} 0,
 \end{align*}
 
-we have the expectation value of the response variable
+we have the expectation value of the response variable as:
 
 \begin{align*}
     \EE{y_i} &= \EE{\Xbi+ \epsilon_i} \\
@@ -53,7 +69,7 @@ To find the variance of this dependent variable, we need the expetation value of
     &= \Xb \svec{\beta}\TT X\TT + \II \sigma^2. \label{eq:expectation_yyT}
 \end{align}
 
-The variance becomes
+The variance now becomes
 
 \begin{align*}
     \variance{y_i} &= \EE{(\vec{y}\vec{y}\TT)_{ii}} -\Big(\EE{y_i}\Big)^2\\
@@ -64,9 +80,11 @@ The variance becomes
 
 The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, is in principle obtained by minimizing the cost function $C(\svec{\beta})$. The cost function is a measure of how badly our model deviates from the observed values, and the method we choose is defined from its cost function. By minimizing it we obtain $\optbeta$, that is:
 
-\begin{align}\label{eq:general_LS}
+\begin{align}
     \pdv{C(\svec{\beta})}{\svec{\beta}}\Bigg|_{\svec{\beta}=\optbeta} = 0.
+    \label{eq:general_LS}
 \end{align}
+
 
 
 
@@ -77,16 +95,13 @@ The ordinary least squares (OLS) method assumes the cost function
 \begin{align*}
     C^\text{OLS}(\svec{\beta}) = \sum_{i=0}^{n-1}(y_i - \tilde{y}_i)^2 =  \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
 \end{align*}
-
 where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
 \footnotetext{Euclidian norm (\lnorm{2}) is defined as $\norm{\vec{a}}_2 = \sqrt{\sum_ia_i^2}$}
 
 \begin{align}\label{eq:optimal_beta_ols}
     \optbeta^\text{OLS} = \invhessian X\TT \vec{y} = H^{-1} X\TT \vec{y},
 \end{align}
-
 where $H = \hessian$ is the Hessian matrix.
-
 Letting $\optbeta = \optbeta^\text{OLS}$ we get the expected value 
 
 \begin{align*}
@@ -126,6 +141,7 @@ Let $\lambda \in \RR$ be some small number such that $\lambda >0$. If we add a p
 \begin{align*}
     \optbeta^\text{Ridge} = \big(\hessian + \lambda \II\big)^{-1} \vec{y} = \big(H + \lambda \II\big)^{-1} \vec{y}
 \end{align*}
+COULD ADD SOMETHING HERE ABOUT SVD DECOMP AND PRINCIPAL VALUE to explain the behaviour of the penalisation. 
 
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
@@ -155,9 +171,9 @@ Suppose we have some set of data $\vec{y}$ from which we have estimated $\optbet
 \end{enumerate}
 We now have a collection of $k$ $\svec{\beta}$ parameters. If we assume $y$ to be independent and identically distributed variables, the central limit theorem tells us that the distribution of $\svec{\beta}$ parameters should approach a normal distribution when $k$ is sufficiently large. Thus, $\optbeta$, which is the beta with the highest probability should approach the expectation value of the above distribution, which for a normal distribution is just the mean values. We therefore write:
 \begin{align*}
-    \optbeta^* = \EE{\svec{\beta^*}} = \bar{B}
+    \optbeta^* = \EE{\svec{\beta^*}} = \bar{B} 
 \end{align*}
-which is out estimate of the optimal parameter $\optbeta^*$ after bootstrapping. 
+which is our estimate of the optimal parameter $\optbeta^*$ after bootstrapping. From the set of vectors $B$ we can estimate the variance and standard error of $\svec{\beta}$, both of which will be vector quantities, with entries that corresponds to each feature in our model. 
 
 \subsubsection{Cross-validation}\label{sec:k_fold}
 Another resampling technique is the cross-validation. Suppose we have the data set $\vec{y}$ which we split into $k$ smaller datasets equal in size. Then:

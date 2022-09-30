@@ -46,17 +46,17 @@
         \end{align}
         The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
     \subsection{Scaling}\label{sec:scaling}
-    We want to scale both our data and the design matrices because the data obtained from either the Franke function, or from some other source often vary a great deal in magnitude. Since the design matrices are set up in order to fit data to a polynomial of degree $d$ in two dimensions, we want to be sure that no term is given more emphasis than the others. In addition, when working with multi-dimensional data and design matrices we want to standardize the features as much as possible to ensure equal (relative) emphasize and treatment of the dimensions. We use the scaling technique \textit{standardization} or \textit{Z-score normalization} which makes the mean of each feature equal to zero, and the their variances to be of unit length. For our observed data $\vec{y}$ this mean:
-    \begin{align*}
-        \vec{y}' = \frac{\vec{y}-\bar{\vec{y}}}{\sigma_{\vec{y}}}
-    \end{align*}
-    where $\vec{y}'$ is now our scaled data. For the design matrices, this must be done for each feature, i.e. for each column.  Mathematically, if $X_j$ is column $j$ of the original design matrix $X$, $j\in[0,p]$:
-    \begin{align*}
-        X_j' = \frac{X_j-\bar{X_j}}{\sigma_{X_j}}.
-    \end{align*}
-    We do this for all the columns and end up with the scaled design matrix $X'$. Since $\optbeta$ is a function of the design matrix $X$ and the data $\vec{y}$,
-    
-    MORE ON WHY EVERYTHING NEED TO BE SCALED WRT TRAIN Data
+        We want to scale both our data and the design matrices because the data obtained from either the Franke function, or from some other source often vary a great deal in magnitude. Since the design matrices are set up in order to fit data to a polynomial of degree $d$ in two dimensions, we want to be sure that no term is given more emphasis than the others. In addition, when working with multi-dimensional data and design matrices we want to standardize the features as much as possible to ensure equal (relative) emphasize and treatment of the dimensions. We use the scaling technique \textit{standardization} or \textit{Z-score normalization} which makes the mean of each feature equal to zero, and the their variances to be of unit length. For our observed data $\vec{y}$ this mean:
+        \begin{align*}
+            \vec{y}' = \frac{\vec{y}-\bar{\vec{y}}}{\sigma_{\vec{y}}}
+        \end{align*}
+        where $\vec{y}'$ is now our scaled data. For the design matrices, this must be done for each feature, i.e. for each column.  Mathematically, if $X_j$ is column $j$ of the original design matrix $X$, $j\in[0,p]$:
+        \begin{align*}
+            X_j' = \frac{X_j-\bar{X_j}}{\sigma_{X_j}}.
+        \end{align*}
+        We do this for all the columns and end up with the scaled design matrix $X'$. Since $\optbeta$ is a function of the design matrix $X$ and the data $\vec{y}$,
+        
+        MORE ON WHY EVERYTHING NEED TO BE SCALED WRT TRAIN Data
 
     \begin{align*}
         \optbeta' = \optbeta\frac{\sigma_X}{\sigma_{\vec{y}}} \implies \optbeta = \optbeta'\frac{\sigma_{\vec{y}}}{\sigma_X}
@@ -68,7 +68,7 @@
         \subsubsection{OLS}\label{sec:olsanalysis}
             We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
 
-            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. COMMENT ON PLOT
+            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. 
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{ptB_betas.pdf}
@@ -83,12 +83,58 @@
                 \label{fig:mse_and_r2_for_order5}
             \end{figure}
 
-            COULD BE NICE TO CHOOSE ONE DEGREE AND PLOT THE MSE AND R2 AS FUNCTION OF NOISE: $\eta$ between 0 and 1
+           
+
+            \begin{figure}
+                \includegraphics[width=\linewidth]{dummy.jpg}
+                \caption{MSE error for different noise values $\eta$}
+                \label{fig:mse_for_different_noise_ols}
+            \end{figure}
+
+            SOMETHING ABOUT NOSIE
+
+            \begin{figure}
+                \includegraphics[width=\linewidth]{ptC_Hastie_OLS.pdf}
+                \caption{Model complexity HASTIE ET AL.}
+                \label{fig:model_complexity_ols}
+            \end{figure}
+
+            \begin{figure}
+                \includegraphics[width=\linewidth]{ptC_tradeoff_OLS.pdf}
+                \caption{Bias Variance}
+                \label{fig:bias_variance_ols}
+            \end{figure}
+
+
+            \begin{figure}
+                \includegraphics[width=\linewidth]{ptD_CV_OLS.pdf}
+                \caption{Cross-validation}
+                \label{fig:cross-validation_ols}
+            \end{figure}
+
 
 
         
 
         \subsubsection{Ridge}\label{sec:rigdeanalysis}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{ptE_CV_Ridge.pdf}
+            \caption{Cross-validation for Ridge regression.}
+            \label{eq:cross-validation_ridge}
+        \end{figure}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{ptE_Hastie_Ridge.pdf}
+            \caption{Model complexity for Ridge regression.}
+            \label{eq:model_complexity_ridge}
+        \end{figure}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{ptE_tradeoff_Ridge.pdf}
+            \caption{Bias-variance for Ridge regression.}
+            \label{eq:bias_variance_ridge}
+        \end{figure}
 
         \subsubsection{Lasso}\label{sec:lassoanalysis}
 
