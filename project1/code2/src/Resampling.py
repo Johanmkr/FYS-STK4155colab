@@ -15,6 +15,7 @@ class resampleTechnique:
         self.trainer = trainer
         self.predictor = predictor
         self.polydeg = self.trainer.polydeg
+        self.nfeatures = self.trainer.nfeatures
         self.Niter = no_iterations
         self.mode, self.method = mode, method
         self.lmbda = hyper_param
@@ -43,6 +44,15 @@ class resampleTechnique:
     def __len__(self):
         return self.Niter
 
+    def getOptimalParameters(self):
+        pVs = []
+        mu_beta = np.zeros(self.Niter)
+        for i in range(self.Niter):
+            pV = self.trainings[i].pV
+            pVs.append(pV)
+            mu_beta[i] = pV.mean()
+
+        return pVs, mu_beta
 
 
 
@@ -88,6 +98,8 @@ class Bootstrap(resampleTechnique):
         assert abs(self.bias2 + self.var - self.error) < tol
 
         return self.error, self.bias2, self.var
+
+    
    
     
 
@@ -115,7 +127,7 @@ class CrossValidation(resampleTechnique):
         quiz = Prediction(tV[test_idx], dM[test_idx])
 
         reg = linearRegression(tog, quiz, mode=self.mode, method=self.method)
-        reg.fit()
+        reg.fit(self.lmbda)
 
         tog.computeModel()
         tog.computeExpectationValues()

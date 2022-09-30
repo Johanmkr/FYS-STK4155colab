@@ -264,12 +264,13 @@ class linearRegression:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Lasso(max_iter=int(1e6), alpha=self.lmbda)
+        reg = linear_model.Lasso(max_iter=int(1e8), alpha=self.lmbda)
         X = self.dM.X
         z = self.tV.z
         reg.fit(X, z)
         beta = reg.coef_
         #beta[0] = reg.intercept_
+        return beta
 
     def computeModel(self):
         """
@@ -302,18 +303,29 @@ class linearRegression:
         return self.R2
 
 
-    def subReg(self):
-        # copy instance (temporary, for bootstrapping)
-        # maybe delete
+    def betaVariance(self):
+        sigma2 = 1 # as data is scaled
 
-        trainer_star = self.trainer.randomShuffle()
-        return linearRegression(trainer_star, self.predictor)
+        if not isinstance(self, (Training, Prediction)):
+            X = self.trainer.dM.getMatrix()
 
+        elif isinstance(self, Training):
+            X = self.dM.getMatrix()
 
+        else:
+            raise TypeError("Cannot use test data for this.")
+        
+        XTX = X.T @ X
 
+        if self.method == 'OLS':
+            var = sigma2 * np.linalg.pinv(XTX)
+        elif self.method == 'Ridge':
+            A = np.linalg.pinv(XTX + self.lmbda*np.eye(self.nfeatures))
+            var = sigma2 * A @ XTX @ A.T
+        else:
+            var = None
 
-
-
+        self.pV.var = var
 
 
 
@@ -343,6 +355,7 @@ class Training(linearRegression):
         self.data = self.tV.z
         self.npoints = len(self.tV)
         self.polydeg = self.dM.polydeg
+        self.nfeatures = self.dM.nfeatures
 
   
        
