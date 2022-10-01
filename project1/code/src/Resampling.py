@@ -35,7 +35,7 @@ class noneResampler:
         self.polydeg = self.trainer.polydeg
         self.nfeatures = self.trainer.nfeatures
         self.Niter = no_iterations
-        self.mode, self.method = mode, method
+        self.mode, self.method = mode.lower(), method.lower()
         self.lmbda = hyper_param
     
     def advance(self, i):

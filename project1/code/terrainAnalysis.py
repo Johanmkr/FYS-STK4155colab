@@ -5,10 +5,12 @@ from src.Resampling import Bootstrap, CrossValidation
 
 
 import plot as PLOT
-PLOT.init('on')
+PLOT.init('off')
+
+PLOT.add_path('terrain')
 
 
-def datapointsTerrain(sx=80, sy=80, tag='2'):
+def datapointsTerrain(sx=40, sy=40, tag='2'):
     from imageio.v2 import imread
     terrain1 = imread(f"../data/SRTM_data_Norway_{tag}.tif")
     z = terrain1[::sy, ::sx].astype('float64')
@@ -21,10 +23,10 @@ def datapointsTerrain(sx=80, sy=80, tag='2'):
 
 x, y, z = datapointsTerrain()
 prepper = dataPrepper(x, y, z)
-prepper.split()
-prepper.scale()
-prepper.genereteSeveralOrders()
-print(np.shape(z))
+prepper.prep()
+
+
+
 #PLOT.visualise_data(x, y, z)
 
 
@@ -38,7 +40,7 @@ for d in POLYDEGS:
     TRAININGS[d] = Training(*prepper.getTrain(d))
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
-HYPERPARAMS = np.logspace(-6, -1)
+HYPERPARAMS = np.logspace(-6, -1, 10)
 
 
 def assessModelComplexityBS(B, method, mode):
@@ -48,8 +50,16 @@ def assessModelComplexityBS(B, method, mode):
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
-
     return Bootstrappings
+
+def assessModelComplexityCV(k, method, mode):
+    Crossvalidations = []
+    for d in POLYDEGS:
+        CV = Bootstrap(TRAININGS[d], PREDICTIONS[d], k, method=method, mode=mode)
+        CV()
+        Crossvalidations.append(CV)
+
+    return Crossvalidations
 
 def assessHyperParamBS(polydeg, B, method, mode):
     Bootstrappings = []
@@ -69,13 +79,47 @@ def assessHyperParamCV(polydeg, k, method, mode):
         Crossvalidations.append(CV)
     return Crossvalidations
 
-def ptF():
-    # bootstrap  OLS
+def ptG():
 
-    Bootstrappings = assessModelComplexityBS(50, 'OLS', 'own')
-    PLOT.Hastie_MSE(Bootstrappings)
+    # c)
+    Bootstrappings = assessModelComplexityBS(100, 'OLS', 'own')
+    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+
+    d = 8
+    idx = 8-1
+    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=True)
+    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=True)
+
+
+    # d)
+    Crossvalidations = assessModelComplexityCV(8, 'OLS', 'own')
+    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+
+    # e)
+    polydeg = 8
+    Bootstrappings = assessHyperParamBS(polydeg, 100, 'Ridge', 'own')
+    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+
+    Crossvalidations = assessHyperParamCV(polydeg, 8, 'Ridge', 'own')
+    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+
+    
+    # f)
+    '''polydeg = 8
+    Bootstrappings = assessHyperParamBS(polydeg, 50, 'Lasso', 'skl')
+    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+
+    Crossvalidations = assessHyperParamCV(polydeg, 8, 'Lasso', 'skl')
+    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+    PLOT.BV_Tradeoff(Bootstrappings, show=True)'''
+
+   
 
 
 
 if __name__ == '__main__':
-    ptF()
+    ptG()
+
+    PLOT.update_info()

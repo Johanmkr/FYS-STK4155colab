@@ -235,8 +235,6 @@ class parameterVector:
         else:
             raise TypeError("beta must be ndarray, list or parameterVector.")
 
-        print(self.__dict__)
-
     def getVector(self):
         """
         Yield the object as an ndarray. For when in doubt, so you can force the vector out.
@@ -257,14 +255,14 @@ class parameterVector:
         str
             terminal print
         """       
-        
-        if self.stdv != None:
+        try:
+            var = self.stdv**2
             sigma = self.stdv
-            data = np.zeros((self.p, 2))
+            data = np.zeros((self.nfeatures, 2))
             data[:,0] = self.beta
             data[:,1] = sigma
             betapd = pd.DataFrame(data=data, index=self.idx, columns=['β', 'Δβ'])
-        else:
+        except TypeError:
             betapd = pd.DataFrame(data=self.beta, index=self.idx)
         l = 40; ind = ' '*5
         s = '\n' + '-'*l + '\n'
@@ -312,7 +310,10 @@ class parameterVector:
 
     def setVariance(self, var):
         self.var = var
-        self.stdv = self.var**(1/2)
+        try: 
+            self.stdv = self.var**(1/2)
+        except TypeError:
+            self.stdv = None
 
 
 
@@ -342,6 +343,15 @@ class parameterVector:
 
 
 class dataPrepper:
+    """
+    Very problem specific class for making x, y, z data ready for regression.
+    Splitting and scaling has to happen before we can use the source files. 
+    (Ideally, all should work for unscaled data as well, but when I tried to account for this,
+    so any bugs arised, so I bailed. Maybe fix if time?)
+
+    Will not spend time explaining this class. 
+    Essentially, one can make an instance and call it, and it is all good.
+    """
 
     def __init__(self, x, y, z, test_size=0.2) -> None:
         
@@ -441,3 +451,11 @@ class dataPrepper:
             self.dM_test = dMs_test
             self.several = True
         return dMs_train, dMs_test
+
+    def __call__(self):
+        self.prep()
+
+    def prep(self, scale_all_data=False):
+        self.split()
+        self.scale(scale_all_data)
+        self.genereteSeveralOrders()

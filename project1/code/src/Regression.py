@@ -165,6 +165,7 @@ class linearRegression:
             beta = eval(f'self.trainer.{pre}{post}()')
             self.trainer.setOptimalbeta(beta)
             self.predictor.setOptimalbeta(parameterVector(beta))
+            
 
         elif isinstance(self, Training):
             beta = eval(f'self.{pre}{post}()')
@@ -172,6 +173,7 @@ class linearRegression:
             raise TypeError("Cannot train on the test data.")
 
         self.setOptimalbeta(beta)
+        
 
         return self.pV
 
@@ -185,7 +187,9 @@ class linearRegression:
             the β-parameter
         """ 
         self.pV = parameterVector(beta)
-
+        if not isinstance(self, Prediction):
+            self.betaVariance()
+  
     def _sklOLS(self):
         """
         (intended local) The Ordinary Least Squares algorithm using Scikit learn.
@@ -195,7 +199,7 @@ class linearRegression:
         ndarray
             the computed β parameter
         """        
-        reg = linear_model.LinearRegression()
+        reg = linear_model.LinearRegression(fit_intercept=False)
         X = self.dM.X
         z = self.tV.z
         reg.fit(X, z)
@@ -227,7 +231,7 @@ class linearRegression:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Ridge(alpha=self.lmbda)
+        reg = linear_model.Ridge(fit_intercept=False, alpha=self.lmbda)
         X = self.dM.X
         z = self.tV.z
         reg.fit(X, z)
@@ -261,7 +265,7 @@ class linearRegression:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Lasso(max_iter=int(1e8), alpha=self.lmbda)
+        reg = linear_model.Lasso(fit_intercept=False, max_iter=int(1e8), alpha=self.lmbda)
         X = self.dM.X
         z = self.tV.z
         reg.fit(X, z)
@@ -311,15 +315,17 @@ class linearRegression:
         
         XTX = X.T @ X
 
-        if self.method == 'OLS':
+        if self.method == 'ols':
             var = sigma2 * np.linalg.pinv(XTX)
-        elif self.method == 'Ridge':
+            var = np.diag(var)
+        elif self.method == 'ridge':
             A = np.linalg.pinv(XTX + self.lmbda*np.eye(self.nfeatures))
             var = sigma2 * A @ XTX @ A.T
+            var = np.diag(var)
         else:
             var = None
 
-        self.pV.var = var
+        self.pV.setVariance(var)
 
 
 
@@ -334,12 +340,10 @@ class Training(linearRegression):
 
         Parameters
         ----------
-        regressor : LinearRegression
-            the regressor for the original data for inheritance of information
-        training_target_vector : TargetVector
-            the z-points in the training set
-        training_design_matrix : DesignMatrix
-            the design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring...)
+        training_target_vector : targetVector
+            the z-points in the SCALED training set
+        training_design_matrix : designMatrix
+            the SCALED design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring...)
         """   
 
 
@@ -391,8 +395,6 @@ class Training(linearRegression):
         return Training(tV, dM)
 
 
-
-
 class Prediction(linearRegression):
     """
     Subclass as an extension specific for handling test data.
@@ -403,22 +405,17 @@ class Prediction(linearRegression):
 
         Parameters
         ----------
-        regressor : LinearRegression
-            the regressor for the original data for inheritance of information
-        test_target_vector : TargetVector
-            the z-points in the prediction set
-        test_design_matrix : DesignMatrix
-            the design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring her også, gitt...)
-        """        
-
-  
-    
-        
+        test_target_vector : targetVector
+            the z-points in the SCALED prediction set
+        test__design_matrix : designMatrix
+            the SCALED design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring...)
+        """       
         self.tV = targetVector(test_target_vector)
         self.dM = designMatrix(test_design_matrix)   
         self.data = self.tV.z 
         self.npoints = len(self.tV)
         self.polydeg = self.dM.polydeg
+        self.nfeatures = self.dM.nfeatures
       
     def predict(self):
         super().computeModel()

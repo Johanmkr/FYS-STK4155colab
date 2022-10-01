@@ -1,3 +1,5 @@
+from distutils.log import info
+from ensurepip import bootstrap
 import numpy as np
 import seaborn as sns
 import os
@@ -6,11 +8,12 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import pandas as pd
 
 
 # The style we want
 plt.style.use('seaborn')
-plt.rc('text', usetex=True)
+#plt.rc('text', usetex=True)
 plt.rc('font', family='DejaVu Sans')
 
 # other rc parameters
@@ -41,12 +44,33 @@ def init(test_mode='off'):
     elif testmode in ['on', 'true']:
         testMode = True
 
+def read_info():
+    global INFO
+    infopd = pd.read_pickle(plot_path + 'info.pkl')
+    INFO = infopd.transpose().to_dict()
 
+def add_path(folder, read=True):
+    global plot_path
+    if folder.lower() in ['franke', 'frankefig', 'frankefigs']:
+        folder = 'Franke/'
+    elif folder.lower() in ['terrain', 'terran', 'terraindata']:
+        folder = 'terrain/'
+    else:
+        raise Warning("Folder name not accepted. Figures are saved to main figure folder.")
+        folder = ''
+    plot_path += folder
+    global show_path
+    show_path = '/output/figures/' + folder
 
+    if read:
+        read_info()
+
+'''b = pd.DataFrame({'method':'ols', 'mode':'own', 'tull':0}, ['dummy'])
+b.to_pickle('info.pkl')
+'''
 def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
     """
-    This function handles wether you want to show,
-    save and/or push the file to git.
+    This function handles wether you want to show, save and/or push the file to git.
     Args:
         fig (matplotlib.figure): Figure you want to handle
         pdfname (string): Name of output pdf file
@@ -99,6 +123,26 @@ def surface_plot(ax, x, y, z):
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     return ax, surf
 
+
+
+def tune_hyper_parameter(resamplings):
+    complexity = []
+    hyper_parameter = []
+    for i, rs in enumerate(resamplings):
+        complexity.append(rs.polydeg)
+        hyper_parameter.append(rs.lmbda)
+    
+    if complexity[1] != complexity[0]:
+        tuning = False
+    elif hyper_parameter[1] != hyper_parameter[0]:
+        tuning = True
+    else:
+        raise TypeError("Make sure that either the model complexity or the hyper parameter stays constant in the resampling.")
+
+    return tuning
+    
+def complexity_measure(resamplings):
+    return not tune_hyper_parameter()
 
 def complexity_or_tuning(complexity, hyper_parameter):
 
@@ -180,6 +224,29 @@ def bias_variance_tradeoff(ax, bootstrappings):
     ax.set_xscale(xscale)
 
 
+
+
+def make_histogram(ax, bootstrap, mse=True):
+
+    polydeg = bootstrap.polydeg
+    B = bootstrap.B
+    bins = int(B/4)
+    if mse:
+        MSEs = bootstrap.mean_squared_error()
+        ax.hist(MSEs[0], bins, alpha=.7, label='train')
+        ax.hist(MSEs[1], bins, alpha=.7, label='test')
+        legend = True
+        xlabel = 'MSE'
+    else:
+        _, beta = bootstrap.getOptimalParameters()
+        ax.hist(beta, bins, alpha=.7)
+        legend = False
+        xlabel = r'$\bar{\beta}$'
+
+    set_axes_2d(ax, xlabel=xlabel, ylabel='frequency', title=r'polynomial degree %i (%i bootstraps)'%(polydeg, B), legend=legend)
+   
+
+
 ### define styles:
 ## believe I will change this...
 
@@ -208,280 +275,153 @@ def visualise_data(x, y, z):
     save_push(fig, "none", save=False, show=True)
 
 
-'''
-# Pt. b)
-'''
+
+
+
+def set_info(pdfname, method=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
+    if pdfname in INFO.keys():
+        pass
+
+    INFO[pdfname] = {'method':method, 'mode':mode, 'polynomial degree':polydeg, 'lambda':lmbda}
+    if resampling_type == None:
+        INFO[pdfname]['resampling (iter)'] = None
+    else:
+        INFO[pdfname]['resampling (iter)'] = f'{resampling_type} ({resampling_iter})'
+    INFO[pdfname]['mark'] = mark
 
 
 
 
-def ptB_franke_funcion(x, y, regression, pdf_name='none', show=False):
-    fig, (ax0, ax1) = plt.subplots(ncols=2, subplot_kw={'projection':'3d'})
-    z = np.reshape(regression.data, np.shape(x))
-    ztilde = np.reshape(regression.model, np.shape(x))
-    ax0, surf0 = surface_plot(ax0, x, y, z)
-    ax1, surf1 = surface_plot(ax1, x, y, ztilde)
-    ax0.set_title(r"Original data")
-    ax1.set_title(r"Polynomial degree $n=%i$"%(regression.polydeg))
-    # Customize the z axis.
-    for ax in [ax0, ax1]:
-        ax.set_zlim(np.min(z), np.max(z))
-        ax.zaxis.set_major_locator(LinearLocator(10))
-        ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    # fig.suptitle(f"n={n}", fontsize=20)
-    fig.suptitle(f"Franke")
-
-    # Add a color bar which maps values to colors.
-    #fig.colorbar(surf, shrink=0.5, aspect=5)
 
 
-    save_push(fig, pdf_name, show=show)
-    
 
-def ptB_franke_funcion_only(x, y, z, pdf_name='none', show=False):
-    fig, ax = plt.subplots(ncols=1, subplot_kw={'projection':'3d'})
-    ax, surf = surface_plot(ax, x, y, z)
-    # ax.set_title(r"Franke function for $x,y\in[0,1]$, $N=40$, $\eta=%.1f$"%eta)
-    # Customize the z axis.
-    ax.set_zlim(np.min(z), np.max(z))
-    ax.zaxis.set_major_locator(LinearLocator(5))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-    # fig.colorbar(surf, shrink=0.5, aspect=5)
-    plt.tight_layout()
 
-    save_push(fig, pdf_name, show=show)
 
-def ptB_scores(trainings, predictions, pdf_name='none', show=False):
-    """
-    Part b) Plot MSE and R2 as functions of polynomial degree.
-    """    
+def train_test_MSE(resamplings, tag='', show=False, mark=None):
+    fig, ax = plt.subplots()
+    MSE_train_test(ax, resamplings)
+    res = resamplings[0]
+    method = res.method
+    pdfname = f'MSE_{method}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    try:
+        Niter = res.B
+        type = 'BS'
+    except AttributeError:
+        Niter = res.k
+        type = 'CV'
+    if tune_hyper_parameter(resamplings):
+        polydeg = res.polydeg
+        lmbda = '...'
+    else:
+        polydeg = '...'
+        lmbda = res.lmbda
+
+    set_info(pdfname, method, resamplings[0].mode, polydeg=polydeg, lmbda=lmbda, resampling_type=type, resampling_iter=Niter, mark=mark)
+
+
+def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
+    fig, ax = plt.subplots()
+
+    bias_variance_tradeoff(ax, bootstrappings)
+    method = bootstrappings[0].method
+    pdfname = f'tradeoff_{method}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    set_info(pdfname, method, bootstrappings[0].mode, resampling_type='BS', resampling_iter=bootstrappings[0].B, mark=mark)
+
+
+
+def beta_params(trainings, tag='', show=False, mark=None):
+    fig, ax = plt.subplots()
+
+    for d in trainings.keys():
+        beta = trainings[d].pV
+        markers, caps, bars = ax.errorbar(range(1,beta.nfeatures+1), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', lw=0.8,label=r'$d=%i$'%d, capsize=5, capthick=2, elinewidth=1.2) 
+        [bar.set_alpha(0.7) for bar in bars]
+        [cap.set_alpha(0.9) for cap in caps]
+
+    t = trainings[max(trainings.keys())]
+    b = t.pV
+    Bmax = b.nfeatures
+    ax.set_xticks(range(1,Bmax+1))
+    ax.set_xticklabels(b.idx_tex)
+   
+    padx = 1/3; pady = np.max(np.abs(b[:]))*0.1
+    set_axes_2d(ax, xlim=(0-padx,Bmax-1+padx), ylim=(np.min(b[:])-pady, np.max(b[:])+pady))
+    pdfname = f'beta_{t.method}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    set_info(pdfname, t.method, t.mode, lmbda=t.lmbda, mark=mark)
+
+
+def hist_resampling(bootstrap, which='mse', tag='', show=False, mark=None):
+    fig, ax = plt.subplots()
+    if which.lower() == 'mse':
+        make_histogram(ax, bootstrap)
+        which = 'MSE'
+    else:
+        make_histogram(ax, bootstrap, False)
+        which = 'beta'
+
+    pdfname = f'{which}_hist_{bootstrap.method}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    set_info(pdfname, bootstrap.method, bootstrap.mode, polydeg=bootstrap.polydeg, resampling_type='BS', resampling_iter=bootstrap.B, lmbda=bootstrap.lmbda, mark=mark)
+
+
+def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
 
     fig, axes = plt.subplots(nrows=2, sharex=True)
     ax1, ax2 = axes.flat
 
     N = len(trainings)
-    n = np.zeros(N)
+    polydegs = np.zeros(N)
     MSE = np.zeros((2,N))
     R2 = np.zeros((2,N))
 
     i = 0
-    for train, test in zip(trainings, predictions):
-        n[i] = train.polydeg
-
-        MSE[0,i] = train.MSE
-        MSE[1,i] = test.MSE
-        R2[0,i] = train.R2
-        R2[1,i] = test.R2
-
-        i += 1
+    for d in trainings.keys():
+        train, test = trainings[d], predictions[d]
+        polydegs[i] = d
+        MSE[:,i] = train.MSE, test.MSE
+        R2[:,i] = train.R2, test.R2
+        i+=1
     
-    ax1.plot(n, MSE[0], ls=dTRAIN['ls'],c=dMSE['c'], label='train MSE')
-    ax1.plot(n, MSE[1], ls=dTEST['ls'], c=dMSE['c'], label='test MSE')
-    ax2.plot(n, R2[0],  ls=dTRAIN['ls'],c=dR2['c'], label='train $R^2$')
-    ax2.plot(n, R2[1],  ls=dTEST['ls'], c=dR2['c'], label='test $R^2$')
+    ax1.plot(polydegs, MSE[0], lw=2, ls=dTRAIN['ls'],c=dMSE['c'], label='train MSE')
+    ax1.plot(polydegs, MSE[1], lw=2, ls=dTEST['ls'], c=dMSE['c'], label='test MSE')
+    ax2.plot(polydegs, R2[0],  lw=2, ls=dTRAIN['ls'],c=dR2['c'],  label='train $R^2$')
+    ax2.plot(polydegs, R2[1],  lw=2, ls=dTEST['ls'], c=dR2['c'],  label='test $R^2$')
 
-    ax2.set_xticks(list(n))
-    ax2.set_xticklabels([f'{ni:.0f}' for ni in n])
+    ax2.set_xticks(list(polydegs))
+    ax2.set_xticklabels([f'{d:.0f}' for d in polydegs])
 
     set_axes_2d(ax1, ylabel='score')
-    set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(n[0], n[-1]))
-
-    pdfname = 'ptB_' + pdf_name.strip().replace('ptB_', '') 
+    pad = 1/4
+    set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
+    method = trainings[d].method
+    pdfname = f'MSE_R2_scores_{method}{tag}.pdf'
     save_push(fig, pdfname, show=show)
 
+    set_info(pdfname, method, trainings[d].mode, lmbda=trainings[d].lmbda, mark=mark)
 
-def ptB_beta_params(trainings, pdf_name='none', show=False):
-    """
-    Part b) Plot beta params.
-    """
-    fig, ax = plt.subplots()
 
-    B = 0 # max length
-    for train in trainings:
-        beta = train.pV
-        markers, caps, bars = ax.errorbar(range(beta.nfeatures), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', label=r'$d=%i$'%train.polydeg, capsize=5, capthick=2)
-        [bar.set_alpha(0.5) for bar in bars]
-        [cap.set_alpha(0.9) for cap in caps]
-        if beta.nfeatures > B:
-            B = beta.nfeatures
-            xlabels = beta.idx_tex
 
 
-    ax.set_xticks(range(B))
-    ax.set_xticklabels(xlabels)
-    set_axes_2d(ax, xlim=(0-1/2,B-1/2))#, ylim=(-50,50))
 
-    pdfname = 'ptB_' + pdf_name.strip().replace('ptB_', '') 
-    save_push(fig, pdfname, show=show)
 
 
 
+def update_info():
+    if testMode:
+        pass
+    else:
 
-"""  
-Pt. c)
-"""
+        infopd = pd.DataFrame.from_dict(INFO, orient='index')
+        # sort ?
+        
+        
+        infopd.to_pickle(plot_path + 'info.pkl')
+        infopd.to_markdown(plot_path + 'README.md')
 
-
-def ptC_Hastie(bootstrappings, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, bootstrappings)
-    pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptC_tradeoff(bootstrappings, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-    bias_variance_tradeoff(ax, bootstrappings)
-    pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-
-
-def ptC_bootstrap_hist_mse(bootstrap, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-
-  
-    polydeg = bootstrap.polydeg
-    B = bootstrap.B
-    l = ['train', 'test']
-    MSEs = bootstrap.mean_squared_error()
-    bins = int(B/4)
-
-    for i, mse in enumerate(MSEs):
-        counts, binsboot, patches = ax.hist(mse, bins, alpha=0.7, label=l[i])
-        #y = norm.pdf(binsboot, np.mean(mse), np.std(mse))
-        #ax.plot(binsboot, y)
-
-
-    set_axes_2d(ax, xlabel='MSE', ylabel='frequency', title=r'polynomial degree %i (%i bootstraps)'%(polydeg, B))
-    pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptC_bootstrap_hist_beta(bootstrap, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-
-
-    polydeg = bootstrap.polydeg
-    B = bootstrap.B
-    bins = int(B/4)
-
-    _, beta = bootstrap.getOptimalParameters()
-    counts, binsboot, patches = ax.hist(beta, bins)
-
-    set_axes_2d(ax, xlabel=r'$\bar{\beta}$', ylabel='frequency', title=r'polynomial degree %i (%i bootstraps)'%(polydeg, B), legend=False)
-    pdfname = 'ptC_' + pdf_name.strip().replace('ptC_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-
-"""
-Pt. d)
-"""
-
-
-def ptD_cross_validation(CVs, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, CVs)
-    pdfname = 'ptD_' + pdf_name.strip().replace('ptD_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-
-"""
-Pt. e)
-"""
-
-def ptE_Hastie_Ridge(bootstrappings, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, bootstrappings)
-    pdfname = 'ptE_' + pdf_name.strip().replace('ptE_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptE_CV_Ridge(CVs, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, CVs)
-    pdfname = 'ptE_' + pdf_name.strip().replace('ptE_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptE_tradeoff_Ridge(bootstrappings, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-    bias_variance_tradeoff(ax, bootstrappings)
-    pdfname = 'ptE_' + pdf_name.strip().replace('ptE_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-
-
-"""
-Pt. f)
-"""
-
-
-def ptE_Hastie_Lasso(bootstrappings, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, bootstrappings)
-    pdfname = 'ptF_' + pdf_name.strip().replace('ptF_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptE_CV_Lasso(CVs, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, CVs)
-    pdfname = 'ptF_' + pdf_name.strip().replace('ptF_', '') 
-    save_push(fig, pdfname, show=show)
-
-
-def ptE_tradeoff_Lasso(bootstrappings, pdf_name='none', show=False):
-    fig, ax = plt.subplots()
-    bias_variance_tradeoff(ax, bootstrappings)
-    pdfname = 'ptF_' + pdf_name.strip().replace('ptF_', '') 
-   
-
-
-
-
-
-
-'''
-put together
-'''
-
-
-def Hastie_MSE(resamplings, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    MSE_train_test(ax, resamplings)
-    save_push(fig, pdf_name, show=show)
-
-
-def BV_Tradeoff(bootstrappings, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-    bias_variance_tradeoff(ax, bootstrappings)
-    save_push(fig, pdf_name, show=show)
-
-
-def beta_params(trainings, pdf_name="none", show=False):
-    fig, ax = plt.subplots()
-
-    B = 0 # max length
-    for train in trainings:
-        beta = train.pV
-        markers, caps, bars = ax.errorbar(range(beta.nfeatures), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', label=r'$d=%i$'%train.polydeg, capsize=5, capthick=2)
-        [bar.set_alpha(0.5) for bar in bars]
-        [cap.set_alpha(0.9) for cap in caps]
-        if beta.nfeatures > B:
-            B = beta.nfeatures
-            xlabels = beta.idx_tex
-
-
-    ax.set_xticks(range(B))
-    ax.set_xticklabels(xlabels)
-    set_axes_2d(ax, xlim=(0-1/2,B-1/2))#, ylim=(-50,50))
-
-    save_push(fig, pdf_name, show=show)
+        with open(plot_path + 'README.md', 'a') as file:
+            file.write('\n\n\n')
+            file.write(f'# Information about plots in `{show_path}`')
+            file.write('\n\n')
