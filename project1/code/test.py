@@ -1,17 +1,14 @@
+
 from src.utils import *
-
-from src.designMatrix import DesignMatrix
-from src.Regression import LinearRegression, SplitScale
-from src.Resampling import Bootstrap
-from src.parameterVector import ParameterVector
-from src.targetVector import TargetVector
-
-from sklearn.preprocessing import StandardScaler
+from src.objects import designMatrix, targetVector, parameterVector, dataPrepper
+from src.Regression import Training, Prediction, linearRegression
+from src.Resampling import Bootstrap, CrossValidation
 
 
+import plot as PLOT
+PLOT.init('on')
 
-
-def datapoints(eta=.01, N=40):
+def datapoints(eta=.01, N=20):
     x = np.sort( np.random.rand(N))
     y = np.sort( np.random.rand(N))
     x, y = np.meshgrid(x, y)
@@ -22,227 +19,154 @@ def datapoints(eta=.01, N=40):
 
 x, y, z = datapoints(0.1)
 
+prepper = dataPrepper(x, y, z)
+prepper.split()
+prepper.scale()
+prepper.genereteSeveralOrders()
+ztest = prepper.getTest()[0]
+ztrain = prepper.getTrain()[0]
 
-dM = DesignMatrix(5)
-dM.createX(x, y)
-Xc = dM.X[:,1:].copy()
 
 
-tV = TargetVector(z)
-zc = tV.z.copy()
 
-reg = LinearRegression(tV, dM, mode='own', method='OLS')
-trainer, predictor = reg.split(scale=True)
-beta = trainer.train()
-amp_beta = beta.group()
 
 
-fac = (reg.sigma_z)/(reg.sigma_X)
-betac = beta.beta* fac#+ reg.mu_z/reg.mu_X
-betac = betac[0]#+ reg.mu_z/reg.mu_X [0]
-print(betac)
 
-zhat = Xc@betac  + reg.mu_z 
 
-print((Xc-reg.mu_X))
-zhat = (Xc-reg.mu_X)*reg.sigma_X[0]**(-1) @ beta.beta *reg.sigma_z + reg.mu_z * reg.sigma_X[0]
-print(zhat.shape)
-error =  zhat - zc
-print(np.mean(error**2))
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from matplotlib import cm
 
-def surface_plot(ax, x, y, z, tri=True):
-    if tri:
-        surf = ax.plot_trisurf(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    else:
-        surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(-0.05, 1.05)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    return ax, surf
 
-fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
 
-zhat = np.reshape(zhat, np.shape(z))
-surface_plot(ax, x, y, zhat, False)
-ax.scatter(x, y, z, color='r')
+def OLS_stuff():
 
+    Tr = []# trainings
+    Pr = []# predictions
 
-plt.show()
+    for d in range(1, 6):
+        trainer = Training(*prepper.getTrain(d))
+        predictor = Prediction(*prepper.getTest(d))
 
 
-sys.exit()
-SS = SplitScale(tV, dM)
+        reg = linearRegression(trainer, predictor, mode='own', method='ols')
+        reg.fit()
+        ztilde = trainer.computeModel()
+        zpred = predictor.predict()
+        trainer.computeExpectationValues()
+        predictor.computeExpectationValues()
 
-SS.reshuffle()
+        Tr.append(trainer)
+        Pr.append(predictor)
 
-SS.split()
-SS.initiateStandardScaling()
-SS.scale()
-polydegs = range(1, 8+1)
+        
+    PLOT.ptB_scores(Tr, Pr, show=True)
+    PLOT.ptB_beta_params(Tr, show=True)
 
-for n in polydegs:
-    dM = DesignMatrix(n)
-    dM.createX(x, y)
-    SS.update_designMatrix(dM)
 
 
+    Tr = []# trainings
+    Pr = []# predictions
 
+    polydegs = range(1, maxPolydeg+1)
 
 
+    for d in polydegs:
+        trainer = Training(*prepper.getTrain(d))
+        predictor = Prediction(*prepper.getTest(d))
 
+        Tr.append(trainer)
+        Pr.append(predictor)
 
 
+    Bootstrappings = []
+    for train, test in zip(Tr, Pr):
+        BS = Bootstrap(train, test, 200, method='OLS')
+        BS()
+        BS.bias_varianceDecomposition()
+        Bootstrappings.append(BS)
 
-sys.exit()
-lmbda = 1
-reg = LinearRegression(tV, dM, mode='own', method='OLS')
-trainer, predictor = reg.split(scale=True)
-beta = trainer.train(lmbda)
-amp_beta = beta.group()
+    PLOT.ptC_Hastie(Bootstrappings,  show=True)
+    PLOT.ptC_tradeoff(Bootstrappings, show=True)
 
-print(amp_beta)
-reg.changeMode()
-beta = trainer.train(lmbda)
-print(beta)
-predictor.setOptimalbeta(beta)
-zpred = predictor.predict()
-predictor.computeExpectationValues()
-print(predictor.MSE)
+    PLOT.ptC_bootstrap_hist_beta(Bootstrappings[5], show=True)
+    PLOT.ptC_bootstrap_hist_mse(Bootstrappings[5], show=True)
 
+    Crossvalidations = []
 
+    for train, test in zip(Tr, Pr):
+        CV = CrossValidation(train, test, 8)
+        CV()
+        Crossvalidations.append(CV)
 
+    PLOT.ptD_cross_validation(Crossvalidations, show=True)
 
-#z = np.reshape(z, np.shape(x))
-#ztilde = np.reshape(z, np.shape(x))
+    
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from matplotlib import cm
+def Ridge_stuff():
 
-def surface_plot(ax, x, y, z, tri=True):
-    if tri:
-        surf = ax.plot_trisurf(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    else:
-        surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(-0.05, 1.05)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    return ax, surf
+    current_polydeg = 8 # or 4, 5
+    lmbdas = np.logspace(-4,-1,20)
 
-fig, axes = plt.subplots(ncols=2, subplot_kw={'projection':'3d'})
-ax1, ax2 = axes
+    trainer = Training(*prepper.getTrain(current_polydeg))
+    predictor = Prediction(*prepper.getTest(current_polydeg))
 
-surface_plot(ax1, x, y, z, False)
-ax1.scatter(x, y, z, color='r')
+    Bootstrappings = []
 
+    for lmbda in lmbdas:
+        BS = Bootstrap(trainer, predictor, 200, method='Ridge', hyper_param=lmbda)
+        BS()
+        BS.bias_varianceDecomposition()
+        Bootstrappings.append(BS)
+    
+    PLOT.ptE_Hastie_Ridge(Bootstrappings, show=True)
 
 
+    Crossvalidations = []
 
-x, y, z = predictor.griddata()
-x, y, ztilde = predictor.gridmodel()
+    for lmbda in lmbdas:
+        CV = CrossValidation(trainer, predictor, 10, method='Ridge', hyper_param=lmbda)
+        CV()
+        Crossvalidations.append(CV)
 
-#surface_plot(ax2, x, y, ztilde)
-ax2.scatter(x, y, ztilde, color='r')
+    PLOT.ptE_CV_Ridge(Crossvalidations, show=True)
 
+    PLOT.ptE_tradeoff_Ridge(Bootstrappings, show=True)
 
-for ax in axes:
-    #ax.set_zlim(np.min(z), np.max(z))
-    ax.set_zlim(-0.05, 1.05)
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    ax.zaxis.set_major_locator(LinearLocator(5))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$y$")
-    ax.set_zlabel(r"$z$")
-plt.tight_layout()
-plt.show()
 
 
-sys.exit()
-trainer.computeModel()
-trainer.computeExpectationValues()
-print(trainer.MSE)
-print(beta)
-predictor.setOptimalbeta(beta)
-ztilde_pred = predictor.predict()
-predictor.computeExpectationValues()
-print(predictor.MSE)
+def Lasso_stuff():
 
+    current_polydeg = 8 # or 4, 5
+    lmbdas = np.logspace(-4,-1,10)
 
+    trainer = Training(*prepper.getTrain(current_polydeg))
+    predictor = Prediction(*prepper.getTest(current_polydeg))
 
-sys.exit()
+    Bootstrappings = []
 
-def datapointsTerrain(sx=10, sy=10, tag='2'):
-    from imageio.v2 import imread
-    terrain1 = imread(f"../data/SRTM_data_Norway_{tag}.tif")
-    z = terrain1[::sy, ::sx].astype('float64')
-    Ny, Nx = np.shape(z)
-    x = np.sort( np.random.rand(Nx))
-    y = np.sort( np.random.rand(Ny))
-    x, y = np.meshgrid(x, y)
-    return x, y, z
+    for lmbda in lmbdas:
+        BS = Bootstrap(trainer, predictor, 2, method='Lasso', mode='skl', hyper_param=lmbda)
+        BS()
+        BS.bias_varianceDecomposition()
+        Bootstrappings.append(BS)
+    
+    PLOT.ptE_Hastie_Ridge(Bootstrappings, show=True)
 
 
+    Crossvalidations = []
 
-x, y, z = datapointsTerrain('2')
+    for lmbda in lmbdas:
+        CV = CrossValidation(trainer, predictor, 5, method='Lasso', mode='skl', hyper_param=lmbda)
+        CV()
+        Crossvalidations.append(CV)
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from matplotlib import cm
+    PLOT.ptE_CV_Ridge(Crossvalidations, show=True)
 
-def surface_plot(ax, x, y, z):
-    surf =  ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(-0.05, 1.05)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    return ax, surf
-fig, axes = plt.subplots(ncols=2, subplot_kw={'projection':'3d'})
-ax1, ax2 = axes
-ax1, surf1 = surface_plot(ax1, x, y, z)
+    PLOT.ptE_tradeoff_Lasso(Bootstrappings, show=True)
 
 
 
-dM = DesignMatrix(5)
+#Lasso_stuff()
+Ridge_stuff()
 
-dM.createX(x, y)
 
-tV = TargetVector(z)
-reg = LinearRegression(tV, dM, mode='own')
-
-print('\n\n\n')
-trainer, predictor = reg.split(scale=False)
-
-beta = trainer.train()
-trainer.computeModel()
-trainer.computeExpectationValues()
-print(trainer.MSE)
-print(beta)
-bbeta = np.zeros(len(beta.beta)+1)
-bbeta[0] = np.mean(z)
-bbeta[1:] = beta.beta
-ztildee = reg.dM.X @ beta.beta
-ztilde = np.reshape(ztildee, np.shape(z))
-print('\n\n\n')
-
-predictor.setOptimalbeta(beta)
-ztilde_pred = predictor.predict()
-predictor.computeExpectationValues()
-print(predictor.MSE)
-
-
-ax2, surf2 = surface_plot(ax2, x, y, ztilde)
-
-for ax in axes:
-    ax.set_zlim(np.min(z), np.max(z))
-    ax.zaxis.set_major_locator(LinearLocator(5))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$y$")
-    ax.set_zlabel(r"$z$")
-plt.tight_layout()
-plt.show()
+#OLS_stuff()

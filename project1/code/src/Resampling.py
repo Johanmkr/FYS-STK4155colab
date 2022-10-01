@@ -1,74 +1,168 @@
 from src.utils import *
+from src.Regression import linearRegression, Training, Prediction
 
-from src.designMatrix import DesignMatrix
-from src.Regression import LinearRegression, Training, Prediction
-from src.parameterVector import betaCollection
 
-class Bootstrap1:
+
+class noneResampler:
 
     """
-    _summary_
-    """    
+    Motherclass for resampling methods. Has daughters
+        * Bootstrap
+        * CrossValidation
+    """
 
-    def __init__(self, method, dM, Beta):
-        self.dM = dM
-        self.method = method
-        self.Beta = Beta
+    def __init__(self, trainer, predictor, no_iterations, mode='manual', method='OLS', hyper_param=0) -> None:
+        """
+        Initiate resampling with data sets and model specs. 
 
-    def perform(self, data, no_bootstrap):
-        data = data.ravel()
-        newbeta = np.zeros((len(self.Beta.beta), no_bootstrap))
-        for i in range(no_bootstrap):
-            idx = np.random.randint(0,len(data), len(data))
-            newdata = data[idx]
-            LS = LinearRegression(newdata, self.dM, self.method)
-            newbeta = LS()
-            newbeta[:,i] = newbeta.getVector()
-        self.Beta.addColumns(newbeta)
-
-
-class Bootstrap:
-
-    def __init__(self, trainer, predictor, no_bootstraps=100):
+        Parameters
+        ----------
+        trainer : Training
+            the SCALED training set
+        predictor : Prediction
+            the SCALED prediction set
+        no_iterations : int
+            number of iterations in resampling algorithm
+        mode : str, optional
+            (see linearRegression) the mode setting in regression, by default 'manual'
+        method : str, optional
+            (see linearRegression) the method with which to perform regression, by default 'OLS'
+        hyper_param : int, optional
+            hyper parameter to tune, by default 0
+        """
         self.trainer = trainer
         self.predictor = predictor
         self.polydeg = self.trainer.polydeg
+        self.nfeatures = self.trainer.nfeatures
+        self.Niter = no_iterations
+        self.mode, self.method = mode, method
+        self.lmbda = hyper_param
+    
+    def advance(self, i):
+        raise NotImplementedError("Implement advance() in subclass.")
 
-        self.B = no_bootstraps
+    def __call__(self, no_iterations=None, hyper_param=None):
+        """
+        Perform the resampling algorithm.
+
+        Parameters
+        ----------
+        no_iterations : int, optional
+            number of iterations in resampling algorithm, by default self.Niter
+        hyper_param : _type_, optional
+            hyper parameter to tune, by default self.lmbda
+
+        Returns
+        -------
+        list(*Training), list(*Prediction)
+            list with trained objects, list with predicted objects
+        """
+        self.Niter = no_iterations or self.Niter
+        self.lmbda = hyper_param or self.lmbda
         
-    def __call__(self, no_bootstraps=None):
-        self.B = no_bootstraps or self.B
-        beta_list = []
-        
-        trainings = []
-        predictions = []
-        for i in range(self.B):
-            newtrainer = self.trainer.randomShuffle()
-            betastar = newtrainer.train()
-            beta_list.append(betastar)
+        self.trainings = []
+        self.predictions = []
 
-            tr = self.trainer.copy()
-            tr.setOptimalbeta(betastar)
-            tr.computeModel()
-            tr.computeExpectationValues()
-
-            pr = self.predictor.copy()
-            pr.setOptimalbeta(betastar)
-            pr.predict()
-            pr.computeExpectationValues()
-
-            trainings.append(tr)
-            predictions.append(pr)
-
-        self.betas = betaCollection(beta_list)
-
-        self.trainings = trainings
-        self.predictions = predictions
+        for i in range(self.Niter):
+            self.advance(i)
 
         return self.trainings, self.predictions
 
-    # dont touch this
+    def mean_squared_error(self):
+        """
+        Get MSEs for each iteration.
+
+        Returns
+        -------
+        ndarray
+            array with [train MSE, test MSE] for each iteration alone
+        """
+
+        MSEs = np.zeros((2, self.Niter)) # (train, test)
+        for i in range(self.Niter):
+            MSEs[0, i] = self.trainings[i].MSE
+            MSEs[1, i] = self.predictions[i].MSE
+  
+        return MSEs
+
+    def __len__(self):
+        return self.Niter
+
+    def getOptimalParameters(self):
+        """
+        Retrieve computed parameter vectors and the mean of their elements
+
+        Returns
+        -------
+        list(*parameterVector), ndarray
+            list of all parameter vectors, their corresponding mean element value
+        """
+        pVs = []
+        mu_beta = np.zeros(self.Niter)
+        for i in range(self.Niter):
+            pV = self.trainings[i].pV
+            pVs.append(pV)
+            mu_beta[i] = pV.mean()
+
+        return pVs, mu_beta
+
+
+
+class Bootstrap(noneResampler):
+
+    def __init__(self, trainer, predictor, no_bootstraps=100, mode='manual', method='OLS', hyper_param=0):
+        """
+        Initiate bootstrap with data sets and model specs. 
+
+        Parameters
+        ----------
+        trainer : Training
+            the SCALED training set
+        predictor : Prediction
+            the SCALED prediction set
+        no_bootstraps : int, optional
+            number of iterations in bootstrap, by default 100
+        mode : str, optional
+            (see linearRegression) the mode setting in regression, by default 'manual'
+        method : str, optional
+            (see linearRegression) the method with which to perform regression, by default 'OLS'
+        hyper_param : int, optional
+            hyper parameter to tune, by default 0
+        """
+        super().__init__(trainer, predictor, no_bootstraps, mode, method, hyper_param)
+        self.B = self.Niter
+
+    def advance(self, i):
+        """
+        Algorithm for bootstrap.
+
+        Parameters
+        ----------
+        i : int
+            iteration number
+        """
+        train = self.trainer.randomShuffle()
+        pred = deepcopy(self.predictor)
+        reg = linearRegression(train, pred, mode=self.mode, method=self.method)
+        reg.fit(self.lmbda)
+        train.computeModel()
+        pred.predict()
+
+        train.computeExpectationValues()
+        pred.computeExpectationValues()
+
+        self.trainings.append(train)
+        self.predictions.append(pred)
+
     def bias_varianceDecomposition(self):
+        """
+        Decompose bootstrap prediction error in bias^2 and variance.
+
+        Returns
+        -------
+        float, float, float
+            predicition error, bias^2, variance
+        """
         z_test = self.predictor.data.ravel()
         z_pred = np.empty((z_test.shape[0], self.B))
         diff = np.zeros_like(z_pred)
@@ -88,77 +182,68 @@ class Bootstrap:
         tol = 1e-8
         assert abs(self.bias2 + self.var - self.error) < tol
 
-    def mean_squared_error(self):
+        return self.error, self.bias2, self.var
 
-        MSEs = np.zeros((2, self.B)) # (train, test)
-        for i in range(self.B):
-            MSEs[0, i] = self.trainings[i].MSE
-            MSEs[1, i] = self.predictions[i].MSE
-  
-      
-        return MSEs
-
+    
    
+
+
+class CrossValidation(noneResampler):
+
+    def __init__(self, trainer, predictor, k_folds=5, mode='manual', method='OLS', hyper_param=0):
+        """
+        Initiate k-fold cross validation with data sets and model specs. 
+
+        Parameters
+        ----------
+        trainer : Training
+            the SCALED training set
+        predictor : Prediction
+            the SCALED prediction set
+        k_folds : int, optional
+            number of folds, by default 5
+        mode : str, optional
+            (see linearRegression) the mode setting in regression, by default 'manual'
+        method : str, optional
+            (see linearRegression) the method with which to perform regression, by default 'OLS'
+        hyper_param : int, optional
+            hyper parameter to tune, by default 0
+        """
+        super().__init__(trainer, predictor, k_folds, mode, method, hyper_param)
+        self.k = self.Niter
+
+    def advance(self, i):
+        """
+        Algorithm for k-fold cross validation.
+
+        Parameters
+        ----------
+        i : int
+            iteration number
+        """
+
+        tV = deepcopy(self.trainer.tV)
+        dM = deepcopy(self.trainer.dM)
+
+        all_idx = np.arange(0, len(tV), 1)
+        part_size = int(len(tV)/self.k)
+
+        test_idx = slice(i*part_size,(i+1)*part_size)
+        train_idx = np.delete(all_idx, test_idx)
+        test_idx = np.delete(all_idx, train_idx)
+
+        tog = Training(tV[train_idx], dM[train_idx])
+        quiz = Prediction(tV[test_idx], dM[test_idx])
+
+        reg = linearRegression(tog, quiz, mode=self.mode, method=self.method)
+        reg.fit(self.lmbda)
+
+        tog.computeModel()
+        tog.computeExpectationValues()
         
+        quiz.predict()
+        quiz.computeExpectationValues()
 
-
-
-class CrossValidation:
-
-    def __init__(self, regressor):
-        self.reg = regressor
-        self.data = regressor.data
-        self.dM = regressor.dM
-        self.trainings = []
-        self.predictions = []
-
-        # self.MSE_train = []
-        # self.MSE_cv = []
-        # self.R2_train = []
-        # self.R2_cv = []
-        # self.var_cv = []
-        # self.bias_cv = []
-
-    def __call__(self, k_folds=5):
-        beta_list = []
-        rav_data = self.data.ravel()
-        all_idx = np.arange(0, len(rav_data), 1)
-        k_size = int(rav_data.size / k_folds)
-        for i in range(k_folds): 
-            test_idx = slice(i*k_size,(i+1)*k_size)
-            train_idx = np.delete(all_idx, test_idx)
-
-            z_train = rav_data[train_idx]
-            z_test = rav_data[test_idx]
-            X_train = self.dM[train_idx,:]
-            X_test = self.dM[test_idx, :]
-
-            trainer = Training(self.reg, z_train, self.dM.newObject(X_train))
-            predictor = Prediction(self.reg, z_test, self.dM.newObject(X_test))
-
-            beta = trainer.train()
-            trainer.computeModel()
-            trainer.computeExpectationValues()
-            
-            predictor.setOptimalbeta(beta)
-            predictor.computeModel()
-            predictor.computeExpectationValues()
-
-            # self.MSE_train.append(trainer.MSE)
-            # self.MSE_cv.append(predictor.MSE)
-            # self.R2_train.append(trainer.R2)
-            # self.R2_cv.append(predictor.R2)
-            # self.var_cv.append(np.var(predictor.model.ravel()))
-            # self.bias_cv.append((predictor.data.ravel() - np.mean(predictor.model.ravel())**2))
-
-            z_test = self.predictor.data.ravel()
-
-
-            self.trainings.append(trainer)
-            self.predictions.append(predictor)
-            beta_list.append(beta)
-        self.betas = betaCollection(beta_list)
-        
-        return [np.mean(self.MSE_train), np.mean(self.MSE_cv), np.mean(self.R2_train), np.mean(self.R2_cv), np.mean(self.var_cv), np.mean(self.bias_cv)]
-        
+        self.trainings.append(tog)
+        self.predictions.append(quiz)
 
