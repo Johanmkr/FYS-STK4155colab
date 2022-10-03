@@ -8,7 +8,6 @@ from src.Resampling import Bootstrap, CrossValidation
 import plot as PLOT
 PLOT.init('off')
 
-
 PLOT.add_path('Franke')
 
 def datapointsFranke(eta=.01, N=20):
@@ -19,8 +18,9 @@ def datapointsFranke(eta=.01, N=20):
     z = FrankeFunction(x, y) + noise
     return x, y, z
 
-
-x, y, z = datapointsFranke(0.1)
+eta = 0.1
+NN = 20
+x, y, z = datapointsFranke(eta, NN)
 prepper = dataPrepper(x, y, z)
 prepper.prep()
 
@@ -172,3 +172,13 @@ if __name__ == '__main__':
 
 
 PLOT.update_info()
+
+with open('README.md', "a") as file:
+    file.write('\n')
+    file.write('## Additional information:\n\n')
+    file.write(f'xy-grid: N x N = {NN} x {NN} \n')
+    file.write(f'noise level: η = {eta}\n\n')
+    file.write(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).\n')
+    file.write(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]} and λ = {HYPERPARAMS[-1]} (logarithmically spaced).\n')
+
+
