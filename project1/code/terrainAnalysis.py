@@ -10,7 +10,7 @@ PLOT.init('off')
 PLOT.add_path('terrain')
 
 
-def datapointsTerrain(sx=40, sy=40, tag='2'):
+def datapointsTerrain(sx=40, sy=80, tag='2'):
     from imageio.v2 import imread
     terrain1 = imread(f"../data/SRTM_data_Norway_{tag}.tif")
     z = terrain1[::sy, ::sx].astype('float64')
@@ -22,6 +22,7 @@ def datapointsTerrain(sx=40, sy=40, tag='2'):
 
 
 x, y, z = datapointsTerrain()
+Ny, Nx = np.shape(x)
 prepper = dataPrepper(x, y, z)
 prepper.prep()
 
@@ -40,8 +41,15 @@ for d in POLYDEGS:
     TRAININGS[d] = Training(*prepper.getTrain(d))
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
+print(TRAININGS[15].dM)
+
 HYPERPARAMS = np.logspace(-6, -1, 10)
 
+goto_polydeg = 8
+goto_B = 100
+goto_k = 5
+
+show = False
 
 def assessModelComplexityBS(B, method, mode):
     Bootstrappings = []
@@ -81,38 +89,39 @@ def assessHyperParamCV(polydeg, k, method, mode):
 
 def ptG():
 
+
     # c)
-    Bootstrappings = assessModelComplexityBS(100, 'OLS', 'own')
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+    Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
+    PLOT.train_test_MSE(Bootstrappings, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
     d = 8
     idx = 8-1
-    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=True)
-    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=True)
+    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
+    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
 
 
     # d)
-    Crossvalidations = assessModelComplexityCV(8, 'OLS', 'own')
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+    Crossvalidations = assessModelComplexityCV(goto_k, 'OLS', 'own')
+    PLOT.train_test_MSE(Crossvalidations, show=show)
 
     # e)
     polydeg = 8
-    Bootstrappings = assessHyperParamBS(polydeg, 100, 'Ridge', 'own')
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+    Bootstrappings = assessHyperParamBS(polydeg, goto_B, 'Ridge', 'own')
+    PLOT.train_test_MSE(Bootstrappings, show=show)
 
-    Crossvalidations = assessHyperParamCV(polydeg, 8, 'Ridge', 'own')
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+    Crossvalidations = assessHyperParamCV(polydeg, goto_k, 'Ridge', 'own')
+    PLOT.train_test_MSE(Crossvalidations, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
     
     # f)
     '''polydeg = 8
     Bootstrappings = assessHyperParamBS(polydeg, 50, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+    PLOT.train_test_MSE(Bootstrappings, show=True)
 
     Crossvalidations = assessHyperParamCV(polydeg, 8, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+    PLOT.train_test_MSE(Crossvalidations, show=True)
     PLOT.BV_Tradeoff(Bootstrappings, show=True)'''
 
    
@@ -122,4 +131,9 @@ def ptG():
 if __name__ == '__main__':
     ptG()
 
-    PLOT.update_info()
+    additionalInfo = []
+    additionalInfo.append(f'xy-grid: (Nx) x (Ny) = {Nx} x {Ny}')
+    additionalInfo.append(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).')
+    additionalInfo.append(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]:.1e} and λ = {HYPERPARAMS[-1]:.1e} (logarithmically spaced).')
+
+    PLOT.update_info(additionalInfo)

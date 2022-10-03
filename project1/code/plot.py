@@ -1,5 +1,4 @@
-from distutils.log import info
-from ensurepip import bootstrap
+
 import numpy as np
 import seaborn as sns
 import os
@@ -9,24 +8,24 @@ from scipy.stats import norm
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import pandas as pd
-
+from collections import OrderedDict
 
 # The style we want
 plt.style.use('seaborn')
-#plt.rc('text', usetex=True)
+plt.rc('text', usetex=True)
 plt.rc('font', family='DejaVu Sans')
 
 # other rc parameters
 plt.rc('figure', figsize=(12,7))
-SMALL_SIZE = 24
+SMALL_SIZE = 22
 MEDIUM_SIZE = 26
 BIGGER_SIZE = 30
-plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
 plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # folder paths
@@ -47,6 +46,7 @@ def init(test_mode='off'):
 def read_info():
     global INFO
     infopd = pd.read_pickle(plot_path + 'info.pkl')
+  
     INFO = infopd.transpose().to_dict()
 
 def add_path(folder, read=True):
@@ -65,9 +65,8 @@ def add_path(folder, read=True):
     if read:
         read_info()
 
-'''b = pd.DataFrame({'method':'ols', 'mode':'own', 'tull':0}, ['dummy'])
-b.to_pickle('info.pkl')
-'''
+
+
 def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
     """
     This function handles wether you want to show, save and/or push the file to git.
@@ -142,7 +141,7 @@ def tune_hyper_parameter(resamplings):
     return tuning
     
 def complexity_measure(resamplings):
-    return not tune_hyper_parameter()
+    return not tune_hyper_parameter(resamplings)
 
 def complexity_or_tuning(complexity, hyper_parameter):
 
@@ -178,22 +177,29 @@ def MSE_train_test(ax, resamplings, errorbar=False):
         trainMSE[i], testMSE[i] = rs.mean_squared_error()
 
     variable, xlabel, xscale = complexity_or_tuning(complexity, hyper_parameter)
-
-    ax.plot(variable, trainMSE, lw=0.3, c=dTRAIN['c'], alpha=0.2)
-    ax.plot(variable, testMSE,  lw=0.3, c=dTEST['c'],  alpha=0.2)
-
-    if errorbar:
-        errTrain, errTest = np.std(trainMSE, axis=1), np.std(testMSE, axis=1)
+    if Niter < 20:
+        alpha = 0.4
+        lw = 0.6
     else:
-        errTrain, errTest = None, None
+        alpha = 1/Niter**(1/3)
+        lw = 0.2
+
+    ax.plot(variable, trainMSE, lw=lw, c='dodgerblue', alpha=alpha) 
+    ax.plot(variable, testMSE,  lw=lw, c='salmon',     alpha=alpha)
 
     muTrain, muTest = np.mean(trainMSE, axis=1), np.mean(testMSE, axis=1)
+    if errorbar:
+        errTrain, errTest = np.std(trainMSE, axis=1), np.std(testMSE, axis=1)
+        markers, caps, bars = ax.errorbar(variable, muTrain, errTrain, c='royalblue', lw=1.8, label='train MSE')
+        markers, caps, bars = ax.errorbar(variable, muTest,  errTest,  c='orangered', lw=1.8, label='test MSE')  
+    else:
+        ax.plot(variable, muTrain, 'o-', c='royalblue', lw=1.8, label='train MSE')
+        ax.plot(variable, muTest,  'o-', c='orangered', lw=1.8, label='test MSE') 
 
-    markers, caps, bars = ax.errorbar(variable, muTrain, errTrain, c=dTRAIN['c'], lw=1.1, alpha=0.9, label='train MSE')
-    markers, caps, bars = ax.errorbar(variable, muTest,  errTest,  c=dTEST['c'],  lw=1.1, alpha=0.9, label='test MSE')   
-   
+    ref = [muTrain[0], muTest[0]]
     ymax = np.max([muTrain[0], muTest[0]])*1.25
-    set_axes_2d(ax, xlabel=xlabel, ylabel='score',  ylim=(0,ymax))
+    ymin = np.max([0, np.min([muTrain, muTest])*0.90])
+    set_axes_2d(ax, xlabel=xlabel, ylabel='score', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
     ax.set_xscale(xscale)
 
 
@@ -215,9 +221,9 @@ def bias_variance_tradeoff(ax, bootstrappings):
 
     variable, xlabel, xscale = complexity_or_tuning(complexity, hyper_parameter)
     
-    ax.plot(variable, error, ls=dTEST['ls'], c=dMSE['c'],  label='error')
-    ax.plot(variable, bias2, ls=dTEST['ls'], c=dBIAS['c'], label='bias$^2$')
-    ax.plot(variable, var,   ls=dTEST['ls'], c=dVAR['c'],  label='variance')
+    ax.plot(variable, error, ls='-', lw=2.5, c='r', label='error')
+    ax.plot(variable, bias2, ls='-', lw=2.5, c='b', label='bias$^2$')
+    ax.plot(variable, var,   ls='-', lw=2.5, c='g', label='variance')
 
     ymax = np.max([error[0], bias2[0], var[0]])*1.1
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', ylim=(0,ymax))
@@ -228,36 +234,23 @@ def bias_variance_tradeoff(ax, bootstrappings):
 
 def make_histogram(ax, bootstrap, mse=True):
 
-    polydeg = bootstrap.polydeg
     B = bootstrap.B
-    bins = int(B/4)
+    bins = int(B/3)
     if mse:
         MSEs = bootstrap.mean_squared_error()
         ax.hist(MSEs[0], bins, alpha=.7, label='train')
         ax.hist(MSEs[1], bins, alpha=.7, label='test')
-        legend = True
         xlabel = 'MSE'
     else:
         _, beta = bootstrap.getOptimalParameters()
         ax.hist(beta, bins, alpha=.7)
-        legend = False
         xlabel = r'$\bar{\beta}$'
-
-    set_axes_2d(ax, xlabel=xlabel, ylabel='frequency', title=r'polynomial degree %i (%i bootstraps)'%(polydeg, B), legend=legend)
+    
+    ax.text(0.9,0.9, str(bootstrap), transform=ax.transAxes, va='top', bbox={'facecolor':'wheat', 'alpha':0.5, 'boxstyle':'round'})
+    set_axes_2d(ax, xlabel=xlabel, ylabel='frequency')
+    if mse:
+        ax.legend(loc='center right')
    
-
-
-### define styles:
-## believe I will change this...
-
-dTRAIN = {'ls':'--', 'c':'b'}
-dTEST = {'ls':'-',  'c':'r'}
-
-dMSE = {'c':'firebrick'}
-dR2 = {'c':'olive'}
-dBIAS = {'c':'dodgerblue'}
-dVAR = {'c':'orange'}
-
 
 
 
@@ -278,11 +271,11 @@ def visualise_data(x, y, z):
 
 
 
-def set_info(pdfname, method=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
+def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
     if pdfname in INFO.keys():
         pass
 
-    INFO[pdfname] = {'method':method, 'mode':mode, 'polynomial degree':polydeg, 'lambda':lmbda}
+    INFO[pdfname] = {'scheme':scheme, 'mode':mode, '$d$':polydeg, '$\lambda$':lmbda}
     if resampling_type == None:
         INFO[pdfname]['resampling (iter)'] = None
     else:
@@ -301,33 +294,28 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
     MSE_train_test(ax, resamplings)
     res = resamplings[0]
-    method = res.method
-    pdfname = f'MSE_{method}{tag}.pdf'
-    save_push(fig, pdfname, show=show)
-    try:
-        Niter = res.B
-        type = 'BS'
-    except AttributeError:
-        Niter = res.k
-        type = 'CV'
+    scheme = res.method
+    type = res.ID()
+    Niter = len(res)
     if tune_hyper_parameter(resamplings):
         polydeg = res.polydeg
         lmbda = '...'
     else:
         polydeg = '...'
         lmbda = res.lmbda
-
-    set_info(pdfname, method, resamplings[0].mode, polydeg=polydeg, lmbda=lmbda, resampling_type=type, resampling_iter=Niter, mark=mark)
+    pdfname = f'MSE_{scheme}_{type}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    set_info(pdfname, scheme, resamplings[0].mode, polydeg=polydeg, lmbda=lmbda, resampling_type=type, resampling_iter=Niter, mark=mark)
 
 
 def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
 
     bias_variance_tradeoff(ax, bootstrappings)
-    method = bootstrappings[0].method
-    pdfname = f'tradeoff_{method}{tag}.pdf'
+    scheme = bootstrappings[0].method
+    pdfname = f'tradeoff_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
-    set_info(pdfname, method, bootstrappings[0].mode, resampling_type='BS', resampling_iter=bootstrappings[0].B, mark=mark)
+    set_info(pdfname, scheme, bootstrappings[0].mode, resampling_type='BS', resampling_iter=bootstrappings[0].B, mark=mark)
 
 
 
@@ -343,7 +331,7 @@ def beta_params(trainings, tag='', show=False, mark=None):
     t = trainings[max(trainings.keys())]
     b = t.pV
     Bmax = b.nfeatures
-    ax.set_xticks(range(1,Bmax+1))
+    ax.set_xticks(range(Bmax))
     ax.set_xticklabels(b.idx_tex)
    
     padx = 1/3; pady = np.max(np.abs(b[:]))*0.1
@@ -385,39 +373,75 @@ def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
         R2[:,i] = train.R2, test.R2
         i+=1
     
-    ax1.plot(polydegs, MSE[0], lw=2, ls=dTRAIN['ls'],c=dMSE['c'], label='train MSE')
-    ax1.plot(polydegs, MSE[1], lw=2, ls=dTEST['ls'], c=dMSE['c'], label='test MSE')
-    ax2.plot(polydegs, R2[0],  lw=2, ls=dTRAIN['ls'],c=dR2['c'],  label='train $R^2$')
-    ax2.plot(polydegs, R2[1],  lw=2, ls=dTEST['ls'], c=dR2['c'],  label='test $R^2$')
+    ax1.plot(polydegs, MSE[0], lw=2.5, ls='--', label='train MSE')
+    ax1.plot(polydegs, MSE[1], lw=2.5, ls='-',  label='test MSE')
+    ax2.plot(polydegs, R2[0],  lw=2.5, ls='--', label='train $R^2$')
+    ax2.plot(polydegs, R2[1],  lw=2.5, ls='-',  label='test $R^2$')
 
     ax2.set_xticks(list(polydegs))
     ax2.set_xticklabels([f'{d:.0f}' for d in polydegs])
 
     set_axes_2d(ax1, ylabel='score')
-    pad = 1/4
+    pad = 1/5
     set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
-    method = trainings[d].method
-    pdfname = f'MSE_R2_scores_{method}{tag}.pdf'
+    scheme = trainings[d].method
+    pdfname = f'MSE_R2_scores_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
 
-    set_info(pdfname, method, trainings[d].mode, lmbda=trainings[d].lmbda, mark=mark)
+    set_info(pdfname, scheme, trainings[d].mode, lmbda=trainings[d].lmbda, mark=mark)
+
+
+def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=None):
+    fig, ax = plt.subplots()
+
+    M = len(eta_vals)
+    N = len(trainings)
+    polydegs = np.zeros(N)
+    trainMSE = np.zeros((N,M))
+    testMSE = np.zeros((N,M))
+
+
+    
+    i = 0
+    for d in trainings.keys():
+        polydegs[i] = d
+        for j in range(M):
+            train, test = trainings[d][j], predictions[d][j]
+            trainMSE[i, j] = train.MSE
+            testMSE[i, j] = test.MSE
+        i+=1
+    
+    for j in range(M):
+        ax.plot(polydegs, trainMSE[:,j], 'o--', lw=2)
+        ax.plot(polydegs, testMSE[:,j],  'o-',  lw=2, c=plt.gca().lines[-1].get_color(), label=r'$\eta=%6.4f$'%eta_vals[j])
+
+    ax.plot(-2,0, 'o--', lw=1.5, c='k', alpha=0.5, label='train MSE')
+    ax.plot(-2,0, 'o-',  lw=1.5, c='k', alpha=0.5, label='test MSE')
+
+    ax.set_xticks(list(polydegs))
+    ax.set_xticklabels([f'{d:.0f}' for d in polydegs])
+
+    pad = 1/4
+    ax.set_yscale('log')
+    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
+    scheme = trainings[d][0].method
+    pdfname = f'error_vs_noise_{scheme}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+
+    set_info(pdfname, scheme, trainings[d][0].mode, lmbda=trainings[d][0].lmbda, mark=mark)
 
 
 
 
 
 
-
-
-def update_info():
+def update_info(additional_information='none'):
     if testMode:
         pass
     else:
-
-        infopd = pd.DataFrame.from_dict(INFO, orient='index')
-        # sort ?
-        
-        
+        INFOd = OrderedDict(sorted(INFO.items(), key=lambda i:i[0].lower()))
+        infopd = pd.DataFrame.from_dict(INFOd, orient='index')
+ 
         infopd.to_pickle(plot_path + 'info.pkl')
         infopd.to_markdown(plot_path + 'README.md')
 
@@ -425,3 +449,10 @@ def update_info():
             file.write('\n\n\n')
             file.write(f'# Information about plots in `{show_path}`')
             file.write('\n\n')
+
+            if additional_information != 'none':
+                file.write('\n## Additional information:\n\n')
+                for line in additional_information:
+                    file.write(f'* {line}\n')
+
+        print(f'\nSuccessfully written information to \n    {show_path}README.md.\n')

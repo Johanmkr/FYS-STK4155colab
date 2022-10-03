@@ -27,7 +27,7 @@ prepper.prep()
 
 TRAININGS = {}
 PREDICTIONS = {}
-
+maxPolydeg = 12
 POLYDEGS = range(1, maxPolydeg+1)
 
 
@@ -36,8 +36,49 @@ for d in POLYDEGS:
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
 
-HYPERPARAMS = np.logspace(-4, -1, 10)
+HYPERPARAMS = np.logspace(-6, -2, 20)  # for Ridge at least (polydeg 5)
 
+show = False
+
+goto_polydeg = 5
+goto_B = 400 # no bootraps
+goto_k = 8  # k folds
+
+def ptEXTRA():
+    etas = np.logspace(-4, 0, 5)
+    polydegs = range(1, 5+1)
+
+    mark = "η = "
+    trainings = {}
+    predictions = {}
+    for d in polydegs:
+        trainings[d] = []
+        predictions[d] = []
+        
+    for i, etai in enumerate(etas):
+        x, y, z = datapointsFranke(etai, NN)
+        prepper = dataPrepper(x, y, z)
+        prepper.prep()
+    
+        for d in polydegs:
+
+            T = Training(*prepper.getTrain(d))
+            P = Prediction(*prepper.getTest(d))
+            reg = linearRegression(T, P, mode='own', method='ols')
+            reg.fit()
+            T.computeModel()
+            P.predict()
+            T.computeExpectationValues()
+            P.computeExpectationValues()
+
+            trainings[d].append(T)
+            predictions[d].append(P)
+    
+        mark += f"{etai:.1e}, "
+
+    mark.strip().strip(',')
+    PLOT.error_vs_noise(trainings, predictions, etas, show=show, mark=mark)
+    
 
 def ptB():
 
@@ -55,96 +96,104 @@ def ptB():
         T.computeExpectationValues()
         P.computeExpectationValues()
 
-    PLOT.train_test_MSE_R2(workouts, forecasts, show=True)
+    PLOT.train_test_MSE_R2(workouts, forecasts, show=show)
 
-    PLOT.beta_params(workouts, show=True) 
+    PLOT.beta_params(workouts, show=show) 
+
+
+    
+
 
 def ptC():
     Bootstrappings = []
     for d in POLYDEGS:
-        BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], 200)
+        BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], goto_B)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
 
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+    PLOT.train_test_MSE(Bootstrappings, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
-    d = 8
-    idx = d-1
-    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=True)
-    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=True)
+
+    idx = goto_polydeg-1
+    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
+    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
 
 
 def ptD():
     Crossvalidations = []
     for d in POLYDEGS:
-        CV = CrossValidation(TRAININGS[d], PREDICTIONS[d], 8)
+        CV = CrossValidation(TRAININGS[d], PREDICTIONS[d], goto_k)
         CV()
         Crossvalidations.append(CV)
 
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
+    PLOT.train_test_MSE(Crossvalidations,  show=show)
 
 def ptE():
-    d = 8 # or 4, 5
 
-    trainer = TRAININGS[d]
-    predictor= PREDICTIONS[d]
+    trainer = TRAININGS[goto_polydeg]
+    predictor= PREDICTIONS[goto_polydeg]
 
     Bootstrappings = []
 
     for lmbda in HYPERPARAMS:
-        BS = Bootstrap(trainer, predictor, 200, method='Ridge', hyper_param=lmbda)
+        BS = Bootstrap(trainer, predictor, goto_B, method='Ridge', hyper_param=lmbda)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
     
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+
+    
+    PLOT.train_test_MSE(Bootstrappings, show=show)
+    idx = goto_polydeg-1
+    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
+    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
+    
 
 
     Crossvalidations = []
 
     for lmbda in HYPERPARAMS:
-        CV = CrossValidation(trainer, predictor, 10, method='Ridge', hyper_param=lmbda)
+        CV = CrossValidation(trainer, predictor, goto_k, method='Ridge', hyper_param=lmbda)
         CV()
         Crossvalidations.append(CV)
 
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+    PLOT.train_test_MSE(Crossvalidations, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
 def ptF():
-    d = 8 # or 4, 5
-    trainer = TRAININGS[d]
-    predictor= PREDICTIONS[d]
+
+    trainer = TRAININGS[goto_polydeg]
+    predictor= PREDICTIONS[goto_polydeg]
 
     Bootstrappings = []
 
-    for lmbda in HYPERPARAMS:
-        BS = Bootstrap(trainer, predictor, 2, method='Lasso', mode='skl', hyper_param=lmbda)
+    for lmbda in HYPERPARAMS[10:]:
+        print('----')
+        BS = Bootstrap(trainer, predictor, 10, method='Lasso', mode='skl', hyper_param=lmbda)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
     
-    PLOT.train_test_MSE(Bootstrappings, '_BS', show=True)
+    PLOT.train_test_MSE(Bootstrappings, show=show)
 
     Crossvalidations = []
 
-    for lmbda in HYPERPARAMS:
-        CV = CrossValidation(trainer, predictor, 5, method='Lasso', mode='skl', hyper_param=lmbda)
+    for lmbda in HYPERPARAMS[10:]:
+        CV = CrossValidation(trainer, predictor, goto_k, method='Lasso', mode='skl', hyper_param=lmbda)
         CV()
         Crossvalidations.append(CV)
 
-    PLOT.train_test_MSE(Crossvalidations, '_CV', show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)
-
-
+    PLOT.train_test_MSE(Crossvalidations, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
 
 
 
 if __name__ == '__main__':
 
-    Franke_pts = ['B', 'C', 'D', 'E', 'F']
+    Franke_pts = ['B', 'C', 'D', 'E', 'F', 'EXTRA']
 
     def runparts(parts, all_pts=Franke_pts):
         pts = []
@@ -171,14 +220,13 @@ if __name__ == '__main__':
 
 
 
-PLOT.update_info()
+additionalInfo = [f'xy-grid: N x N = {NN} x {NN}']
+additionalInfo.append(f'noise level: η = {eta}')
+additionalInfo.append(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).')
+additionalInfo.append(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]:.1e} and λ = {HYPERPARAMS[-1]:.1e} (logarithmically spaced).')
 
-with open('README.md', "a") as file:
-    file.write('\n')
-    file.write('## Additional information:\n\n')
-    file.write(f'xy-grid: N x N = {NN} x {NN} \n')
-    file.write(f'noise level: η = {eta}\n\n')
-    file.write(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).\n')
-    file.write(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]} and λ = {HYPERPARAMS[-1]} (logarithmically spaced).\n')
 
+
+
+PLOT.update_info(additionalInfo)
 
