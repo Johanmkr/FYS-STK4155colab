@@ -21,7 +21,7 @@ where the mean of the observed values $\vec{y}$ is given by:
 Before we delve into the various methods, lets have a look at some mathematical concepts that will be of great use in the further discussion. 
 
 \subsection{Singular value decomposition}\label{sec:SVD}
-    The singular value decomposition is a result from linear algebra that states that an arbitrary matrix $A$ of rank $r$ and size $n\cross p$ can be decomposed into the following\cite{svd}:
+    The singular value decomposition is a result from linear algebra that states that an arbitrary matrix $A$ of rank $r$ and size $n\cross p$ can be decomposed into the following\cite{svdecomp}:
     \begin{align}\label{eq:svd}
         A = U\Sigma V\TT,
     \end{align}
@@ -40,9 +40,6 @@ Before we delve into the various methods, lets have a look at some mathematical 
         \end{bmatrix}
     \end{align*}
     where $D$ is a diagonal matrix of size $r\cross r$ and $r\leq \text{min}(n,p)$. Further is $U$ a $n\cross n$ matrix whose first $r$ columns is an orthornormal basis of $\text{Col}A$. The remaining columns span $\text{Nul}A\TT$. Alltogether, $U$ forms an orthonormal basis set spanning $\RR[n]$. Likwise, $V$ is a $p\cross p$ square matrix whose columns are an orthonormal basis spanning $\RR[p]$. The first $r$ columns of $V$ form an orthonormal basis of $\text{Row} A$. The ramaining columns span $\text{Nul}A$. As a result of the orthogonality of $U$ and $V$ we have that $U\TT U$ = $VV\TT = \II$
-
-\subsection{Principal component analysis}\label{sec:principal_comp}
-DO THIS LINALG P445.  Pehaps not here
 
 \subsection{Linear regression}\label{sec:regression}
 We will attempt to create a model $\tilde{\vec{y}}$ by the means of linear regression. 
@@ -99,8 +96,7 @@ The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, 
     \label{eq:general_LS}
 \end{align}
 
-
-
+\subsubsection{Bias-variance tradeoff}\label{sec:bias_variance_tradeoff}
 
 \subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
 
@@ -109,7 +105,7 @@ The ordinary least squares (OLS) method assumes the cost function
 \begin{align*}
     C^\text{OLS}(\svec{\beta}) = \sum_{i=0}^{n-1}(y_i - \tilde{y}_i)^2 =  \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
 \end{align*}
-where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
+where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter.
 \footnotetext{Euclidian norm (\lnorm{2}) is defined as $\norm{\vec{a}}_2 = \sqrt{\sum_ia_i^2}$}
 
 \begin{align}\label{eq:optimal_beta_ols}
@@ -127,7 +123,7 @@ Letting $\optbeta = \optbeta^\text{OLS}$ we get the expected value
 
 The variance is then 
 
-\begin{align}\label{eq:variance_of_optimal_beta_ols}\nonumber 
+\begin{align}\label{eq:variance_of_optimal_beta_ols}
     \variance{\optbeta} &= \EE{\optbeta \optbeta\TT} -\EE{\optbeta} \EE{\optbeta\TT} \nonumber \\
     &= \EE{\invhessian X\TT  \vec{y} \vec{y}\TT X (\invhessian)\TT} - \svec{\beta} \svec{\beta}\TT \nonumber \\
     &= \invhessian X\TT \EE{ \vec{y} \vec{y}\TT } X \invhessian - \svec{\beta} \svec{\beta}\TT \nonumber \\
@@ -143,7 +139,7 @@ If we perform the singular value decomposition from \Sec{SVD}, and rewrite $X$ u
     &= U\S\VT(V\S^2\VT)^{-1}V\ST\UT\vec{y}\nonumber \\
     &= U\S\VT V(\S^2)^{-1}\VT V\ST\UT\vec{y}\nonumber \\
     &= U\S^2(\S^2)^{-1}\VT V \VT V\UT\vec{y} \nonumber\\
-    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2}\right)\UT\vec{y} = U\UT\vec{y},
+    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2}\right)\UT\vec{y} = U\UT\vec{y} = \sum_{i=1}^p\vec{u}_i\vec{u}\TT_i\vec{y},
 \end{align}
 where we have used that $\UT U = V\VT = \II$ and $(\VT V)^{-1} = \VT V \implies \VT V \VT V = \II$. 
 
@@ -171,13 +167,18 @@ We use the singular value decomposition to obtain a similar result as for OLS. W
     &= \big(V\left[\S^2+\lambda\II\right]\VT)^{-1}
 \end{align*}
 We follow the same argument as with \Eq{ols_svd} and obtain:
-\begin{align*}
-    \tilde{\vec{y}}^{\text{Ridge}} &=X\optbeta^{\text{Ridge}} \\
-    &= U\S\VT \big(V\left[\S^2+\lambda\II\right]\VT)^{-1} V\ST\UT\vec{y} \\
-    &= U\S^2\left[\S^2+\lambda\II\right]^{-1} \VT V\VT V\UT\vec{y} \\
-    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2+\lambda}\right)\UT\vec{y}
-\end{align*}
 
+\begin{align}\label{eq:ridge_svd}
+    \tilde{\vec{y}}^{\text{Ridge}} &=X\optbeta^{\text{Ridge}} \nonumber \\
+    &= U\S\VT \big(V\left[\S^2+\lambda\II\right]\VT)^{-1} V\ST\UT\vec{y}\nonumber  \\
+    &= U\S^2\left[\S^2+\lambda\II\right]^{-1} \VT V\VT V\UT\vec{y}\nonumber  \\
+    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2+\lambda}\right)\UT\vec{y} \nonumber \\
+    &= \sum_{i=1}^p\vec{u}_i\frac{\sigma_i^2}{\sigma_i^2+\lambda}\vec{u}\TT_i\vec{y}.
+\end{align}
+
+If we now compare \Eq{ols_svd} to \Eq{ridge_svd} we see that they are fairly similar but the prediction $\tilde{\vec{y}}^{\text{ridge}}$ contains a factor $\sigma_i^2/(\sigma_i^2 + \lambda)$ where $\sigma_i$ are the singular values of the design matrix $X$ (follows from the singular value decomposition, section \Sec{SVD}), and $\lambda$ is the penalty term which effectively shrinks the predicted values. The shrinkage is large when $\sigma_i^2$ is small, and thus adding this penalty term means that we are emphasizing the parts of $X$ (and thereby the prediction), whose corresponding singular values are the largest. This is called \textit{principal component analysis}.
+
+CAN ADD MORE HERE IF WE WANT
 
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
@@ -191,9 +192,7 @@ If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm
     &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_{1}
 \end{align*}
 
-\begin{align*}
-    \optbeta^\text{Lasso} = \dots
-\end{align*}
+The analytical expression for $\optbeta^{\text{Lasso}}$ is not trivial to derive, and when performing the analysis we will use the \texttt{scikit-learn} package in python. Hence, we do not derive this analytical expression. 
 
 \subsection{Resampling}\label{sec:resampling}
 Having obtained some optimal parameters $\optbeta$ from either OLS, Ridge regression or Lasso regression it is of interest to determine how good of a prediction $\optbeta$ yields. Data is often limited and thus we resample the data in clever ways in order to test it for larger samples. We will consider two ways of resampling data, the Bootstrap and Cross Validation. 

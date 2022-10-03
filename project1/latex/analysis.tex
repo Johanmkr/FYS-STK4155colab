@@ -14,9 +14,9 @@
             &= f(\vec{x}) + \epsilon
         \end{align}
         where $\vec{x} = (x,y)$. 
-        NECESSARY?From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
+        From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
 
-        We visualise the data both with and without noise. Figure \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=40$. Figure \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
+        We visualise the data both with and without noise. Figure \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=20$. We could use more data points, but for the sake computational efficiency we use a $20\cross20$ grid throughout this analysis.  Figure \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{franke.pdf}
@@ -33,8 +33,11 @@
     \subsection{Data splitting}\label{sec:splitting}
         In order to test our estimate of $\hat{\svec{\beta}}$ we reserve some of the data for testing. We thus divide our data set into a part for testing a part for training. We select 80 \% of the data for training and the remaining 20 \% for testing the data. The data is split at random. 
 
+
+
+
     \subsection{Model and design matrix}\label{sec:model}
-        The design matrix $X$ has dimensionality ($n\cross p$) where $n$ represents the data points and $p$ the features of the model. We have already split the data set into training and testing, and must therefore create two design matrices: $X_{\text{train}}$ and $X_{\text{test}}$. 
+        The design matrix $X$ has dimensionality ($n\cross p$) where $n$ represents the data points and $p$ the features of the model. We have already split the data set into training and testing, and must therefore create two design matrices: $X^{\text{train}}$ and $X^{\text{test}}$. 
         \\
         We want our model to be a two-dimensional polynomial of order $d$:
         \begin{align*}
@@ -45,22 +48,31 @@
             X_{ij} = \sum_{l=1}^d\sum_{k=0}^{l} x^{l-k}y^k
         \end{align}
         The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
+
+
+
+
+
+    
     \subsection{Scaling}\label{sec:scaling}
         We want to scale both our data and the design matrices because the data obtained from either the Franke function, or from some other source often vary a great deal in magnitude. Since the design matrices are set up in order to fit data to a polynomial of degree $d$ in two dimensions, we want to be sure that no term is given more emphasis than the others. In addition, when working with multi-dimensional data and design matrices we want to standardize the features as much as possible to ensure equal (relative) emphasize and treatment of the dimensions. We use the scaling technique \textit{standardization} or \textit{Z-score normalization} which makes the mean of each feature equal to zero, and the their variances to be of unit length. For our observed data $\vec{y}$ this mean:
         \begin{align*}
             \vec{y}' = \frac{\vec{y}-\bar{\vec{y}}}{\sigma_{\vec{y}}}
         \end{align*}
-        where $\vec{y}'$ is now our scaled data. For the design matrices, this must be done for each feature, i.e. for each column.  Mathematically, if $X_j$ is column $j$ of the original design matrix $X$, $j\in[0,p]$:
+        where $\vec{y}'$ is now our scaled data. For the design matrices, this must be done for each feature, i.e. for each column.  Mathematically, if $X_j$ is column $j$ of the original design matrix $X$, $j\in[1,p]$:
         \begin{align*}
             X_j' = \frac{X_j-\bar{X_j}}{\sigma_{X_j}}.
         \end{align*}
-        We do this for all the columns and end up with the scaled design matrix $X'$. Since $\optbeta$ is a function of the design matrix $X$ and the data $\vec{y}$,
-        
-        MORE ON WHY EVERYTHING NEED TO BE SCALED WRT TRAIN Data
+        We do this for all the columns and end up with the scaled design matrix $X'$. Since $\optbeta$ is a function of the design matrix of the training data: $X^{\text{train}}$ and the data $\vec{y}$, we need to scale both the training and test data with respect to the mean and standard deviation of each column of the train data:
+        \begin{align*}
+            X_j'^{\text{ train}} &= \frac{X_j^{\text{train}}-\bar{X_j}^{\text{train}}}{\sigma_{X_j^{\text{train}}}} \\
+            X_j'^{\text{ test}} &= \frac{X_j^{\text{test}}-\bar{X_j}^{\text{train}}}{\sigma_{X_j^{\text{train}}}}
+        \end{align*}
+        This scaling will ensure that we treat the data in the same way, no matter the actual numerical value of the data. 
 
-    \begin{align*}
-        \optbeta' = \optbeta\frac{\sigma_X}{\sigma_{\vec{y}}} \implies \optbeta = \optbeta'\frac{\sigma_{\vec{y}}}{\sigma_X}
-    \end{align*}
+    % \begin{align*}
+    %     \optbeta' = \optbeta\frac{\sigma_X}{\sigma_{\vec{y}}} \implies \optbeta = \optbeta'\frac{\sigma_{\vec{y}}}{\sigma_X}
+    % \end{align*}
 
 
     \subsection{Regression analysis}\label{sec:reganalysis}
@@ -68,7 +80,7 @@
         \subsubsection{OLS}\label{sec:olsanalysis}
             We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
 
-            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. 
+            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. We further see that the coefficients of the same features more or less have the same sign for the different polynomial degrees. This is a sign of a stable model, as we do not want these coefficient to change much when we use different polynomial degrees for our model. WHY??
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{ptB_betas.pdf}
@@ -76,14 +88,16 @@
                 \label{fig:beta_with_standard_deviation}
             \end{figure}
 
-            Having found the optimal parameter $\optbeta^{\text{OLS}}$ we can make predictions by computing $\tilde{\vec{y}} = X\optbeta^{\text{OLS}}$ for both the training data and the test data. In order to say something about the quality of these predictions we compute the mean square error and the $R^2$ score from equations \Eq{MSE} and \Eq{R2} respectively. The result of this is shown in \Fig{mse_and_r2_for_order5}. COMMENT ON PLOT
+            Having found the optimal parameter $\optbeta^{\text{OLS}}$ we can make predictions by computing $\tilde{\vec{y}} = X\optbeta^{\text{OLS}}$ on both the training data and the test data. In order to say something about the quality of these predictions we compute the mean square error and the $R^2$ score from equations \Eq{MSE} and \Eq{R2} respectively. The result of this is shown in \Fig{mse_and_r2_for_order5}. We see that the MSE decreases and the $R^2$ score increases (towards 1) as the polynomial degree increase. This signifies that the data we are trying to model (the Franke function) shows a complex behaviour, and is not very well modelled by a low-degree polynomial. From this plot a lone it is fair to deduce that the higher the polynomial degree the better the model. However, we will see that this is not necessarily the case. 
+
             \begin{figure}
                 \includegraphics[width=\linewidth]{ptB_scores.pdf}
                 \caption{SCORES}
                 \label{fig:mse_and_r2_for_order5}
             \end{figure}
-
-           
+            
+            
+            SOMETHING ABOUT NOISE AND STUFF WHEN THE plot in \Fig{mse_for_different_noise_ols}
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{dummy.jpg}
@@ -91,13 +105,17 @@
                 \label{fig:mse_for_different_noise_ols}
             \end{figure}
 
-            SOMETHING ABOUT NOSIE
+
+            From \Fig{mse_and_r2_for_order5} we got the impression the higher the polynomial degree, the better the model. We want to investigate this further and look at how the (MEAN) MSE behaves for polynomials of order up to 20. The model is trained on the training data, but the MSE is evaluated for both the training and test data. The result is shown in \Fig{model_complexity_ols}. The MSE of the training data decreas as the polynomial degree increase. This is not a surprise, since the model will traverse more points of the training data exactly as the complexity ($d$) increase. The MSE of the testing data however, seem to decrease at first, but then rapidly increase as the polynomial degree increase. This is similarly explained with the model being too tailored to the training data. When applied to the test data (which consist of completely different pieces of data), the model fails to make accurate predictions. This is an indicator of a phenomenon called \textit{overfitting}: when the model is so tailored to the training data it is unable to make accurate predictions on other, similar data. For a more reliable result, the data in figure \Fig{model_complexity_ols} is generated by bootstrapping the training data with $k=$ HOW MANY TIMES as explained in \Sec{bootstrap}
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{ptC_Hastie_OLS.pdf}
                 \caption{Model complexity HASTIE ET AL.}
                 \label{fig:model_complexity_ols}
             \end{figure}
+
+
+            
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{ptC_tradeoff_OLS.pdf}
