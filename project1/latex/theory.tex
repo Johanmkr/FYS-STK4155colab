@@ -105,7 +105,7 @@ The ordinary least squares (OLS) method assumes the cost function
 \begin{align*}
     C^\text{OLS}(\svec{\beta}) = \sum_{i=0}^{n-1}(y_i - \tilde{y}_i)^2 =  \norm{\vec{y}-\tilde{\vec{y}}}_2^{2} = \norm{\vec{y}-\Xb}_2^{2},
 \end{align*}
-where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter
+where the subscript "2" implies the \lnorm{2}\footnotemark. Solving \Eq{general_LS} for $C=C^\text{OLS}$ yields the OLS expression for the optimal parameter.
 \footnotetext{Euclidian norm (\lnorm{2}) is defined as $\norm{\vec{a}}_2 = \sqrt{\sum_ia_i^2}$}
 
 \begin{align}\label{eq:optimal_beta_ols}
@@ -181,7 +181,6 @@ If we now compare \Eq{ols_svd} to \Eq{ridge_svd} we see that they are fairly sim
 CAN ADD MORE HERE IF WE WANT
 
 
-
 \subsubsection{Lasso regression}\label{sec:Lasso}
 
 If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm{1}\footnotemark, to the OLS cost function, we are left with the Lasso regression's cost function,
@@ -193,9 +192,7 @@ If we add the penalty term $\lambda \norm{\svec{\beta}}_1$, now using the \lnorm
     &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_{1}
 \end{align*}
 
-\begin{align*}
-    \optbeta^\text{Lasso} = \dots
-\end{align*}
+The analytical expression for $\optbeta^{\text{Lasso}}$ is not trivial to derive, and when performing the analysis we will use the \texttt{scikit-learn} package in python. Hence, we do not derive this analytical expression. 
 
 \subsection{Resampling}\label{sec:resampling}
 Having obtained some optimal parameters $\optbeta$ from either OLS, Ridge regression or Lasso regression it is of interest to determine how good of a prediction $\optbeta$ yields. Data is often limited and thus we resample the data in clever ways in order to test it for larger samples. We will consider two ways of resampling data, the Bootstrap and Cross Validation. 
