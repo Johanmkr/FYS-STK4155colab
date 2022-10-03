@@ -265,7 +265,7 @@ class linearRegression:
         ndarray
             the computed β parameter
         """   
-        reg = linear_model.Lasso(fit_intercept=False, max_iter=int(1e8), alpha=self.lmbda)
+        reg = linear_model.Lasso(fit_intercept=False, max_iter=int(1e6), alpha=self.lmbda)
         X = self.dM.X
         z = self.tV.z
         reg.fit(X, z)

@@ -35,8 +35,10 @@ class noneResampler:
         self.polydeg = self.trainer.polydeg
         self.nfeatures = self.trainer.nfeatures
         self.Niter = no_iterations
-        self.mode, self.method = mode.lower(), method.lower()
+        self.mode, self.scheme = mode.lower(), method.lower()
         self.lmbda = hyper_param
+        self.method = self.scheme
+    
     
     def advance(self, i):
         raise NotImplementedError("Implement advance() in subclass.")
@@ -105,6 +107,12 @@ class noneResampler:
             mu_beta[i] = pV.mean()
 
         return pVs, mu_beta
+
+    def __str__(self):
+        s = r'$d = %i$'%self.polydeg
+        if self.scheme != 'mse':
+            s += r'\n$\lambda = %.2e$'%self.lmbda
+        return s
 
 
 
@@ -184,6 +192,9 @@ class Bootstrap(noneResampler):
 
         return self.error, self.bias2, self.var
 
+    def ID(self):
+        return 'BS'
+
     
    
 
@@ -246,4 +257,8 @@ class CrossValidation(noneResampler):
 
         self.trainings.append(tog)
         self.predictions.append(quiz)
+
+
+    def ID(self):
+        return 'CV'
 
