@@ -1,14 +1,20 @@
-|                    | method   | mode   | polynomial degree   | lambda   | resampling (iter)   | mark   |
-|:-------------------|:---------|:-------|:--------------------|:---------|:--------------------|:-------|
-| MSE_ols_BS.pdf     | ols      | own    | ...                 | 0        | BS (100)            |        |
-| tradeoff_ols.pdf   | ols      | own    |                     |          | BS (100)            |        |
-| MSE_hist_ols.pdf   | ols      | own    | 8                   | 0        | BS (100)            |        |
-| beta_hist_ols.pdf  | ols      | own    | 8                   | 0        | BS (100)            |        |
-| MSE_ols_CV.pdf     | ols      | own    | ...                 | 0        | BS (8)              |        |
-| MSE_ridge_BS.pdf   | ridge    | own    | 8                   | ...      | BS (100)            |        |
-| MSE_ridge_CV.pdf   | ridge    | own    | 8                   | ...      | CV (8)              |        |
-| tradeoff_ridge.pdf | ridge    | own    |                     |          | BS (100)            |        |
+|                    | scheme   | mode   | $d$   | $\lambda$   | resampling (iter)   | mark   |
+|:-------------------|:---------|:-------|:------|:------------|:--------------------|:-------|
+| beta_hist_ols.pdf  | ols      | own    | 8     | 0           | BS (100)            |        |
+| MSE_hist_ols.pdf   | ols      | own    | 8     | 0           | BS (100)            |        |
+| MSE_ols_BS.pdf     | ols      | own    | ...   | 0           | BS (5)              |        |
+| MSE_ridge_BS.pdf   | ridge    | own    | 8     | ...         | BS (100)            |        |
+| MSE_ridge_CV.pdf   | ridge    | own    | 8     | ...         | CV (5)              |        |
+| tradeoff_ols.pdf   | ols      | own    |       |             | BS (100)            |        |
+| tradeoff_ridge.pdf | ridge    | own    |       |             | BS (100)            |        |
+| MSE_ols_CV.pdf     | nan      | nan    | nan   | nan         | nan                 |        |
 
 
 # Information about plots in `/output/figures/terrain/`
 
+
+## Additional information:
+
+* xy-grid: (Nx) x (Ny) = 46 x 46
+* Considered 18 polynomial degrees between d = 1 and d = 18 (linarly spaced).
+* Considered 10 λ-values between λ = 1.0e-06 and λ = 1.0e-01 (logarithmically spaced).
