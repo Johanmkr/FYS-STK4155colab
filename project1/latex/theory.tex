@@ -25,10 +25,24 @@ Before we delve into the various methods, lets have a look at some mathematical 
     \begin{align}\label{eq:svd}
         A = U\Sigma V\TT,
     \end{align}
-    where $\Sigma$ is a $n\cross p$ diagonal matrix with the singular values of $A$ as diagonal elements in descending order: $\sigma_1\geq\sigma_2\geq\sigma_3\geq\dots\geq\sigma_r\geq 0$. $V$ is a $p\cross p$ square matrix whose columns are the eigenvectors of $A\TT A$, and thus is an orthonormal basis spanning $\RR[p]$.  $U$ is a $n\cross n$ square matrix whose columns also form an orthonormal basis set that spans $\RR[n]$. 
+    where $\Sigma$ is a $n\cross p$ diagonal matrix with the singular values of $A$ as diagonal elements in descending order: $\sigma_1\geq\sigma_2\geq\sigma_3\geq\dots\geq\sigma_r\geq 0$. That is:
+    \begin{align*}
+        \Sigma = 
+        \begin{bmatrix}
+            D & 0 \\
+            0 & 0
+        \end{bmatrix},
+        \quad\quad D = 
+        \begin{bmatrix}
+            \sigma_1 & \dots & 0 \\
+            \vdots & \ddots & \vdots \\
+            0 & \dots & \sigma_r
+        \end{bmatrix}
+    \end{align*}
+    where $D$ is a diagonal matrix of size $r\cross r$ and $r\leq \text{min}(n,p)$. Further is $U$ a $n\cross n$ matrix whose first $r$ columns is an orthornormal basis of $\text{Col}A$. The remaining columns span $\text{Nul}A\TT$. Alltogether, $U$ forms an orthonormal basis set spanning $\RR[n]$. Likwise, $V$ is a $p\cross p$ square matrix whose columns are an orthonormal basis spanning $\RR[p]$. The first $r$ columns of $V$ form an orthonormal basis of $\text{Row} A$. The ramaining columns span $\text{Nul}A$. As a result of the orthogonality of $U$ and $V$ we have that $U\TT U$ = $VV\TT = \II$
 
 \subsection{Principal component analysis}\label{sec:principal_comp}
-DO THIS LINALG P445.  
+DO THIS LINALG P445.  Pehaps not here
 
 \subsection{Linear regression}\label{sec:regression}
 We will attempt to create a model $\tilde{\vec{y}}$ by the means of linear regression. 
@@ -122,10 +136,16 @@ The variance is then
     &= \sigma^2 \invhessian.
 \end{align}
 
-
-
-\dots
-
+If we perform the singular value decomposition from \Sec{SVD}, and rewrite $X$ using \Eq{svd} we obtain the following:
+\begin{align}\label{eq:ols_svd}
+    \tilde{\vec{y}} &= X\optbeta = X\invhessian X\TT \vec{y} \nonumber\\
+    &= U\S\VT(V\ST\UT U\S\VT)^{-1}V\ST\UT\vec{y} \nonumber\\
+    &= U\S\VT(V\S^2\VT)^{-1}V\ST\UT\vec{y}\nonumber \\
+    &= U\S\VT V(\S^2)^{-1}\VT V\ST\UT\vec{y}\nonumber \\
+    &= U\S^2(\S^2)^{-1}\VT V \VT V\UT\vec{y} \nonumber\\
+    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2}\right)\UT\vec{y} = U\UT\vec{y},
+\end{align}
+where we have used that $\UT U = V\VT = \II$ and $(\VT V)^{-1} = \VT V \implies \VT V \VT V = \II$. 
 
 
 \subsubsection{Ridge regression}\label{sec:Ridge}
@@ -138,10 +158,26 @@ Let $\lambda \in \RR$ be some small number such that $\lambda >0$. If we add a p
     &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_2^2 
 \end{align*}
 
+ADD SOME FILLER TEXT HERE
+
 \begin{align*}
-    \optbeta^\text{Ridge} = \big(\hessian + \lambda \II\big)^{-1} \vec{y} = \big(H + \lambda \II\big)^{-1} \vec{y}
+    \optbeta^\text{Ridge} = \big(\hessian + \lambda \II\big)^{-1} X\TT\vec{y}
 \end{align*}
-COULD ADD SOMETHING HERE ABOUT SVD DECOMP AND PRINCIPAL VALUE to explain the behaviour of the penalisation. 
+We use the singular value decomposition to obtain a similar result as for OLS. We notice the only difference is the following term:
+\begin{align*}
+    \big(\hessian + \lambda\II\big)^{-1} &= \big(V\ST\UT U\S\VT + \lambda\II\big)^{-1}\\
+    &= \big(V\ST\S\VT + \lambda\II\big)^{-1} \\
+    &=\big(V\S^2\VT + \lambda\II\big)^{-1} \\
+    &= \big(V\left[\S^2+\lambda\II\right]\VT)^{-1}
+\end{align*}
+We follow the same argument as with \Eq{ols_svd} and obtain:
+\begin{align*}
+    \tilde{\vec{y}}^{\text{Ridge}} &=X\optbeta^{\text{Ridge}} \\
+    &= U\S\VT \big(V\left[\S^2+\lambda\II\right]\VT)^{-1} V\ST\UT\vec{y} \\
+    &= U\S^2\left[\S^2+\lambda\II\right]^{-1} \VT V\VT V\UT\vec{y} \\
+    &= U\text{diag}\left(\frac{\sigma_i^2}{\sigma_i^2+\lambda}\right)\UT\vec{y}
+\end{align*}
+
 
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
