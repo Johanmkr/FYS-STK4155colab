@@ -114,6 +114,8 @@
                 \label{fig:model_complexity_ols}
             \end{figure}
 
+            We take the analysis further and consider the bias-variance trade off, as explained in \Sec{bias_variance_tradeoff}. The result is shown in figure \Fig{bias_variance_ols}  where we clearly see that for low polynomial degrees the error occurs mostly from bias, and for high degrees from  variance. There is a trade off, where the  total error switches  main dependence from bias to variance, ultimately minimizing it. In \Fig{bias_variance_ols} this  trade off can be found around polynomial degree $d\approx 5$.
+
             
             \begin{figure}
                 \includegraphics[width=\linewidth]{franke/tradeoff_ols.pdf}
@@ -122,18 +124,23 @@
             \end{figure}
             
             
+            CROSS validation 
+
             \begin{figure}
                 \includegraphics[width=\linewidth]{franke/MSE_ols_CV.pdf}
                 \caption{MSE for train and test data for polynomials up to order $d=12$ for the OLS analysis of the Franke function ($N=20$, $\eta=0.1$) generated with an $8-$fold cross validation. We observe a similar behaviour with \Fig{model_complexity_ols} where the MSE for the test data reaches a minimum at $d=5$ and then seem to diverge. }
                 \label{fig:cross-validation_ols}
             \end{figure}
             
+            CHOOSE DEGREE HISTOGRAM
+
             \begin{figure}
                 \includegraphics[width=\linewidth]{franke/MSE_hist_OLS.pdf}
                 \caption{Histogram of average MSE for train and test data for polynomial degree $d=5$ for the OLS analysis of the Franke function ($N=20$, $\eta=0.1$), generated with a $k=400$ bootstrap. The train data seem to have a slightly lower MSE than the test data. This is consistent with \Fig{model_complexity_ols} for $d=5$.}
                 \label{fig:mse_hist_ols}
             \end{figure}
 
+            BETA  HIST
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{franke/beta_hist_OLS.pdf}
