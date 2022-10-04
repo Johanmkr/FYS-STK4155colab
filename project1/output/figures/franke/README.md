@@ -3,6 +3,8 @@
 | beta_hist_ols.pdf      | OLS      | manual | 5     | 0                     | BS (400)            |                                                  |
 | beta_hist_ridge.pdf    | Ridge    | manual | 5     | 0.0008858667904100823 | BS (400)            |                                                  |
 | beta_ols.pdf           | OLS      | manual |       | 0                     |                     |                                                  |
+| data3D.pdf             |          |        |       |                       |                     | $η=0.1$                                          |
+| data3D_no_noise.pdf    |          |        |       |                       |                     | $η=0$                                            |
 | error_vs_noise_ols.pdf | ols      | manual |       | 0                     |                     | η = 1.0e-04, 1.0e-03, 1.0e-02, 1.0e-01, 1.0e+00, |
 | MSE_hist_ols.pdf       | OLS      | manual | 5     | 0                     | BS (400)            |                                                  |
 | MSE_hist_ridge.pdf     | Ridge    | manual | 5     | 0.0008858667904100823 | BS (400)            |                                                  |
