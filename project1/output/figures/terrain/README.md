@@ -5,7 +5,7 @@
 | data3D.pdf            |          |        |       |             |                     | visualise x, y, z data     |
 | MSE_hist_ols.pdf      | ols      | own    | 8     | 0           | BS (100)            |                            |
 | MSE_hist_olsTrue.pdf  | OLS      | own    | 8     | 0           | BS (200)            |                            |
-| MSE_ols_BS.pdf        | OLS      | own    | ...   | 0           | BS (200)            |                            |
+| MSE_ols_BS.pdf        | OLS      | own    | ...   | 0           | BS (5)              |                            |
 | MSE_ols_CV.pdf        | nan      | nan    | nan   | nan         | nan                 |                            |
 | MSE_R2_scores_ols.pdf | OLS      | manual |       | 0           |                     |                            |
 | MSE_ridge_BS.pdf      | ridge    | own    | 8     | ...         | BS (100)            |                            |
