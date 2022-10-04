@@ -96,7 +96,7 @@ class noneResampler:
 
         Returns
         -------
-        list(*parameterVector), ndarray
+        list(*parameterVector), list(*groupedVector),  ndarray
             list of all parameter vectors, their corresponding mean element value
         """
         pVs = []

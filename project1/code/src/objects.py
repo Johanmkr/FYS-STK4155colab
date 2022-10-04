@@ -208,6 +208,11 @@ class targetVector(dataType):
             return self.z - other
 
 
+class modelVector(targetVector):
+    def __init__(self, z) -> None:
+        super().__init__(z)
+
+
 
 
 class parameterVector:

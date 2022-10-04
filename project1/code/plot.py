@@ -116,7 +116,7 @@ def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xli
 
 
 
-
+boxStyle = {'facecolor':'lavender', 'alpha':0.7, 'boxstyle':'round'}
 
 def surface_plot(ax, x, y, z, angles, cmap=cm.coolwarm):
     if len(np.shape(x)) == 2:
@@ -258,19 +258,24 @@ def make_histogram(ax, bootstrap, which):
             ax.hist(beta_mean, bins, alpha=.7)
             xlabel = r'$\bar{\beta}$'
         elif which.lower() == 'beta_grouped':
-            for i in range(len(beta_grouped)):
-                ax.hist(beta_grouped[i], bins, alpha=.4)
-            xlabel = r'$\beta^{(d)}$'
+            b0 = beta_grouped[0]
+            bins = 10
+            for i in range(len(b0)):
+                ax.hist(beta_grouped[:][i], bins, alpha=.4, label=b0.idx_tex[i])
+            xlabel = r'$\beta^{(d_i)}$'
         else:
             raise ValueError('Provide valid histogram measure.')
     
-    ax.text(0.8,0.9, str(bootstrap), transform=ax.transAxes, va='top', bbox={'facecolor':'lavender', 'alpha':0.6, 'boxstyle':'round'})
+    ax.text(0.8,0.9, str(bootstrap), transform=ax.transAxes, va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
     set_axes_2d(ax, xlabel=xlabel, ylabel='frequency', legend=False)
     if which.lower() != 'beta_mean':
         ax.legend(loc='center right')
    
 
-
+def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles):
+    ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles) #computed
+    ax.scatter(X_exp[:,0], X_exp[:,1], z_exp[:], marker='^', c='yellow') #expected
+    return ax
 
 
 
@@ -313,6 +318,18 @@ def visualise_data(z_data, X_data, angles=(40, 30), tag='', show=False, mark=Non
 
 
 
+def compare_data(expected, computed, angles=(40, 30), tag='', show=False, mark=None):
+    fig, ax = plt.subplots(subplot_kw={'projection':'3d'}, figsize=(9,7))
+    ax = data_model_comparison(ax, expected.tV, expected.dM, computed.mV, computed.dM, angles=angles)
+    fig.text(0.8, 0.9, str(computed), ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
+    scheme = computed.scheme.lower()
+    pdfname = f'comparison3D_{scheme}{tag}.pdf'
+    fig.subplots_adjust(left=0.02, bottom=0.04, right=0.96, top=0.96)
+    save_push(fig, pdfname, show=show, tight=False)
+    set_info(pdfname, scheme, mode=computed.mode, polydeg=computed.polydeg, lmbda=computed.lmbda, mark=mark)
+
+
+
 
 def train_test_MSE(resamplings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
@@ -324,6 +341,7 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
     if tune_hyper_parameter(resamplings):
         polydeg = res.polydeg
         lmbda = '...'
+        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
     else:
         polydeg = '...'
         lmbda = res.lmbda
@@ -334,12 +352,19 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
 
 def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
-
     bias_variance_tradeoff(ax, bootstrappings)
-    scheme = bootstrappings[0].scheme.lower()
+    bs = bootstrappings[0]
+    scheme = bs.scheme.lower()
+    if tune_hyper_parameter(bootstrappings):
+        polydeg = bs.polydeg
+        lmbda = '...'
+        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
+    else:
+        polydeg = '...'
+        lmbda = bs.lmbda
     pdfname = f'tradeoff_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
-    set_info(pdfname, scheme, bootstrappings[0].mode, resampling_type='BS', resampling_iter=bootstrappings[0].B, mark=mark)
+    set_info(pdfname, scheme, bs.mode, polydeg=polydeg, lmbda=lmbda, resampling_type='BS', resampling_iter=bs.B, mark=mark)
 
 
 
@@ -487,8 +512,6 @@ def update_info(additional_information='none'):
     else:
         INFOd = OrderedDict(sorted(INFO.items(), key=lambda i:i[0].lower()))
         infopd = pd.DataFrame.from_dict(INFOd, orient='index')
-        
-
         infopd.to_pickle(plot_path + 'info.pkl')
         infopd.to_markdown(plot_path + 'README.md')
 

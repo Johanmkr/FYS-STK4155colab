@@ -1,7 +1,7 @@
 from src.utils import *
 
 from sklearn import linear_model
-from src.objects import parameterVector, targetVector, designMatrix
+from src.objects import parameterVector, targetVector, designMatrix, modelVector
 
 
 ## Valid 'codes' for settings:
@@ -161,7 +161,8 @@ class linearRegression:
             post = f'Lasso'
     
         if not isinstance(self, (Training, Prediction)):
-            self.trainer.lmbda = self.lmbda
+            self.trainer.setHyperParameter(self.lmbda)
+            self.predictor.setHyperParameter(self.lmbda)
             beta = eval(f'self.trainer.{pre}{post}()')
             self.trainer.setOptimalbeta(beta)
             self.predictor.setOptimalbeta(parameterVector(beta))
@@ -173,9 +174,11 @@ class linearRegression:
             raise TypeError("Cannot train on the test data.")
 
         self.setOptimalbeta(beta)
-        
 
         return self.pV
+
+    def setHyperParameter(self, lmbda):
+        self.lmbda = lmbda
 
     def setOptimalbeta(self, beta):
         """
@@ -281,8 +284,9 @@ class linearRegression:
         ndarray
             the model
         """
-        self.model = self.dM * self.pV  # see __mul__ and __rmul__ in respective classes        
-        return self.model
+        self.model = self.dM * self.pV  # see __mul__ and __rmul__ in respective classes     
+        self.mV = modelVector(self.model)
+        return self.mV
 
     def computeExpectationValues(self):
         """
@@ -326,6 +330,13 @@ class linearRegression:
             var = None
 
         self.pV.setVariance(var)
+
+    def __str__(self):
+        s = r'$d = %i$'%self.polydeg
+        if self.scheme != 'ols':
+            s += '\n'
+            s += r'$\lambda = %.2e$'%self.lmbda
+        return s
 
 
 
