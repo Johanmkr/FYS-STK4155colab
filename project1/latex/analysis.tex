@@ -19,13 +19,13 @@
         We visualise the data both with and without noise. Figure \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=20$. We could use more data points, but for the sake computational efficiency we use a $20\cross20$ grid throughout this analysis.  Figure \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/data3D_no_noise.pdf}
+            \includegraphics[width=\linewidth]{franke/data3D_no_noise.pdf}
             \caption{The Franke function plotted on a grid where $N=40$ and $\eta=0$}
             \label{fig:franke_function}
         \end{figure}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/data3D.pdf}
+            \includegraphics[width=\linewidth]{franke/data3D.pdf}
             \caption{The Franke function with added noise plotted on a grid where $N=40$ and $\eta=0.1$}
             \label{fig:franke_function_noise}
         \end{figure}
@@ -75,7 +75,7 @@
     % \end{align*}
 
 
-    \subsection{Regression analysis}\label{sec:reganalysis}
+    \subsection{Regression analysis for Franke function}\label{sec:reganalysis_franke}
 
         \subsubsection{OLS}\label{sec:olsanalysis}
             We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
@@ -83,7 +83,7 @@
             We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. We further see that the coefficients of the same features more or less have the same sign for the different polynomial degrees. This is a sign of a stable model, as we do not want these coefficient to change much when we use different polynomial degrees for our model. WHY??
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/beta_ols.pdf}
+                \includegraphics[width=\linewidth]{franke/beta_ols.pdf}
                 \caption{Numerical value of the feature parameters $\beta$, with 1$\sigma$ error bars, for polynomials up to order $d=5$.}
                 \label{fig:beta_with_standard_deviation}
             \end{figure}
@@ -91,7 +91,7 @@
             Having found the optimal parameter $\optbeta^{\text{OLS}}$ we can make predictions by computing $\tilde{\vec{y}} = X\optbeta^{\text{OLS}}$ on both the training data and the test data. In order to say something about the quality of these predictions we compute the mean square error and the $R^2$ score from equations \Eq{MSE} and \Eq{R2} respectively. The result of this is shown in \Fig{mse_and_r2_for_order5}. We see that the MSE decreases and the $R^2$ score increases (towards 1) as the polynomial degree increase. This signifies that the data we are trying to model (the Franke function) shows a complex behaviour, and is not very well modelled by a low-degree polynomial. From this plot a lone it is fair to deduce that the higher the polynomial degree the better the model. However, we will see that this is not necessarily the case. 
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/MSE_R2_scores_ols.pdf}
+                \includegraphics[width=\linewidth]{franke/MSE_R2_scores_ols.pdf}
                 \caption{SCORES}
                 \label{fig:mse_and_r2_for_order5}
             \end{figure}
@@ -100,7 +100,7 @@
             SOMETHING ABOUT NOISE AND STUFF WHEN THE plot in \Fig{mse_for_different_noise_ols}
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/error_vs_noise_ols.pdf}
+                \includegraphics[width=\linewidth]{franke/error_vs_noise_ols.pdf}
                 \caption{MSE error for different noise values $\eta$}
                 \label{fig:mse_for_different_noise_ols}
             \end{figure}
@@ -109,7 +109,7 @@
             From \Fig{mse_and_r2_for_order5} we got the impression the higher the polynomial degree, the better the model. We want to investigate this further and look at how the (MEAN) MSE behaves for polynomials of order up to 20. The model is trained on the training data, but the MSE is evaluated for both the training and test data. The result is shown in \Fig{model_complexity_ols}. The MSE of the training data decreas as the polynomial degree increase. This is not a surprise, since the model will traverse more points of the training data exactly as the complexity ($d$) increase. The MSE of the testing data however, seem to decrease at first, but then rapidly increase as the polynomial degree increase. This is similarly explained with the model being too tailored to the training data. When applied to the test data (which consist of completely different pieces of data), the model fails to make accurate predictions. This is an indicator of a phenomenon called \textit{overfitting}: when the model is so tailored to the training data it is unable to make accurate predictions on other, similar data. For a more reliable result, the data in figure \Fig{model_complexity_ols} is generated by bootstrapping the training data with $k=$ HOW MANY TIMES as explained in \Sec{bootstrap}
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/MSE_ols_BS.pdf}
+                \includegraphics[width=\linewidth]{franke/MSE_ols_BS.pdf}
                 \caption{Model complexity HASTIE ET AL.}
                 \label{fig:model_complexity_ols}
             \end{figure}
@@ -118,14 +118,14 @@
             
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/tradeoff_ols.pdf}
+                \includegraphics[width=\linewidth]{franke/tradeoff_ols.pdf}
                 \caption{Bias Variance}
                 \label{fig:bias_variance_ols}
             \end{figure}
 
 
             \begin{figure}
-                \includegraphics[width=\linewidth]{Franke/MSE_ols_CV.pdf}
+                \includegraphics[width=\linewidth]{franke/MSE_ols_CV.pdf}
                 \caption{Cross-validation}
                 \label{fig:cross-validation_ols}
             \end{figure}
@@ -137,19 +137,19 @@
         \subsubsection{Ridge}\label{sec:rigdeanalysis}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/MSE_ridge_CV.pdf}
+            \includegraphics[width=\linewidth]{franke/MSE_ridge_CV.pdf}
             \caption{Cross-validation for Ridge regression.}
             \label{fig:cross-validation_ridge}
         \end{figure}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/MSE_ridge_BS.pdf}
+            \includegraphics[width=\linewidth]{franke/MSE_ridge_BS.pdf}
             \caption{Model complexity for Ridge regression. (RIKTIG PLOT?)}
             \label{fig:model_complexity_ridge}
         \end{figure}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/tradeoff_ridge.pdf}
+            \includegraphics[width=\linewidth]{franke/tradeoff_ridge.pdf}
             \caption{Bias-variance for Ridge regression.}
             \label{fig:bias_variance_ridge}
         \end{figure}
@@ -157,27 +157,27 @@
         \subsubsection{Lasso}\label{sec:lassoanalysis}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/MSE_lasso_CV.pdf}
+            \includegraphics[width=\linewidth]{franke/MSE_lasso_CV.pdf}
             \caption{Cross-validation for Lasso regression.}
             \label{fig:cross-validation_lasso}
         \end{figure}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
+            \includegraphics[width=\linewidth]{franke/MSE_lasso_BS.pdf}
             \caption{Model complexity for Lasso regression. (RIKTIG PLOT?)}
             \label{fig:model_complexity_lasso}
         \end{figure}
 
         \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/tradeoff_lasso.pdf}
+            \includegraphics[width=\linewidth]{franke/tradeoff_lasso.pdf}
             \caption{Bias-variance for Lasso regression.}
             \label{fig:bias_variance_lasso}
         \end{figure}
 
-    \subsection{Applying best fit model}\label{sec:applybestmodel}
+    % \subsection{Applying best fit model}\label{sec:applybestmodel}
 
-    \subsection{Real terrain data}\label{sec:realdata}
 
+    \subsection{Regression analysis for real terrain data}\label{sec:reganalysis_real_data}
 
     \begin{figure}
         \includegraphics[width=\linewidth]{terrain/data3D.pdf}
