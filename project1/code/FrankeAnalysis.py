@@ -64,7 +64,7 @@ def ptEXTRA():
 
             T = Training(*prepper.getTrain(d))
             P = Prediction(*prepper.getTest(d))
-            reg = linearRegression(T, P, mode='own', method='ols')
+            reg = linearRegression(T, P, mode='own', scheme='ols')
             reg.fit()
             T.computeModel()
             P.predict()
@@ -89,12 +89,13 @@ def ptB():
     for d in range(1, 6):
         T, P = workouts[d], forecasts[d]
 
-        reg = linearRegression(T, P, mode='own', method='ols')
+        reg = linearRegression(T, P, mode='own', scheme='ols')
         reg.fit()
         T.computeModel()
         P.predict()
         T.computeExpectationValues()
         P.computeExpectationValues()
+
 
     PLOT.train_test_MSE_R2(workouts, forecasts, show=show)
 
@@ -117,8 +118,8 @@ def ptC():
 
 
     idx = goto_polydeg-1
-    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
-    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
+    PLOT.beta_hist_resampling(Bootstrappings[idx],  show=show)
 
 
 def ptD():
@@ -138,7 +139,7 @@ def ptE():
     Bootstrappings = []
 
     for lmbda in HYPERPARAMS:
-        BS = Bootstrap(trainer, predictor, goto_B, method='Ridge', hyper_param=lmbda)
+        BS = Bootstrap(trainer, predictor, goto_B, scheme='Ridge', hyper_param=lmbda)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
@@ -146,16 +147,16 @@ def ptE():
 
     
     PLOT.train_test_MSE(Bootstrappings, show=show)
-    idx = goto_polydeg-1
-    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
-    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
+    idx = np.argmin(np.abs(HYPERPARAMS-1e-3))
+    PLOT.mse_hist_resampling(Bootstrappings[idx],  show=show)
+    PLOT.beta_hist_resampling(Bootstrappings[idx], show=show)
     
 
 
     Crossvalidations = []
 
     for lmbda in HYPERPARAMS:
-        CV = CrossValidation(trainer, predictor, goto_k, method='Ridge', hyper_param=lmbda)
+        CV = CrossValidation(trainer, predictor, goto_k, scheme='Ridge', hyper_param=lmbda)
         CV()
         Crossvalidations.append(CV)
 
@@ -171,7 +172,7 @@ def ptF():
 
     for lmbda in HYPERPARAMS[10:]:
         print('----')
-        BS = Bootstrap(trainer, predictor, 10, method='Lasso', mode='skl', hyper_param=lmbda)
+        BS = Bootstrap(trainer, predictor, 10, scheme='Lasso', mode='skl', hyper_param=lmbda)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
@@ -181,7 +182,7 @@ def ptF():
     Crossvalidations = []
 
     for lmbda in HYPERPARAMS[10:]:
-        CV = CrossValidation(trainer, predictor, goto_k, method='Lasso', mode='skl', hyper_param=lmbda)
+        CV = CrossValidation(trainer, predictor, goto_k, scheme='Lasso', mode='skl', hyper_param=lmbda)
         CV()
         Crossvalidations.append(CV)
 

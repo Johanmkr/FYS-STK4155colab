@@ -46,7 +46,7 @@ def init(test_mode='off'):
 def read_info():
     global INFO
     infopd = pd.read_pickle(plot_path + 'info.pkl')
-  
+    
     INFO = infopd.transpose().to_dict()
 
 def add_path(folder, read=True):
@@ -115,13 +115,23 @@ def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xli
 
 
 
-def surface_plot(ax, x, y, z):
-    surf =  ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(-0.05, 1.05)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    return ax, surf
 
+
+
+def surface_plot(ax, x, y, z, angles, cmap=cm.coolwarm):
+    if len(np.shape(x)) == 2:
+        surf = ax.plot_surface(x, y, z, cmap=cmap, linewidth=0, antialiased=False)
+    else: 
+        surf = ax.plot_trisurf(x, y, z, cmap=cmap, linewidth=0, antialiased=False)
+    ax.view_init(*angles)
+    ax.set_zlim(np.min(z), np.max(z))
+    ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([])
+    ax.zaxis.set_ticklabels([])
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
+    ax.set_zlabel(r"$z$")
+    return ax, surf
 
 
 def tune_hyper_parameter(resamplings):
@@ -232,48 +242,49 @@ def bias_variance_tradeoff(ax, bootstrappings):
 
 
 
-def make_histogram(ax, bootstrap, mse=True):
+def make_histogram(ax, bootstrap, which):
 
     B = bootstrap.B
     bins = int(B/3)
-    if mse:
+    if which.lower() == 'mse':
         MSEs = bootstrap.mean_squared_error()
         ax.hist(MSEs[0], bins, alpha=.7, label='train')
         ax.hist(MSEs[1], bins, alpha=.7, label='test')
         xlabel = 'MSE'
     else:
-        _, beta = bootstrap.getOptimalParameters()
-        ax.hist(beta, bins, alpha=.7)
-        xlabel = r'$\bar{\beta}$'
+        beta, beta_grouped, beta_mean = bootstrap.getOptimalParameters()
+        
+        if which.lower() == 'beta_mean':
+            ax.hist(beta_mean, bins, alpha=.7)
+            xlabel = r'$\bar{\beta}$'
+        elif which.lower() == 'beta_grouped':
+            for i in range(len(beta_grouped)):
+                ax.hist(beta_grouped[i], bins, alpha=.4)
+            xlabel = r'$\beta^{(d)}$'
+        else:
+            raise ValueError('Provide valid histogram measure.')
     
-    ax.text(0.9,0.9, str(bootstrap), transform=ax.transAxes, va='top', bbox={'facecolor':'wheat', 'alpha':0.5, 'boxstyle':'round'})
-    set_axes_2d(ax, xlabel=xlabel, ylabel='frequency')
-    if mse:
+    ax.text(0.8,0.9, str(bootstrap), transform=ax.transAxes, va='top', bbox={'facecolor':'lavender', 'alpha':0.6, 'boxstyle':'round'})
+    set_axes_2d(ax, xlabel=xlabel, ylabel='frequency', legend=False)
+    if which.lower() != 'beta_mean':
         ax.legend(loc='center right')
    
 
 
 
-def visualise_data(x, y, z):
-    fig, ax = plt.subplots(ncols=1, subplot_kw={'projection':'3d'})
-    ax, surf = surface_plot(ax, x, y, z)
-    ax.set_zlim(np.min(z), np.max(z))
-    ax.zaxis.set_major_locator(LinearLocator(5))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-    plt.tight_layout()
 
-    save_push(fig, "none", save=False, show=True)
 
 
 
 
 
 def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
-    if pdfname in INFO.keys():
-        pass
+    if scheme == 'ols':
+        scheme = 'OLS'
+    elif scheme == 'ridge':
+        scheme = 'Ridge'
+    elif scheme == 'lasso':
+        scheme = 'Lasso'
 
     INFO[pdfname] = {'scheme':scheme, 'mode':mode, '$d$':polydeg, '$\lambda$':lmbda}
     if resampling_type == None:
@@ -287,6 +298,19 @@ def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampli
 
 
 
+def visualise_data(z_data, X_data, angles=(40, 30), tag='', show=False, mark=None):
+    x = X_data[:,0]; y = X_data[:,1]; z = z_data[:]
+    fig, ax = plt.subplots(subplot_kw={'projection':'3d'}, figsize=(9,7))
+    ax, surf = surface_plot(ax, x, y, z, angles)
+    pdfname = f'data3D{tag}.pdf'
+    fig.subplots_adjust(left=0.02, bottom=0.04, right=0.96, top=0.96)
+    save_push(fig, pdfname, show=show, tight=False)
+    if mark == None:
+        mark = 'visualise x, y, z data'
+    set_info(pdfname, mark=mark)
+
+
+
 
 
 
@@ -294,7 +318,7 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
     MSE_train_test(ax, resamplings)
     res = resamplings[0]
-    scheme = res.method
+    scheme = res.scheme.lower()
     type = res.ID()
     Niter = len(res)
     if tune_hyper_parameter(resamplings):
@@ -312,47 +336,64 @@ def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
 
     bias_variance_tradeoff(ax, bootstrappings)
-    scheme = bootstrappings[0].method
+    scheme = bootstrappings[0].scheme.lower()
     pdfname = f'tradeoff_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
     set_info(pdfname, scheme, bootstrappings[0].mode, resampling_type='BS', resampling_iter=bootstrappings[0].B, mark=mark)
 
 
 
-def beta_params(trainings, tag='', show=False, mark=None):
+def beta_params(trainings, grouped=False, tag='', show=False, mark=None):
     fig, ax = plt.subplots()
 
     for d in trainings.keys():
-        beta = trainings[d].pV
-        markers, caps, bars = ax.errorbar(range(1,beta.nfeatures+1), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', lw=0.8,label=r'$d=%i$'%d, capsize=5, capthick=2, elinewidth=1.2) 
+        if grouped:
+            beta = trainings[d].pV.group()
+        else:
+            beta = trainings[d].pV
+        markers, caps, bars = ax.errorbar(range(1,beta.nfeatures+1), beta[:], beta.stdv, fmt='o', ms='10',  ls='--', lw=0.8, label=r'$d=%i$'%d, capsize=5, capthick=2, elinewidth=1.2) 
         [bar.set_alpha(0.7) for bar in bars]
         [cap.set_alpha(0.9) for cap in caps]
 
     t = trainings[max(trainings.keys())]
-    b = t.pV
+    if grouped:
+        b = t.pV.group()
+    else:
+        b = t.pV
     Bmax = b.nfeatures
-    ax.set_xticks(range(Bmax))
+    ax.set_xticks(range(1, Bmax+1))
     ax.set_xticklabels(b.idx_tex)
    
     padx = 1/3; pady = np.max(np.abs(b[:]))*0.1
-    set_axes_2d(ax, xlim=(0-padx,Bmax-1+padx), ylim=(np.min(b[:])-pady, np.max(b[:])+pady))
-    pdfname = f'beta_{t.method}{tag}.pdf'
+    set_axes_2d(ax, xlim=(1-padx, Bmax+padx), ylim=(np.min(b[:])-pady, np.max(b[:])+pady))
+    scheme = t.scheme.lower()
+    pdfname = f'beta_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
-    set_info(pdfname, t.method, t.mode, lmbda=t.lmbda, mark=mark)
+    set_info(pdfname, scheme, t.mode, lmbda=t.lmbda, mark=mark)
 
 
-def hist_resampling(bootstrap, which='mse', tag='', show=False, mark=None):
+def mse_hist_resampling(bootstrap, tag='', show=False, mark=None):
+    assert isinstance(tag, str)
     fig, ax = plt.subplots()
-    if which.lower() == 'mse':
-        make_histogram(ax, bootstrap)
-        which = 'MSE'
-    else:
-        make_histogram(ax, bootstrap, False)
-        which = 'beta'
-
-    pdfname = f'{which}_hist_{bootstrap.method}{tag}.pdf'
+    make_histogram(ax, bootstrap, 'mse')
+    scheme = bootstrap.scheme.lower()
+    pdfname = f'MSE_hist_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
-    set_info(pdfname, bootstrap.method, bootstrap.mode, polydeg=bootstrap.polydeg, resampling_type='BS', resampling_iter=bootstrap.B, lmbda=bootstrap.lmbda, mark=mark)
+    set_info(pdfname, scheme, bootstrap.mode, polydeg=bootstrap.polydeg, resampling_type='BS', resampling_iter=bootstrap.B, lmbda=bootstrap.lmbda, mark=mark)
+
+
+def beta_hist_resampling(bootstrap, grouped=False, tag='', show=False, mark=None):
+    assert isinstance(tag, str)
+    fig, ax = plt.subplots()
+    scheme = bootstrap.scheme.lower()
+    if grouped:
+        make_histogram(ax, bootstrap, 'beta_grouped')
+        pdfname = f'beta_polydeg_hist_{scheme}{tag}.pdf'
+    else:
+        make_histogram(ax, bootstrap, 'beta_mean')
+        pdfname = f'beta_hist_{scheme}{tag}.pdf'
+    save_push(fig, pdfname, show=show)
+    set_info(pdfname, scheme, bootstrap.mode, polydeg=bootstrap.polydeg, resampling_type='BS', resampling_iter=bootstrap.B, lmbda=bootstrap.lmbda, mark=mark)
 
 
 def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
@@ -373,10 +414,10 @@ def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
         R2[:,i] = train.R2, test.R2
         i+=1
     
-    ax1.plot(polydegs, MSE[0], lw=2.5, ls='--', label='train MSE')
-    ax1.plot(polydegs, MSE[1], lw=2.5, ls='-',  label='test MSE')
-    ax2.plot(polydegs, R2[0],  lw=2.5, ls='--', label='train $R^2$')
-    ax2.plot(polydegs, R2[1],  lw=2.5, ls='-',  label='test $R^2$')
+    ax2.plot(polydegs, MSE[0], lw=2.5, ls='--', c='deepskyblue', label='train MSE')
+    ax2.plot(polydegs, MSE[1], lw=2.5, ls='-',  c='forestgreen', label='test MSE')
+    ax1.plot(polydegs, R2[0],  lw=2.5, ls='--', c='teal',        label='train $R^2$')
+    ax1.plot(polydegs, R2[1],  lw=2.5, ls='-',  c='darkgreen',   label='test $R^2$')
 
     ax2.set_xticks(list(polydegs))
     ax2.set_xticklabels([f'{d:.0f}' for d in polydegs])
@@ -384,10 +425,9 @@ def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
     set_axes_2d(ax1, ylabel='score')
     pad = 1/5
     set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
-    scheme = trainings[d].method
+    scheme = trainings[d].scheme.lower()
     pdfname = f'MSE_R2_scores_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
-
     set_info(pdfname, scheme, trainings[d].mode, lmbda=trainings[d].lmbda, mark=mark)
 
 
@@ -399,7 +439,6 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
     polydegs = np.zeros(N)
     trainMSE = np.zeros((N,M))
     testMSE = np.zeros((N,M))
-
 
     
     i = 0
@@ -424,7 +463,7 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
     pad = 1/4
     ax.set_yscale('log')
     set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
-    scheme = trainings[d][0].method
+    scheme = trainings[d][0].scheme.lower()
     pdfname = f'error_vs_noise_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
 
@@ -434,6 +473,13 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
 
 
 
+def remove_pdf(info, pdfname):
+    infoT = info.transpose()
+    infoT.pop(pdfname)
+    info = infoT.transpose()
+    return info
+
+
 
 def update_info(additional_information='none'):
     if testMode:
@@ -441,7 +487,8 @@ def update_info(additional_information='none'):
     else:
         INFOd = OrderedDict(sorted(INFO.items(), key=lambda i:i[0].lower()))
         infopd = pd.DataFrame.from_dict(INFOd, orient='index')
- 
+        
+
         infopd.to_pickle(plot_path + 'info.pkl')
         infopd.to_markdown(plot_path + 'README.md')
 

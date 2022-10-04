@@ -11,7 +11,7 @@ class noneResampler:
         * CrossValidation
     """
 
-    def __init__(self, trainer, predictor, no_iterations, mode='manual', method='OLS', hyper_param=0) -> None:
+    def __init__(self, trainer, predictor, no_iterations, mode='manual', scheme='OLS', hyper_param=0) -> None:
         """
         Initiate resampling with data sets and model specs. 
 
@@ -25,7 +25,7 @@ class noneResampler:
             number of iterations in resampling algorithm
         mode : str, optional
             (see linearRegression) the mode setting in regression, by default 'manual'
-        method : str, optional
+        scheme : str, optional
             (see linearRegression) the method with which to perform regression, by default 'OLS'
         hyper_param : int, optional
             hyper parameter to tune, by default 0
@@ -35,9 +35,9 @@ class noneResampler:
         self.polydeg = self.trainer.polydeg
         self.nfeatures = self.trainer.nfeatures
         self.Niter = no_iterations
-        self.mode, self.scheme = mode.lower(), method.lower()
+        self.mode, self.scheme = mode.lower(), scheme.lower()
         self.lmbda = hyper_param
-        self.method = self.scheme
+        self.method = self.scheme # alias
     
     
     def advance(self, i):
@@ -100,25 +100,28 @@ class noneResampler:
             list of all parameter vectors, their corresponding mean element value
         """
         pVs = []
+        amp_pVs = []
         mu_beta = np.zeros(self.Niter)
         for i in range(self.Niter):
             pV = self.trainings[i].pV
             pVs.append(pV)
+            amp_pVs.append(pV.group())
             mu_beta[i] = pV.mean()
 
-        return pVs, mu_beta
+        return pVs, amp_pVs, mu_beta
 
     def __str__(self):
         s = r'$d = %i$'%self.polydeg
-        if self.scheme != 'mse':
-            s += r'\n$\lambda = %.2e$'%self.lmbda
+        if self.scheme != 'ols':
+            s += '\n'
+            s += r'$\lambda = %.2e$'%self.lmbda
         return s
 
 
 
 class Bootstrap(noneResampler):
 
-    def __init__(self, trainer, predictor, no_bootstraps=100, mode='manual', method='OLS', hyper_param=0):
+    def __init__(self, trainer, predictor, no_bootstraps=100, mode='manual', scheme='OLS', hyper_param=0):
         """
         Initiate bootstrap with data sets and model specs. 
 
@@ -132,12 +135,12 @@ class Bootstrap(noneResampler):
             number of iterations in bootstrap, by default 100
         mode : str, optional
             (see linearRegression) the mode setting in regression, by default 'manual'
-        method : str, optional
+        scheme : str, optional
             (see linearRegression) the method with which to perform regression, by default 'OLS'
         hyper_param : int, optional
             hyper parameter to tune, by default 0
         """
-        super().__init__(trainer, predictor, no_bootstraps, mode, method, hyper_param)
+        super().__init__(trainer, predictor, no_bootstraps, mode, scheme, hyper_param)
         self.B = self.Niter
 
     def advance(self, i):
@@ -151,7 +154,7 @@ class Bootstrap(noneResampler):
         """
         train = self.trainer.randomShuffle()
         pred = deepcopy(self.predictor)
-        reg = linearRegression(train, pred, mode=self.mode, method=self.method)
+        reg = linearRegression(train, pred, mode=self.mode, scheme=self.scheme)
         reg.fit(self.lmbda)
         train.computeModel()
         pred.predict()
@@ -201,7 +204,7 @@ class Bootstrap(noneResampler):
 
 class CrossValidation(noneResampler):
 
-    def __init__(self, trainer, predictor, k_folds=5, mode='manual', method='OLS', hyper_param=0):
+    def __init__(self, trainer, predictor, k_folds=5, mode='manual', scheme='OLS', hyper_param=0):
         """
         Initiate k-fold cross validation with data sets and model specs. 
 
@@ -215,12 +218,12 @@ class CrossValidation(noneResampler):
             number of folds, by default 5
         mode : str, optional
             (see linearRegression) the mode setting in regression, by default 'manual'
-        method : str, optional
+        scheme : str, optional
             (see linearRegression) the method with which to perform regression, by default 'OLS'
         hyper_param : int, optional
             hyper parameter to tune, by default 0
         """
-        super().__init__(trainer, predictor, k_folds, mode, method, hyper_param)
+        super().__init__(trainer, predictor, k_folds, mode, scheme, hyper_param)
         self.k = self.Niter
 
     def advance(self, i):
@@ -246,7 +249,7 @@ class CrossValidation(noneResampler):
         tog = Training(tV[train_idx], dM[train_idx])
         quiz = Prediction(tV[test_idx], dM[test_idx])
 
-        reg = linearRegression(tog, quiz, mode=self.mode, method=self.method)
+        reg = linearRegression(tog, quiz, mode=self.mode, scheme=self.scheme)
         reg.fit(self.lmbda)
 
         tog.computeModel()

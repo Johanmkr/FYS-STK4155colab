@@ -1,8 +1,10 @@
+
 from src.utils import *
-from src.objects import dataPrepper
+from src.objects import dataPrepper, groupedVector
 from src.Regression import Training, Prediction, linearRegression
 from src.Resampling import Bootstrap, CrossValidation
 
+from imageio.v2 import imread
 
 import plot as PLOT
 PLOT.init('off')
@@ -10,10 +12,11 @@ PLOT.init('off')
 PLOT.add_path('terrain')
 
 
-def datapointsTerrain(sx=40, sy=80, tag='2'):
-    from imageio.v2 import imread
-    terrain1 = imread(f"../data/SRTM_data_Norway_{tag}.tif")
-    z = terrain1[::sy, ::sx].astype('float64')
+
+def datapointsTerrain(location='GrandCanyon', sx=slice(2500, 3400, 30), sy=slice(2500, 3400, 30)):
+    
+    terrain1 = imread(f"../data/SRTM_data_{location}.tif")
+    z = terrain1[sx, sy].astype('float64')
     Ny, Nx = np.shape(z)
     x = np.sort( np.random.rand(Nx))
     y = np.sort( np.random.rand(Ny))
@@ -24,11 +27,9 @@ def datapointsTerrain(sx=40, sy=80, tag='2'):
 x, y, z = datapointsTerrain()
 Ny, Nx = np.shape(x)
 prepper = dataPrepper(x, y, z)
-prepper.prep()
+prepper.prep(True)
 
-
-
-#PLOT.visualise_data(x, y, z)
+#PLOT.visualise_data(*prepper.dump())
 
 
 TRAININGS = {} 
@@ -41,20 +42,22 @@ for d in POLYDEGS:
     TRAININGS[d] = Training(*prepper.getTrain(d))
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
-print(TRAININGS[15].dM)
 
 HYPERPARAMS = np.logspace(-6, -1, 10)
 
 goto_polydeg = 8
-goto_B = 100
+goto_B = 200
 goto_k = 5
 
+
 show = False
+
+PLOT.visualise_data(*prepper.getTrain(goto_polydeg), show=show)
 
 def assessModelComplexityBS(B, method, mode):
     Bootstrappings = []
     for d in POLYDEGS:
-        BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], B, method=method, mode=mode)
+        BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], B, scheme=method, mode=mode)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
@@ -63,7 +66,7 @@ def assessModelComplexityBS(B, method, mode):
 def assessModelComplexityCV(k, method, mode):
     Crossvalidations = []
     for d in POLYDEGS:
-        CV = Bootstrap(TRAININGS[d], PREDICTIONS[d], k, method=method, mode=mode)
+        CV = Bootstrap(TRAININGS[d], PREDICTIONS[d], k, scheme=method, mode=mode)
         CV()
         Crossvalidations.append(CV)
 
@@ -72,7 +75,7 @@ def assessModelComplexityCV(k, method, mode):
 def assessHyperParamBS(polydeg, B, method, mode):
     Bootstrappings = []
     for lmbda in HYPERPARAMS:
-        BS = Bootstrap(TRAININGS[polydeg], PREDICTIONS[polydeg], B, method=method, mode=mode, hyper_param=lmbda)
+        BS = Bootstrap(TRAININGS[polydeg], PREDICTIONS[polydeg], B, scheme=method, mode=mode, hyper_param=lmbda)
         BS()
         BS.bias_varianceDecomposition()
         Bootstrappings.append(BS)
@@ -82,54 +85,150 @@ def assessHyperParamBS(polydeg, B, method, mode):
 def assessHyperParamCV(polydeg, k, method, mode):
     Crossvalidations = []
     for lmbda in HYPERPARAMS:
-        CV = CrossValidation(TRAININGS[polydeg], PREDICTIONS[polydeg], k, method=method, mode=mode, hyper_param=lmbda)
+        CV = CrossValidation(TRAININGS[polydeg], PREDICTIONS[polydeg], k, scheme=method, mode=mode, hyper_param=lmbda)
         CV()
         Crossvalidations.append(CV)
     return Crossvalidations
 
 def ptG():
+    # b)
+
+    polydegs = range(1, 9)
+    workouts = {d:deepcopy(TRAININGS[d]) for d in polydegs}
+    forecasts = {d:deepcopy(PREDICTIONS[d]) for d in polydegs}
+
+    for d in polydegs:
+        T, P = workouts[d], forecasts[d]
+
+        reg = linearRegression(T, P, mode='own', scheme='OLS')
+        reg.fit()
+        T.computeModel()
+        P.predict()
+        T.computeExpectationValues()
+        P.computeExpectationValues()
+       
+    PLOT.train_test_MSE_R2(workouts, forecasts, show=show)
+    PLOT.beta_params(workouts, grouped=True, show=show, mark="$β$'s grouped by order $d$") 
+
 
 
     # c)
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
     PLOT.train_test_MSE(Bootstrappings, show=show)
     PLOT.BV_Tradeoff(Bootstrappings, show=show)
-
-    d = 8
-    idx = 8-1
-    PLOT.hist_resampling(Bootstrappings[idx], 'mse', show=show)
-    PLOT.hist_resampling(Bootstrappings[idx], 'beta', show=show)
+    idx = goto_polydeg-1
+    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=True, show=show)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
 
 
-    # d)
+
+
+
+
+def olsAnalysis():
+
+    # Simple analysis
+
+
+    polydegs = range(1, 9)
+    workouts = {d:deepcopy(TRAININGS[d]) for d in polydegs}
+    forecasts = {d:deepcopy(PREDICTIONS[d]) for d in polydegs}
+
+    for d in polydegs:
+        T, P = workouts[d], forecasts[d]
+
+        reg = linearRegression(T, P, mode='own', scheme='OLS')
+        reg.fit()
+        T.computeModel()
+        P.predict()
+        T.computeExpectationValues()
+        P.computeExpectationValues()
+       
+    PLOT.train_test_MSE_R2(workouts, forecasts, show=show)
+    PLOT.beta_params(workouts, grouped=True, show=show, mark="$β$'s grouped by order $d$") 
+
+
+    # Bootstrap 
+
+    Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
+    PLOT.train_test_MSE(Bootstrappings, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=show)
+    idx = goto_polydeg-1
+    PLOT.beta_hist_resampling(Bootstrappings[idx], show=show)
+
+    # Cross-validation
+
     Crossvalidations = assessModelComplexityCV(goto_k, 'OLS', 'own')
     PLOT.train_test_MSE(Crossvalidations, show=show)
 
-    # e)
-    polydeg = 8
-    Bootstrappings = assessHyperParamBS(polydeg, goto_B, 'Ridge', 'own')
-    PLOT.train_test_MSE(Bootstrappings, show=show)
 
-    Crossvalidations = assessHyperParamCV(polydeg, goto_k, 'Ridge', 'own')
-    PLOT.train_test_MSE(Crossvalidations, show=show)
+def ridgeAnalysis():
+
+    # Bootstrap 
+
+    Bootstrappings = assessHyperParamBS(goto_polydeg, goto_B, 'Ridge', 'own')
+    PLOT.train_test_MSE(Bootstrappings, show=show)
     PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
-    
-    # f)
-    '''polydeg = 8
-    Bootstrappings = assessHyperParamBS(polydeg, 50, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Bootstrappings, show=True)
+    # Cross-validation
 
-    Crossvalidations = assessHyperParamCV(polydeg, 8, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Crossvalidations, show=True)
-    PLOT.BV_Tradeoff(Bootstrappings, show=True)'''
+    Crossvalidations = assessHyperParamCV(goto_polydeg, goto_k, 'Ridge', 'own')
+    PLOT.train_test_MSE(Crossvalidations, show=show)
+    
+
 
    
+def lassoAnalysis():
+    print('\nDoing Lasso analysis ...')
+
+    # Bootstrap
+    print('\n   BOOTSTRAP')
+
+    Bootstrappings = assessHyperParamBS(goto_polydeg, 50, 'Lasso', 'skl')
+    PLOT.train_test_MSE(Bootstrappings, show=True)
+
+
+    # Cross-validation
+
+    Crossvalidations = assessHyperParamCV(goto_polydeg, 8, 'Lasso', 'skl')
+    PLOT.train_test_MSE(Crossvalidations, show=True)
+    PLOT.BV_Tradeoff(Bootstrappings, show=True)
+
+
+
+
+
+
+
 
 
 
 if __name__ == '__main__':
-    ptG()
+
+    all_parts = ['ols', 'ridge', 'lasso'] 
+
+    def runparts(parts):
+        pts = []
+        for part in parts:
+            pt = part.strip().lower().replace('analysis', '')
+            if pt == 'ALL':
+                pts = parts
+                break
+            else:
+                assert pt in all_parts
+                pts.append(pt)
+
+        for pt in pts:
+            eval(f'{pt}Analysis()')
+
+    try:
+        dummy = sys.argv[1]
+        parts = sys.argv[1:]
+    except IndexError:
+        parts = input('OLS, Ridge or Lasso? ').replace(',', ' ').split()
+
+    runparts(parts)
+
 
     additionalInfo = []
     additionalInfo.append(f'xy-grid: (Nx) x (Ny) = {Nx} x {Ny}')

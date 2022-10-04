@@ -290,6 +290,9 @@ class parameterVector:
         """        
         return self.beta[index]
 
+    def __len__(self):
+        return len(self.beta)
+
     def __rmul__(self, other):
         """
         Special method for performing the matrix multiplication 
@@ -309,33 +312,64 @@ class parameterVector:
         return other.X @ self.beta
 
     def setVariance(self, var):
-        self.var = var
+        tol = 1e-14
         try: 
+            self.var = np.where(var>tol, var, np.nan)
             self.stdv = self.var**(1/2)
         except TypeError:
+            self.var = None
             self.stdv = None
 
 
 
     def group(self):
-        # FIXME
-
-        polydegs = range(1, self.deg+1)
-        beta_amp = np.zeros(self.deg)
-        i = 0
-        for d in range(1, self.deg):
-            p = polydeg2features(d) - 1
-            beta_amp[d-1] = np.mean(self.beta[i:p])
-            i = p
-        beta_amp[d] = np.mean(self.beta[i:])
-            
-        self.amp_betapd = pd.DataFrame(beta_amp, index=[f'β^({d})' for d in polydegs], columns=['β'])
-
-        return self.amp_betapd
-
+        self.pV_grouped = groupedVector(self)
+        return self.pV_grouped
 
     def mean(self):
         return np.mean(self.beta)
+
+
+class groupedVector(parameterVector):
+
+    def __init__(self, beta) -> None:
+        super().__init__(beta)
+
+        polydegs = range(1, self.polydeg+1)
+        beta = np.zeros(self.polydeg)
+        i = 0
+        if isinstance(self.var, np.ndarray):
+            VAR = True
+            var = np.zeros(self.polydeg)
+        for d in range(1, self.polydeg+1):
+            if d == self.polydeg:
+                if VAR:
+                    var[d-1] = np.mean(self.var[i:])
+                beta[d-1] = np.mean(self.beta[i:])
+            else:
+                p = polydeg2features(d) - 1
+                if VAR:
+                    var[d-1] = np.mean(self.var[i:p])
+                beta[d-1] = np.mean(self.beta[i:p])
+                i = p
+
+        self.beta = beta
+        self.nfeatures = self.polydeg
+        self.idx = [f'β^({d})' for d in polydegs]
+        self.idx_tex = [r'$\beta^{(%i)}$'%d for d in polydegs]
+        if VAR:
+            self.setVariance(var)
+
+        
+        #betapd = pd.DataFrame(beta, index=[f'β^({d})' for d in polydegs], columns=['β'])
+
+        
+
+
+
+
+
+
 
 
 
@@ -414,6 +448,10 @@ class dataPrepper:
             return self.tV_test, self.dM_test[polydeg]
         else:
             return self.tV_test, self.dM_test
+
+    def dump(self):
+        return self.tV_org, self.dM_org
+        
 
     def reduceOrderPolynomial(self, polydeg):
         if polydeg < self.polydeg:

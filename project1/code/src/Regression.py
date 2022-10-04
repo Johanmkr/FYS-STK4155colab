@@ -19,7 +19,7 @@ class linearRegression:
     Class for performing linear regression fitting in 3D space.
     """    
 
-    def __init__(self, train, test, method='ols', mode='manual', shrinkage_parameter=0):
+    def __init__(self, train, test, scheme='ols', mode='manual', shrinkage_parameter=0):
         """
         Constructor that holds information necessary to the regression (or something of the sort...). 
 
@@ -38,11 +38,11 @@ class linearRegression:
         """ 
 
         self.__setMode(mode)
-        self.__setMethod(method)
+        self.__setMethod(scheme)
 
         for set in [train, test]:
             set.__setMode(mode)
-            set.__setMethod(method)
+            set.__setMethod(scheme)
 
         self.trainer = train
         self.predictor = test
@@ -76,30 +76,30 @@ class linearRegression:
         else:
             raise ValueError('Not a valid mode.')
 
-    def __setMethod(self, method):
+    def __setMethod(self, scheme):
         """
         (intended local) Select method for regression.
 
         Parameters
         ----------
-        method : str
+        scheme : str
             the method (in (global) olsMethods for Ordinary Least Squares, ridgeMethods for Ridge Regression or lassoMethods Lasso Regression)
 
         Raises
         ------
         ValueError
-            the string "method" is not in any of the globally defined lists - maybe append?
+            the string "scheme" is not in any of the globally defined lists - maybe append?
         """        
-        method = method.strip().lower()
-        if method in olsMethods:
-            self.method = 'ols'
-        elif method in ridgeMethods:
-            self.method = 'ridge'
-        elif method in lassoMethods:
-            self.method = 'lasso'
+        scheme = scheme.strip().lower()
+        if scheme in olsMethods:
+            self.scheme = 'ols'
+        elif scheme in ridgeMethods:
+            self.scheme = 'ridge'
+        elif scheme in lassoMethods:
+            self.scheme = 'lasso'
             self.__setMode('auto')
         else:
-            raise ValueError('Not a valid method.')      
+            raise ValueError('Not a valid scheme.')      
 
     def changeMode(self, new_mode='other'):
         """
@@ -119,17 +119,17 @@ class linearRegression:
                 new_mode = 'manual'
         self.__setMode(new_mode)
 
-    def changeMethod(self, new_method):
+    def changeMethod(self, new_scheme):
         """
         Change the method of the self-object.
 
         Parameters
         ----------
-        new_method : str
+        new_scheme : str
             the (new) method to use (in *Methods)
         """        
         #assert self.notPredictor and self.notTrainer
-        self.__setMethod(new_method)
+        self.__setMethod(new_scheme)
 
     def fit(self, shrinkage_parameter=None):
         """
@@ -153,11 +153,11 @@ class linearRegression:
         elif self.mode == 'manual':
             pre = '_man'
         
-        if self.method in olsMethods:
+        if self.scheme in olsMethods:
             post = f'OLS'
-        elif self.method in ridgeMethods:
+        elif self.scheme in ridgeMethods:
             post = f'Ridge'
-        elif self.method in lassoMethods:
+        elif self.scheme in lassoMethods:
             post = f'Lasso'
     
         if not isinstance(self, (Training, Prediction)):
@@ -315,10 +315,10 @@ class linearRegression:
         
         XTX = X.T @ X
 
-        if self.method == 'ols':
+        if self.scheme == 'ols':
             var = sigma2 * np.linalg.pinv(XTX)
             var = np.diag(var)
-        elif self.method == 'ridge':
+        elif self.scheme == 'ridge':
             A = np.linalg.pinv(XTX + self.lmbda*np.eye(self.nfeatures))
             var = sigma2 * A @ XTX @ A.T
             var = np.diag(var)
