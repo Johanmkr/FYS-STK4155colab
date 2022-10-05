@@ -21,7 +21,7 @@ where the mean of the observed values $\vec{y}$ is given by:
 Before we delve into the various methods, lets have a look at some mathematical concepts that will be of great use in the further discussion. 
 
 \subsection{Singular value decomposition}\label{sec:SVD}
-    The singular value decomposition is a result from linear algebra that states that an arbitrary matrix $A$ of rank $r$ and size $n\cross p$ can be decomposed into the following\cite{svdecomp}:
+    The singular value decomposition is a result from linear algebra that states that an arbitrary matrix $A$ of rank $r$ and size $n\cross p$ can be decomposed into the following \citep{svdecomp}:
     \begin{align}\label{eq:svd}
         A = U\Sigma V\TT,
     \end{align}
@@ -97,6 +97,11 @@ The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, 
 \end{align}
 
 \subsubsection{Bias-variance tradeoff}\label{sec:bias_variance_tradeoff}
+When considering the bias-variance trad off we take into account the mean squared error of the cost function: . 
+\begin{align*}
+    C(X, \svec{\beta}) = \frac{1}{n}\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2 = \EE{(\vec{y}-\tilde{\vec{y}})^2},
+\end{align*}
+which is a measure of the expected error in our model. 
 
 \subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
 
