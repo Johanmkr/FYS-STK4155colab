@@ -130,7 +130,7 @@
                 \includegraphics[width=\linewidth]{Franke/MSE_ols_CV.pdf}
                 \caption{MSE for train and test data for polynomials up to order $d=12$ for the OLS analysis of the Franke function ($N=20$, $\eta=0.1$) generated with an $8-$fold cross validation. We observe a similar behaviour with \Fig{model_complexity_ols} where the MSE for the test data reaches a minimum at $d=5$ and then seem to diverge. }
                 \label{fig:cross-validation_ols}
-            \end{figure}
+            \end{figure} 
             
             It has become apparent that the polynomial degree that seem to fit our data the best is $d=5$, and so we want to investigate this model further. Considering the bootstrapping resampling technique we make a histogram of the average MSE with samples from each iteration for $d=5$. The  result is shown  in figure \Fig{mse_hist_ols}. We may interpret these histograms (if they were to be normalised) as a probability distribution, where the expectation value of the MSE for the train and test data is the MSE which corresponds to the highest probability. As discussed in section \Sec{bootstrap}, if $k\to\infty$ then this probability distribution approaches the normal distribution and the expectation value would be the mean. Translating this to the specific case at hand here, the most likely MSE value can interpreted as the MSE value with the highest frequency for both the train and test data. If we compare this plot to \Fig{model_complexity_ols} we see that the numerical values of MSEs coincide, with the test MSE being slightly higher than the test MSE. 
 
@@ -154,25 +154,54 @@
 
         \subsubsection{Ridge}\label{sec:rigdeanalysis}
 
-            We continue our analysis of the model using $d=5$, but now for ridge regression, where the free parameter will be the penalty term $\lambda$. 
+        We continue our analysis of the model using $d=5$, but now for ridge regression, where the free parameter will be the penalty term $\lambda$. The technicalities of this method is explained in section \Sec{Ridge}. A natural place to start this analysis is to see how the MSE change for different penalty parameters $\lambda$, and we to this by using the two resampling techniques previously discussed. In \Fig{cross-validation_ridge} we see how the MSE for both the train and the test data change as a function of $\lambda$. This plot was generated using an 8-fold cross validation. Since $\lambda=0$ correspond to OLS analysis, we would expect the MSEs for low $\lambda$ to be fairly similar to the OLS values. If we compare this with \Fig{model_complexity_ols} and \Fig{cross-validation_ols} we see that this is indeed the case when $d=5$. We also observe that both the test and train MSEs increase when we increase $\lambda$. 
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/MSE_ridge_CV.pdf}
-            \caption{Cross-validation for Ridge regression.}
+            \caption{MSE for train and test data for polynomial of degree $d=5$, as function of the penalty parameter $\lambda$ for the ridge analysis of the Franke function ($N=20, \eta=0.1$) generated with an 8-fold cross validation. For small $\lambda$ the train MSE and test MSE are close the OLS values, but both increase when we increase $\lambda$.}
             \label{fig:cross-validation_ridge}
         \end{figure}
 
+        However, when we repeat the analysis but generate the plot using a $k=400$ bootstrap instead, as shown in \Fig{bootstrapping_ridge}, we see that the test MSE decrease to a minimum and remain low when we increase $\lambda$. We also note that the $\lambda$ which minimised the test MSE is found numerically to be $\lambda^\mathrm{ridge}_\mathrm{min} = 8.86\cdot 10^{-4}$ given to two significant figures. 
+
+
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/MSE_ridge_BS.pdf}
-            \caption{Model complexity for Ridge regression. (RIKTIG PLOT?)}
-            \label{fig:model_complexity_ridge}
+            \caption{MSE for train and test data for polynomial of degree $d=5$, as a function of the penalty parameter $\lambda$ for the ridge analysis of the Franke function ($N=20, \eta=0.1$) generated using a $k=400$ bootstrap. We see that the train MSE increase in a similar way as in \Fig{cross-validation_ridge}, while the test MSE decreases to a minimum and remain low, reaching a minimum at around $\lambda\approx 10^{-4}$ }
+            \label{fig:bootstrapping_ridge}
         \end{figure}
+
+        We perform the bias-variance analysis with a $k=400$ bootstrap which results in the plot shown in figure \Fig{bias_variance_ridge}. We see that the variance remains low for this $\lambda$ range, while the residual error follows the bias closely. They both seem to reach a minimum at around $\lambda\approx 10^{-4}$ which coincides very well with $\lambda^\mathrm{ridge}_\mathrm{min}$. This is expected since ridge regression is a biased model. 
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/tradeoff_ridge.pdf}
-            \caption{Bias-variance for Ridge regression.}
+            \caption{Bias, variance and residual error for polynomial of degree $d=5$, as a function of the penalty parameter $\lambda$ for the ridge analysis of the Franke function ($N=20, \eta=0.1$) generated with a $k=400$ bootstrap. We see that the variance remain low for this rang, and the bias and error terms follow each other. They both seem to reach a local minimum at $\lambda\approx 10^{-4}$.}
             \label{fig:bias_variance_ridge}
         \end{figure}
+
+        We investigate the model further by using $\lambda^\mathrm{ridge}_\mathrm{min}$ and plot the frequencies of the average MSE for the train and test data as a histogram using a $k=400$ bootstrap, shown in \Fig{mse_hist_ridge}. From this we see that the test MSE is slightly lower that the train MSE which is in accordance with \Fig{bootstrapping_ridge}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{Franke/MSE_hist_ridge.pdf}
+            \caption{Histogram of average MSE for train and test data for polynomial degree $d=5$ for the ridge analysis of the Franke function ($N=20$, $\eta=0.1$), generated with a $k=400$ bootstrap and $\lambda=8.86\cdot 10^{-4}$. The test data has a lower MSE than the train data. This is consistent with \Fig{bootstrapping_ridge} for this value of $\lambda$.}
+            \label{fig:mse_hist_ridge}
+        \end{figure}
+
+        We may also plot the plot the histogram of the average of the feature parameters $\svec{\beta}$. We would perhaps guess that these values should be centered around 0, using similar arguments as for \Fig{beta_hist_ols}. However, the penalty parameters $\lambda$ will shrink $\svec{\beta}$-values corresponding to small singular values in the design matrix $X$. It therefore give emphasize to the $\svec{\beta}$-values corresponding to large singular values of the design matrix. This may explain the skew towards negative parameter values which we observe in \Fig{beta_hist_ridge} where we plot the abovementioned histogram. 
+        \begin{figure}
+            \includegraphics[width=\linewidth]{Franke/beta_hist_ridge.pdf}
+            \caption{Histogram of average feature parameters $\svec{\beta}$ for polynomial degree $d=5$ for the ridge analysis of the Franke function ($N=20$, $\eta=0.1$), generated with a $k=400$ bootstrap and $\lambda=8.86\cdot 10^{-4}$. With the same reasoning as in \Fig{beta_hist_ols} we would expect these to be centred around 0. However, the penalty parameter shrinks certain beta values, which may explain the skew observed here.}
+            \label{fig:beta_hist_ridge}
+        \end{figure}
+
+
+
+
+
+
+
+
+
 
         \subsubsection{Lasso}\label{sec:lassoanalysis}
 
@@ -185,7 +214,7 @@
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
             \caption{Model complexity for Lasso regression. (RIKTIG PLOT?)}
-            \label{fig:model_complexity_lasso}
+            \label{fig:bootstrapping_lasso}
         \end{figure}
 
         \begin{figure}
