@@ -116,6 +116,17 @@ class noneResampler:
             s += '\n'
             s += r'$\lambda = %.2e$'%self.lmbda
         return s
+    
+    def resamplingError(self):
+
+        MSEs = self.mean_squared_error()
+
+        self.errTrain = np.mean(MSEs[0])
+        self.errTest = np.mean(MSEs[1])
+
+        return self.errTest
+
+
 
 
 
@@ -164,6 +175,7 @@ class Bootstrap(noneResampler):
 
         self.trainings.append(train)
         self.predictions.append(pred)
+
 
     def bias_varianceDecomposition(self):
         """

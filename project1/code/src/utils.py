@@ -19,12 +19,12 @@ np.random.seed(ourSeed)
 randomState = check_random_state(ourSeed)
 
 # 3D extrapolation of Vandermonde matrix
-maxPolydeg = 18
+maxPolydeg = 20
 matrixColoumns = []
 
-for i in range(1, maxPolydeg+1):
-    for k in range(i+1):
-        matrixColoumns.append(f'x^{(i-k):1.0f} y^{k:1.0f}')
+for i_ in range(1, maxPolydeg+1):
+    for k_ in range(i_+1):
+        matrixColoumns.append(f'x^{(i_-k_):1.0f} y^{k_:1.0f}')
 matrixColoumns.append(' ')
 
 '''
@@ -73,11 +73,13 @@ def features2polydeg(features):
         order of 2D polynomial
     """    
     p = features + 1
+    
     coeff = [1, 3, 2-2*p]
     ns = np.roots(coeff)
     n = int(np.max(ns))
+    if p == 153 or p ==152:
+        n = 16 # ...
     return n
-
 
 
 def featureMatrix_2Dpolynomial(x, y, max_polydeg=maxPolydeg):
@@ -99,26 +101,3 @@ def featureMatrix_2Dpolynomial(x, y, max_polydeg=maxPolydeg):
     Xpd = pd.DataFrame(data=X, columns=cols, index=idx)
 
     return Xpd
-
-
-
-
-
-# Handy tool for running relevant parts from terminal 
-
-Franke_pts = ['B', 'C', 'D', 'E', 'F']
-
-def runparts(parts, all_pts=Franke_pts):
-    pts = []
-    for part in parts:
-        pt = part.strip().upper().replace('PT', '')
-        if pt == 'ALL':
-            pts = all_pts
-            break
-        else:
-            assert pt in all_pts
-            pts.append(pt)
-
-    for pt in pts:
-        eval(f'pt{pt}()')
-

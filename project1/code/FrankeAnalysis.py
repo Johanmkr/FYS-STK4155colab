@@ -38,7 +38,7 @@ for d in POLYDEGS:
 
 HYPERPARAMS = np.logspace(-6, -2, 20)  # for Ridge at least (polydeg 5)
 
-show = False
+show = True
 
 goto_polydeg = 5
 goto_B = 400 # no. of bootraps
@@ -57,6 +57,24 @@ def noneAnalysis():
     angles = (28, -20)
     PLOT.visualise_data(*prepper1.dump(), angles=angles, show=show, mark="$η=0.1$")
     PLOT.visualise_data(*prepper2.dump(), angles=angles, tag='_no_noise', show=show, mark="$η=0$")
+
+
+def finalAnalysis():
+
+    d = 5
+    scheme = 'OLS'
+    lmbda = 0
+
+    trainer, predictor = TRAININGS[d], PREDICTIONS[d]
+
+    reg = linearRegression(trainer, predictor, mode='own', scheme=scheme, shrinkage_parameter=lmbda)
+    reg.fit()
+    predictor.predict()
+    PLOT.compare_data(predictor, predictor, angles=(20, 30), show=show, mark='prediction set')
+
+
+
+
 
 def olsAnalysis():
 
@@ -187,11 +205,28 @@ def ridgeAnalysis():
             Crossvalidations.append(CV)
 
         PLOT.train_test_MSE(Crossvalidations, show=show)
-    
+
+    def grid_search():
+        CVgrid = []
+
+        for d in range(1,6):
+            trainer = TRAININGS[d]
+            predictor = PREDICTIONS[d]
+            CV_l  = []
+            for lmbda in HYPERPARAMS:
+                CV = CrossValidation(trainer, predictor, goto_k, scheme='Ridge', hyper_param=lmbda)
+                CV()
+                CV_l.append(CV)
+
+            CVgrid.append(CV_l)
+        
+        PLOT.heatmap(CVgrid, show=show)
+
+    grid_search()
     print('   > Bootstrap ...\n')
-    bootstrap_analysis()
+    #bootstrap_analysis()
     print('   > k-fold cross-validation ...\n')
-    cv_analysis()
+    #cv_analysis()
 
 def lassoAnalysis():
 
@@ -235,7 +270,7 @@ def lassoAnalysis():
 
 if __name__ == '__main__':
 
-    all_parts = ['ols', 'ridge', 'lasso', 'none'] 
+    all_parts = ['ols', 'ridge', 'lasso', 'none', 'final'] 
 
     def runparts(parts):
         pts = []

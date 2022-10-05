@@ -6,7 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import matplotlib.ticker as ticker
 import pandas as pd
 from collections import OrderedDict
 
@@ -185,7 +185,6 @@ def MSE_train_test(ax, resamplings, errorbar=False):
         complexity[i] = rs.polydeg
         hyper_parameter[i] = rs.lmbda
         trainMSE[i], testMSE[i] = rs.mean_squared_error()
-
     variable, xlabel, xscale = complexity_or_tuning(complexity, hyper_parameter)
     if Niter < 20:
         alpha = 0.4
@@ -272,9 +271,9 @@ def make_histogram(ax, bootstrap, which):
         ax.legend(loc='center right')
    
 
-def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles):
-    ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles) #computed
-    ax.scatter(X_exp[:,0], X_exp[:,1], z_exp[:], marker='^', c='yellow') #expected
+def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles, cmap):
+    ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles, cmap) #computed
+    ax.scatter(X_exp[:,0], X_exp[:,1], z_exp[:], marker='^', c='navy') #expected
     return ax
 
 
@@ -303,10 +302,13 @@ def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampli
 
 
 
-def visualise_data(z_data, X_data, angles=(40, 30), tag='', show=False, mark=None):
+def visualise_data(z_data, X_data, angles=(40, 30), cmap='default', tag='', show=False, mark=None):
     x = X_data[:,0]; y = X_data[:,1]; z = z_data[:]
     fig, ax = plt.subplots(subplot_kw={'projection':'3d'}, figsize=(9,7))
-    ax, surf = surface_plot(ax, x, y, z, angles)
+    if cmap == 'default':
+        ax, surf = surface_plot(ax, x, y, z, angles, cm.coolwarm)
+    elif cmap == 'terrain':
+        ax, surf = surface_plot(ax, x, y, z, angles, cm.terrain)
     pdfname = f'data3D{tag}.pdf'
     fig.subplots_adjust(left=0.02, bottom=0.04, right=0.96, top=0.96)
     save_push(fig, pdfname, show=show, tight=False)
@@ -318,9 +320,13 @@ def visualise_data(z_data, X_data, angles=(40, 30), tag='', show=False, mark=Non
 
 
 
-def compare_data(expected, computed, angles=(40, 30), tag='', show=False, mark=None):
+def compare_data(expected, computed, angles=(40, 30), cmap='default', tag='', show=False, mark=None):
     fig, ax = plt.subplots(subplot_kw={'projection':'3d'}, figsize=(9,7))
-    ax = data_model_comparison(ax, expected.tV, expected.dM, computed.mV, computed.dM, angles=angles)
+    if cmap == 'default':
+        cmapp = cm.coolwarm
+    else:
+        cmapp = cm.terrain
+    ax = data_model_comparison(ax, expected.tV, expected.dM, computed.mV, computed.dM, angles=angles, cmap=cmapp)
     fig.text(0.8, 0.9, str(computed), ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
     scheme = computed.scheme.lower()
     pdfname = f'comparison3D_{scheme}{tag}.pdf'
@@ -332,7 +338,7 @@ def compare_data(expected, computed, angles=(40, 30), tag='', show=False, mark=N
 
 
 def train_test_MSE(resamplings, tag='', show=False, mark=None):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(layout="constrained")
     MSE_train_test(ax, resamplings)
     res = resamplings[0]
     scheme = res.scheme.lower()
@@ -341,29 +347,29 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
     if tune_hyper_parameter(resamplings):
         polydeg = res.polydeg
         lmbda = '...'
-        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
+        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, transform=ax.transAxes, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
     else:
         polydeg = '...'
         lmbda = res.lmbda
     pdfname = f'MSE_{scheme}_{type}{tag}.pdf'
-    save_push(fig, pdfname, show=show)
+    save_push(fig, pdfname, show=show, tight=False)
     set_info(pdfname, scheme, resamplings[0].mode, polydeg=polydeg, lmbda=lmbda, resampling_type=type, resampling_iter=Niter, mark=mark)
 
 
 def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(layout="constrained")
     bias_variance_tradeoff(ax, bootstrappings)
     bs = bootstrappings[0]
     scheme = bs.scheme.lower()
     if tune_hyper_parameter(bootstrappings):
         polydeg = bs.polydeg
         lmbda = '...'
-        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
+        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, transform=ax.transAxes, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
     else:
         polydeg = '...'
         lmbda = bs.lmbda
     pdfname = f'tradeoff_{scheme}{tag}.pdf'
-    save_push(fig, pdfname, show=show)
+    save_push(fig, pdfname, show=show, tight=False)
     set_info(pdfname, scheme, bs.mode, polydeg=polydeg, lmbda=lmbda, resampling_type='BS', resampling_iter=bs.B, mark=mark)
 
 
@@ -487,12 +493,75 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
 
     pad = 1/4
     ax.set_yscale('log')
-    set_axes_2d(ax, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
+    set_axes_2d(ax, xlabel=r'polynomial degree $d$', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
     scheme = trainings[d][0].scheme.lower()
     pdfname = f'error_vs_noise_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
 
     set_info(pdfname, scheme, trainings[d][0].mode, lmbda=trainings[d][0].lmbda, mark=mark)
+
+
+def heatmap(resampling_grid, levels=[0], fmt=None, tag='', show=False, mark=None):
+    fig, ax = plt.subplots(layout="constrained")
+    N_polydegs = len(resampling_grid)
+    N_params = len(resampling_grid[0])
+
+    pred_error = np.zeros((N_params, N_polydegs))
+    polydegs = np.zeros_like(pred_error)
+    hparams = np.zeros_like(pred_error)
+
+
+    for i in range(N_polydegs):
+        for j in range(N_params):
+            rs = resampling_grid[i][j]
+            pred_error[j, i] = rs.resamplingError()
+            polydegs[j, i] = rs.polydeg
+            hparams[j, i] = rs.lmbda
+
+
+    # cmaps: Accent, magma, plasma,c ividis
+    L = 30
+    levels0 = np.linspace(pred_error.min(), pred_error.max(), L)
+    CS = ax.contourf(polydegs, hparams, pred_error, cmap=cm.magma, levels=levels0)
+    #
+    j0, i0 = np.unravel_index(np.argmin(pred_error), np.shape(pred_error))
+    d0, l0, err0 = polydegs[j0,i0], hparams[j0,i0], pred_error[j0,i0]
+    # contours
+    if levels[0] != 0:
+        ax.contour(CS, levels=levels, inline=True, fmt=fmt, colors='b')
+    #dummy = np.where(polydegs<10, pred_error, np.nan)
+    #levels1 = np.linspace(np.nanmin(dummy), np.nanmax(dummy), L)
+    #ax.contour(CS, levels=[0,levels1[int(L/10)]], colors='b', alpha=0.7)
+
+    cbar = fig.colorbar(CS)
+    cbar.ax.set_ylabel(r'prediction error')
+    ax.axhline(l0, ls='--', lw=0.8, color='r', alpha=0.7)
+    ax.axvline(d0, ls='--', lw=0.8, color='r', alpha=0.7)
+    ax.text(polydegs[j0,int(N_polydegs/5)], l0, r'$\lambda = %.2e$'%l0,   fontsize=SMALL_SIZE, color='r', bbox=boxStyle)
+    ax.text(d0, hparams[int(3*N_params/5),i0], r'$d = %i$'%d0,fontsize=SMALL_SIZE, color='r', rotation=-90, bbox=boxStyle)
+
+    set_axes_2d(ax, xlabel=r'polynomial degree $d$', ylabel=r'hyper parameter $\lambda$', legend=False, ylim=(np.min(hparams), np.max(hparams)), xlim=(np.min(polydegs)-0.02, np.max(polydegs)+0.02))
+    ax.set_yscale('log')
+    
+
+    scheme = rs.scheme.lower()
+    type = rs.ID()
+    Niter = rs.Niter
+    pdfname = f'MSE_heatmap_{scheme}_{type}{tag}.pdf'
+    save_push(fig, pdfname, show=show, tight=False)
+
+    set_info(pdfname, scheme, rs.mode, resampling_type=type, resampling_iter=Niter, mark=mark)
+
+        
+
+
+
+
+
+
+
+
+
 
 
 
