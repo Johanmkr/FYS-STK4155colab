@@ -27,7 +27,7 @@ prepper.prep()
 
 TRAININGS = {}
 PREDICTIONS = {}
-maxPolydeg = 12
+maxPolydeg = 14
 POLYDEGS = range(1, maxPolydeg+1)
 
 
@@ -37,7 +37,7 @@ for d in POLYDEGS:
 
 
 HYPERPARAMS_R = np.logspace(-6, -2, 20)  # for Ridge (polydeg 5)
-HYPERPARAMS_L = np.logspace(-4, -2, 10)  # for Lasso
+HYPERPARAMS_L = np.logspace(-6, -2, 10)  # for Lasso
 
 show = True
 
