@@ -34,7 +34,7 @@ class noneResampler:
         self.predictor = predictor
         self.polydeg = self.trainer.polydeg
         self.nfeatures = self.trainer.nfeatures
-        self.Niter = no_iterations
+        self.Niter = int(no_iterations)
         self.mode, self.scheme = mode.lower(), scheme.lower()
         self.lmbda = hyper_param
         self.method = self.scheme # alias

@@ -8,6 +8,7 @@ import os
 import pandas as pd
 
 from copy import deepcopy
+#import warnings as warn
 
 from sklearn.utils import check_random_state
 
@@ -101,3 +102,4 @@ def featureMatrix_2Dpolynomial(x, y, max_polydeg=maxPolydeg):
     Xpd = pd.DataFrame(data=X, columns=cols, index=idx)
 
     return Xpd
+

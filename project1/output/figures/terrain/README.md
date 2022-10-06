@@ -1,6 +1,6 @@
 |                                   | scheme   | mode   | $d$   | $\lambda$   | resampling (iter)   | mark                               |
 |:----------------------------------|:---------|:-------|:------|:------------|:--------------------|:-----------------------------------|
-| beta_hist_ols.pdf                 | OLS      | own    | 8     | 0           | BS (200)            |                                    |
+| beta_hist_ols.pdf                 | OLS      | own    | 6     | 0           | BS (200)            |                                    |
 | beta_ols.pdf                      | OLS      | manual |       | 0           |                     | $β$'s grouped by order $d$         |
 | beta_polydeg_hist_ols.pdf         | OLS      | own    | 8     | 0           | BS (200)            |                                    |
 | comparison3D.pdf                  |          |        |       |             |                     | visualise x, y, z data             |
@@ -13,7 +13,7 @@
 | MSE_heatmap_ridge_CV_loworder.pdf | Ridge    | skl    |       |             | CV (9)              | 60 $λ$'s from 1.00e-06 to 1.00e-06 |
 | MSE_hist_ols.pdf                  | ols      | own    | 8     | 0           | BS (100)            |                                    |
 | MSE_hist_olsTrue.pdf              | OLS      | own    | 8     | 0           | BS (200)            |                                    |
-| MSE_ols_BS.pdf                    | OLS      | own    | ...   | 0           | BS (9)              |                                    |
+| MSE_ols_BS.pdf                    | OLS      | own    | ...   | 0           | BS (10)             |                                    |
 | MSE_ols_CV.pdf                    | nan      | nan    | nan   | nan         | nan                 |                                    |
 | MSE_R2_scores_ols.pdf             | OLS      | manual |       | 0           |                     |                                    |
 | MSE_ridge_BS.pdf                  | Ridge    | skl    | 18    | ...         | BS (200)            |                                    |

@@ -223,15 +223,62 @@
             \label{fig:bias_variance_lasso}
         \end{figure}
 
+        \begin{figure}
+            \includegraphics[width=\linewidth]{Franke/MSE_heatmap_lasso_CV.pdf}
+            \caption{The heatmap shows the cross-validation error resulting from a grid search. FIXME}
+            \label{fig:gridsearch_cv_lasso}
+        \end{figure}
+
+
     % \subsection{Applying best fit model}\label{sec:applybestmodel}
 
 
     \subsection{Regression analysis for real terrain data}\label{sec:reganalysis_real_data}
 
+    By the courtesy of \citep{EarthExplorer}, we were able to extract the terrain data of a part of the Crand Ganyon in Arizona, United States. To properly retrieve the geographical coordinates of the map is somewhat circumstantial and utterly unimportant to this task, we to not mind these in this project. We read the GeoTIFF and choose an area from which we extract a coarse grid. In particular, the original cutout area in question consists of $N=900$ points in the $x$ and $y$ direction each. In order to speed up our codes, we use only the data from every \nth{30} $x$- and $y$-point, leaving us with $N=30$ in each direction. We now have $N^2=900$ $z$-points representing relative altitude, of which 20\% are saved for verification. After splitting randomly, we scale the data using the Z-score normalisation explained in \Sec{scaling}. It would not make sense to concern ourselves with the vertical units (the actual altitude), as we already have omitted the horizontal units. The scaled data is what we aspire to work with and is presented in its completeness in \Fig{gc_data}.
+
     \begin{figure}
         \includegraphics[width=\linewidth]{terrain/data3D.pdf}
-        \caption{Scaled terrain data representing a part of the Grand Canyon, downloaded from \citep{EarthExplorer}. We use every \nth{30} point in each direction of the original $300\cross 300$-cutout, leaving us with an $xy$-grid of $30\cross 30$ points.}
+        \caption{Scaled terrain data representing a part of the Grand Canyon.}
         \label{fig:gc_data}
     \end{figure}
+
+        \subsubsection{OLS}\label{sec:gc_olsanalysis}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/beta_ols.pdf}
+            \caption{FIXME.}
+            \label{fig:gc_beta_with_standard_deviation}
+        \end{figure}
+
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/MSE_ols_BS.pdf}
+            \caption{Bootstrap training and prediction errors FIXME.}
+            \label{fig:gc_model_complexity}
+        \end{figure}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/tradeoff_ols.pdf}
+            \caption{FIXME.}
+            \label{fig:gc_bias_variance_ols}
+        \end{figure}
+
+
+        \subsection{Ridge}\label{sec:gc_ridgeanalysis}
+
+        % something about lower limig lambda?
+        
+
+
+
+
+
+        \subsection{Lasso}\label{sec:gc_lassoanalysis}
+      
+
+
+
+
 
     

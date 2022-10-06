@@ -501,7 +501,7 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
     set_info(pdfname, scheme, trainings[d][0].mode, lmbda=trainings[d][0].lmbda, mark=mark)
 
 
-def heatmap(resampling_grid, levels=[0], fmt=None, tag='', show=False, mark=None):
+def heatmap(resampling_grid, ref_error=0, tag='', show=False, mark=None):
     fig, ax = plt.subplots(layout="constrained")
     N_polydegs = len(resampling_grid)
     N_params = len(resampling_grid[0])
@@ -527,11 +527,12 @@ def heatmap(resampling_grid, levels=[0], fmt=None, tag='', show=False, mark=None
     j0, i0 = np.unravel_index(np.argmin(pred_error), np.shape(pred_error))
     d0, l0, err0 = polydegs[j0,i0], hparams[j0,i0], pred_error[j0,i0]
     # contours
-    if levels[0] != 0:
-        ax.contour(CS, levels=levels, inline=True, fmt=fmt, colors='b')
-    #dummy = np.where(polydegs<10, pred_error, np.nan)
-    #levels1 = np.linspace(np.nanmin(dummy), np.nanmax(dummy), L)
-    #ax.contour(CS, levels=[0,levels1[int(L/10)]], colors='b', alpha=0.7)
+    if ref_error>err0:
+        #fmt1 = {levels[0]:'', levels[1]:'MSE'}
+        #ax.clabel(cntr, fmt=fmt1, colors='springgreen', fontsize=SMALL_SIZE)
+        ii = np.argmin(np.abs(levels0-ref_error))
+        cntr = ax.contour(CS, levels=[levels0[0], levels0[ii]], colors='springgreen')
+        
 
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel(r'prediction error')

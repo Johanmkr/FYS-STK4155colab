@@ -13,7 +13,8 @@ To properly run the code, make sure you are in the `code` directory.
 The main scripts `FrankeAnalysis.py` and `terrainAnalysis.py` are written such that in order to run, they require a case-insesitive command line argument 
 * `OLS` to perform the analysis using the Ordinary least squares scheme,
 * `Ridge` to perform the analysis using the Ridge minimisation scheme,
-* `Lasso` to perform the analysis using the Lasso minimisation scheme, 
+* `Lasso` to perform the analysis using the Lasso minimisation scheme and
+* `final` to  visualise the model we decide on,
 
 but will ask for input if these are not given. In addition, `none` as command line or input argument will run miscellaneous code, e.g. generate 3D visualisations. To run all of the script, use `all` instead.
 

@@ -36,11 +36,12 @@ for d in POLYDEGS:
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
 
-HYPERPARAMS = np.logspace(-6, -2, 20)  # for Ridge at least (polydeg 5)
+HYPERPARAMS_R = np.logspace(-6, -2, 20)  # for Ridge (polydeg 5)
+HYPERPARAMS_L = np.logspace(-4, -2, 10)  # for Lasso
 
 show = True
 
-goto_polydeg = 5
+goto_polydeg = 5 # 
 goto_B = 400 # no. of bootraps
 goto_k = 8  # no. of folds
 
@@ -57,7 +58,12 @@ def noneAnalysis():
     angles = (28, -20)
     PLOT.visualise_data(*prepper1.dump(), angles=angles, show=show, mark="$η=0.1$")
     PLOT.visualise_data(*prepper2.dump(), angles=angles, tag='_no_noise', show=show, mark="$η=0$")
+    
 
+
+
+
+ref_MSE = {'simple':0.14848043170413214, 'BS':0.16646991921908658, 'CV':0.17656214912552667}
 
 def finalAnalysis():
 
@@ -72,6 +78,18 @@ def finalAnalysis():
     predictor.predict()
     PLOT.compare_data(predictor, predictor, angles=(20, 30), show=show, mark='prediction set')
 
+    BS = Bootstrap(trainer, predictor, goto_B, scheme=scheme, mode='own', hyper_param=lmbda)
+    BS()
+    MSE_BS = BS.resamplingError()
+
+
+    CV = CrossValidation(trainer, predictor, goto_k, scheme=scheme, mode='own', hyper_param=lmbda)
+    CV()
+    MSE_CV = CV.resamplingError()
+
+    MSE_un = predictor.mean_squared_error()
+    
+    print(MSE_un, MSE_BS, MSE_CV) # This could have been done smarter, but now I am running out of time (and space on my machine)
 
 
 
@@ -138,7 +156,9 @@ def olsAnalysis():
         PLOT.beta_params(workouts, show=show) 
 
     def bootstrap_analysis():
+        print('   > Bootstrap ...\n')
         Bootstrappings = []
+
         for d in POLYDEGS:
             BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], goto_B)
             BS()
@@ -153,8 +173,9 @@ def olsAnalysis():
         PLOT.beta_hist_resampling(Bootstrappings[idx],  show=show)
 
     def cv_analysis():
-
+        print('   > k-fold cross-validation ...\n')
         Crossvalidations = []
+
         for d in POLYDEGS:
             CV = CrossValidation(TRAININGS[d], PREDICTIONS[d], goto_k)
             CV()
@@ -164,9 +185,7 @@ def olsAnalysis():
     
     noise_effect()
     simple_analysis()
-    print('   > Bootstrap ...\n')
     bootstrap_analysis()
-    print('   > k-fold cross-validation ...\n')
     cv_analysis()
 
 def ridgeAnalysis():
@@ -180,9 +199,10 @@ def ridgeAnalysis():
     predictor= PREDICTIONS[goto_polydeg]
 
     def bootstrap_analysis():
+        print('   > Bootstrap ...\n')
         Bootstrappings = []
 
-        for lmbda in HYPERPARAMS:
+        for lmbda in HYPERPARAMS_R:
             BS = Bootstrap(trainer, predictor, goto_B, scheme='Ridge', hyper_param=lmbda)
             BS()
             BS.bias_varianceDecomposition()
@@ -192,14 +212,15 @@ def ridgeAnalysis():
         PLOT.BV_Tradeoff(Bootstrappings, show=show)
 
         # assess one choice:
-        idx = np.argmin(np.abs(HYPERPARAMS-1e-3))
+        idx = np.argmin(np.abs(HYPERPARAMS_R-1e-4))
         PLOT.mse_hist_resampling(Bootstrappings[idx],  show=show)
         PLOT.beta_hist_resampling(Bootstrappings[idx], show=show)
 
     def cv_analysis():
+        print('   > k-fold cross-validation ...\n')
         Crossvalidations = []
 
-        for lmbda in HYPERPARAMS:
+        for lmbda in HYPERPARAMS_R:
             CV = CrossValidation(trainer, predictor, goto_k, scheme='Ridge', hyper_param=lmbda)
             CV()
             Crossvalidations.append(CV)
@@ -207,13 +228,14 @@ def ridgeAnalysis():
         PLOT.train_test_MSE(Crossvalidations, show=show)
 
     def grid_search():
+        print('   > Grid search using k-fold cross-validation ...\n')
         CVgrid = []
 
         for d in range(1,6):
             trainer = TRAININGS[d]
             predictor = PREDICTIONS[d]
             CV_l  = []
-            for lmbda in HYPERPARAMS:
+            for lmbda in HYPERPARAMS_R:
                 CV = CrossValidation(trainer, predictor, goto_k, scheme='Ridge', hyper_param=lmbda)
                 CV()
                 CV_l.append(CV)
@@ -222,11 +244,9 @@ def ridgeAnalysis():
         
         PLOT.heatmap(CVgrid, show=show)
 
+    bootstrap_analysis()
+    cv_analysis()
     grid_search()
-    print('   > Bootstrap ...\n')
-    #bootstrap_analysis()
-    print('   > k-fold cross-validation ...\n')
-    #cv_analysis()
 
 def lassoAnalysis():
 
@@ -234,15 +254,19 @@ def lassoAnalysis():
     print('-'*40)
     print('\n')
 
+    
     trainer = TRAININGS[goto_polydeg]
-    predictor= PREDICTIONS[goto_polydeg]
+    predictor = PREDICTIONS[goto_polydeg]
+
+    trainer = TRAININGS[9]
+    predictor= PREDICTIONS[9]   
 
     def bootstrap_analysis():
+        print('   > Bootstrap ...\n')
         Bootstrappings = []
 
-        for lmbda in HYPERPARAMS[10:]:
-            print('----')
-            BS = Bootstrap(trainer, predictor, 10, scheme='Lasso', mode='skl', hyper_param=lmbda)
+        for lmbda in HYPERPARAMS_L[1:]:
+            BS = Bootstrap(trainer, predictor, goto_B/40, scheme='Lasso', mode='skl', hyper_param=lmbda)
             BS()
             BS.bias_varianceDecomposition()
             Bootstrappings.append(BS)
@@ -251,19 +275,43 @@ def lassoAnalysis():
         PLOT.BV_Tradeoff(Bootstrappings, show=show)
     
     def cv_analysis():
+        print('   > k-fold cross-validation ...\n')
         Crossvalidations = []
 
-        for lmbda in HYPERPARAMS[10:]:
+        for lmbda in HYPERPARAMS_L[1:]:
             CV = CrossValidation(trainer, predictor, goto_k, scheme='Lasso', mode='skl', hyper_param=lmbda)
             CV()
             Crossvalidations.append(CV)
 
         PLOT.train_test_MSE(Crossvalidations, show=show)
+
+    def grid_search():
+        print('   > Grid search using k-fold cross-validation ...\n')
+        CVgrid = []
+
+        for d in POLYDEGS[5:]:
+            print(f'\nd = {d:2.0f} ...')
+            trainer = TRAININGS[d]
+            predictor = PREDICTIONS[d]
+            CV_l  = []
+            for lmbda in HYPERPARAMS_L:
+                print(f'   > λ = {lmbda:.3e} ...')
+                CV = CrossValidation(trainer, predictor, goto_k, scheme='Lasso', mode='skl', hyper_param=lmbda)
+                CV()
+                CV_l.append(CV)
+            CVgrid.append(CV_l)
+        
+        def fmt(x):
+            if np.abs(x) < 1e-10:
+                s = ''
+            else:
+                s = r'$\text{MSE}^\text{OLS}$'
+        PLOT.heatmap(CVgrid, ref_error=ref_MSE['CV'],  show=show)
+
     
-    print('   > Bootstrap ...\n')
-    bootstrap_analysis()
-    print('   > k-fold cross-validation ...\n')
-    cv_analysis()
+    #bootstrap_analysis()
+    #cv_analysis()
+    grid_search()
     
 
 
@@ -298,9 +346,8 @@ if __name__ == '__main__':
     additionalInfo = [f'xy-grid: N x N = {NN} x {NN}']
     additionalInfo.append(f'noise level: η = {eta}')
     additionalInfo.append(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).')
-    additionalInfo.append(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]:.1e} and λ = {HYPERPARAMS[-1]:.1e} (logarithmically spaced).')
-
-
+    additionalInfo.append(f'Ridge: Considered {len(HYPERPARAMS_R)} λ-values between λ = {HYPERPARAMS_R[0]:.1e} and λ = {HYPERPARAMS_R[-1]:.1e} (logarithmically spaced).')
+    additionalInfo.append(f'Lasso: Considered {len(HYPERPARAMS_L)} λ-values between λ = {HYPERPARAMS_L[0]:.1e} and λ = {HYPERPARAMS_L[-1]:.1e} (logarithmically spaced).')
 
 
     PLOT.update_info(additionalInfo)

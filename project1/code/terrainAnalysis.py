@@ -32,7 +32,7 @@ prepper.prep(True)
 
 
 
-TRAININGS = {} 
+TRAININGS = {}
 PREDICTIONS = {}
 
 POLYDEGS = range(1, maxPolydeg+1)
@@ -45,12 +45,12 @@ for d in POLYDEGS:
 
 HYPERPARAMS = np.logspace(-5, -2, 12)
 
-goto_polydeg = 8
+goto_polydeg = 6 # or seven
 goto_B = 200
 goto_k = 10
 
 
-show = True
+show = False
 
 
 def assessModelComplexityBS(B, method, mode, polydegs=POLYDEGS):
@@ -137,7 +137,7 @@ def olsAnalysis():
 
 
     def simple_analysis():
-        polydegs = range(1, 9)
+        polydegs = range(1, 8)
         workouts = {d:deepcopy(TRAININGS[d]) for d in polydegs}
         forecasts = {d:deepcopy(PREDICTIONS[d]) for d in polydegs}
 
@@ -155,8 +155,8 @@ def olsAnalysis():
         PLOT.beta_params(workouts, grouped=True, show=show, mark="$β$'s grouped by order $d$") 
         
         # Select one polydeg to visualise for
-        T, P = workouts[goto_polydeg], forecasts[goto_polydeg]
-        PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
+        #T, P = workouts[goto_polydeg], forecasts[goto_polydeg]
+        #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
     #
     # simple_analysis()
@@ -240,8 +240,8 @@ def lassoAnalysis():
     PLOT.train_test_MSE(Crossvalidations, show=show)
     PLOT.BV_Tradeoff(Bootstrappings, show=show)'''
     HYPERPARAMS_L = np.logspace(-5, -2, 10)
-    POLYDEGS_L = POLYDEGS[3:-2]
-    k_L = 5
+    POLYDEGS_L = POLYDEGS[3:]
+    k_L = 7
     # Cross validation (grid search)
     print('   > k-fold cross-validation with grid search ...\n')
     t0 = time()
@@ -249,7 +249,7 @@ def lassoAnalysis():
     t1 = time()
     print(t1-t0)
     print('plotting')
-    PLOT.heatmap(CVgrid, show=show, mark=f"{len(HYPERPARAMS_L)} $λ$'s from {HYPERPARAMS_L[0]:.2e} to {HYPERPARAMS_L[0]:.2e}")
+    PLOT.heatmap(CVgrid,show=show, mark=f"{len(HYPERPARAMS_L)} $λ$'s from {HYPERPARAMS_L[0]:.2e} to {HYPERPARAMS_L[0]:.2e}")
 
 
 
