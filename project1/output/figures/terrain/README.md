@@ -4,7 +4,7 @@
 | beta_ols.pdf                      | OLS      | manual |       | 0           |                     | $β$'s grouped by order $d$         |
 | beta_polydeg_hist_ols.pdf         | OLS      | own    | 8     | 0           | BS (200)            |                                    |
 | comparison3D.pdf                  |          |        |       |             |                     | visualise x, y, z data             |
-| comparison3D_ols.pdf              | OLS      | manual | 8     | 0           |                     | prediction set                     |
+| comparison3D_ols.pdf              | OLS      | manual | 6     | 0           |                     | prediction set                     |
 | comparison3D_ridge.pdf            | Ridge    | manual | 15    | 1.08e-08    |                     | prediction set                     |
 | comparison3D_ridgetrain.pdf       | Ridge    | manual | 15    | 1.08e-08    |                     | training set                       |
 | data3D.pdf                        |          |        |       |             |                     | visualise x, y, z data             |
