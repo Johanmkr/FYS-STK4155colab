@@ -8,7 +8,7 @@
 | comparison3D_ridge.pdf            | Ridge    | manual | 15    | 1.08e-08    |                     | prediction set                     |
 | comparison3D_ridgetrain.pdf       | Ridge    | manual | 15    | 1.08e-08    |                     | training set                       |
 | data3D.pdf                        |          |        |       |             |                     | visualise x, y, z data             |
-| MSE_heatmap_lasso_CV.pdf          | Lasso    | skl    |       |             | CV (9)              | 10 $λ$'s from 1.00e-04 to 1.00e-04 |
+| MSE_heatmap_lasso_CV.pdf          | Lasso    | skl    |       |             | CV (10)             | 10 $λ$'s from 1.00e-05 to 1.00e-05 |
 | MSE_heatmap_ridge_CV.pdf          | Ridge    | skl    |       |             | CV (10)             | 12 $λ$'s from 1.00e-05 to 1.00e-05 |
 | MSE_heatmap_ridge_CV_loworder.pdf | Ridge    | skl    |       |             | CV (9)              | 60 $λ$'s from 1.00e-06 to 1.00e-06 |
 | MSE_hist_ols.pdf                  | ols      | own    | 8     | 0           | BS (100)            |                                    |

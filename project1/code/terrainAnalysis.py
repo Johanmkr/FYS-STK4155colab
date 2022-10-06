@@ -159,10 +159,10 @@ def olsAnalysis():
         #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
     #
-    # simple_analysis()
+    simple_analysis()
 
     # Bootstrap 
-    print('   > Bootstrap ...\n')
+    '''print('   > Bootstrap ...\n')
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
     PLOT.train_test_MSE(Bootstrappings, show=show)
     PLOT.BV_Tradeoff(Bootstrappings, show=show)
@@ -172,7 +172,7 @@ def olsAnalysis():
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     Crossvalidations = assessModelComplexityCV(goto_k, 'OLS', 'own')
-    PLOT.train_test_MSE(Crossvalidations, show=show)
+    PLOT.train_test_MSE(Crossvalidations, show=show)'''
 
 
 
