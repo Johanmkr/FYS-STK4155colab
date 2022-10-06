@@ -27,7 +27,7 @@ prepper.prep()
 
 TRAININGS = {}
 PREDICTIONS = {}
-maxPolydeg = 12
+maxPolydeg = 14
 POLYDEGS = range(1, maxPolydeg+1)
 
 
@@ -35,15 +35,18 @@ for d in POLYDEGS:
     TRAININGS[d] = Training(*prepper.getTrain(d))
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
+POLYDEGS = POLYDEGS[:-2]
+
 
 HYPERPARAMS_R = np.logspace(-6, -2, 20)  # for Ridge (polydeg 5)
-HYPERPARAMS_L = np.logspace(-4, -2, 10)  # for Lasso
-
-show = True
-
+HYPERPARAMS_L = np.logspace(-6, -2, 20)  # for Lasso
+kLIST = range(5,11)
 goto_polydeg = 5 # 
 goto_B = 400 # no. of bootraps
 goto_k = 8  # no. of folds
+
+
+show = True
 
 def noneAnalysis():
     # Data with noise
@@ -174,14 +177,18 @@ def olsAnalysis():
 
     def cv_analysis():
         print('   > k-fold cross-validation ...\n')
-        Crossvalidations = []
 
-        for d in POLYDEGS:
-            CV = CrossValidation(TRAININGS[d], PREDICTIONS[d], goto_k)
-            CV()
-            Crossvalidations.append(CV)
+        CVgrid = []
+        for i, k in enumerate([5, 6, 7, 8, 9, 10]):
+            Crossvalidations = []
 
-        PLOT.train_test_MSE(Crossvalidations,  show=show)
+            for d in POLYDEGS:
+                CV = CrossValidation(TRAININGS[d], PREDICTIONS[d], k)
+                CV()
+                Crossvalidations.append(CV)
+            CVgrid.append(Crossvalidations)
+
+        PLOT.CV_errors(CVgrid, show=show)
     
     noise_effect()
     simple_analysis()
@@ -213,19 +220,21 @@ def ridgeAnalysis():
 
         # assess one choice:
         idx = np.argmin(np.abs(HYPERPARAMS_R-1e-4))
-        PLOT.mse_hist_resampling(Bootstrappings[idx],  show=show)
+        PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
         PLOT.beta_hist_resampling(Bootstrappings[idx], show=show)
 
     def cv_analysis():
         print('   > k-fold cross-validation ...\n')
-        Crossvalidations = []
+        CVgrid = []
+        for k in kLIST[1::2]:
+            Crossvalidations = []
+            for lmbda in HYPERPARAMS_R:
+                CV = CrossValidation(trainer, predictor, k, scheme='Ridge', hyper_param=lmbda)
+                CV()
+                Crossvalidations.append(CV)
+            CVgrid.append(Crossvalidations)
 
-        for lmbda in HYPERPARAMS_R:
-            CV = CrossValidation(trainer, predictor, goto_k, scheme='Ridge', hyper_param=lmbda)
-            CV()
-            Crossvalidations.append(CV)
-
-        PLOT.train_test_MSE(Crossvalidations, show=show)
+        PLOT.CV_errors(CVgrid, show=show)
 
     def grid_search():
         print('   > Grid search using k-fold cross-validation ...\n')
@@ -245,8 +254,8 @@ def ridgeAnalysis():
         PLOT.heatmap(CVgrid, show=show)
 
     bootstrap_analysis()
-    cv_analysis()
-    grid_search()
+    #cv_analysis()
+    #grid_search()
 
 def lassoAnalysis():
 
@@ -254,18 +263,17 @@ def lassoAnalysis():
     print('-'*40)
     print('\n')
 
+    d_L = 14
     
-    trainer = TRAININGS[goto_polydeg]
-    predictor = PREDICTIONS[goto_polydeg]
+    trainer = TRAININGS[d_L]
+    predictor = PREDICTIONS[d_L]
 
-    trainer = TRAININGS[9]
-    predictor= PREDICTIONS[9]   
 
     def bootstrap_analysis():
         print('   > Bootstrap ...\n')
         Bootstrappings = []
 
-        for lmbda in HYPERPARAMS_L[1:]:
+        for lmbda in HYPERPARAMS_L:
             BS = Bootstrap(trainer, predictor, goto_B/40, scheme='Lasso', mode='skl', hyper_param=lmbda)
             BS()
             BS.bias_varianceDecomposition()
@@ -276,14 +284,16 @@ def lassoAnalysis():
     
     def cv_analysis():
         print('   > k-fold cross-validation ...\n')
-        Crossvalidations = []
+        CVgrid = []
+        for k in kLIST[1::2]:
+            Crossvalidations = []
+            for lmbda in HYPERPARAMS_L[1:]:
+                CV = CrossValidation(trainer, predictor, k, scheme='Lasso', mode='skl', hyper_param=lmbda)
+                CV()
+                Crossvalidations.append(CV)
+            CVgrid.append(Crossvalidations)
 
-        for lmbda in HYPERPARAMS_L[1:]:
-            CV = CrossValidation(trainer, predictor, goto_k, scheme='Lasso', mode='skl', hyper_param=lmbda)
-            CV()
-            Crossvalidations.append(CV)
-
-        PLOT.train_test_MSE(Crossvalidations, show=show)
+        PLOT.CV_errors(CVgrid, show=show)
 
     def grid_search():
         print('   > Grid search using k-fold cross-validation ...\n')
@@ -308,10 +318,10 @@ def lassoAnalysis():
                 s = r'$\text{MSE}^\text{OLS}$'
         PLOT.heatmap(CVgrid, ref_error=ref_MSE['CV'],  show=show)
 
+    cv_analysis()
+    bootstrap_analysis()
     
-    #bootstrap_analysis()
-    #cv_analysis()
-    grid_search()
+    #grid_search()
     
 
 

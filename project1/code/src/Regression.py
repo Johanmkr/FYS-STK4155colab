@@ -17,6 +17,7 @@ class linearRegression:
 
     """
     Class for performing linear regression fitting in 3D space.
+    Currently assuming scaled training and validation data, as according to Z-score normalisation.
     """    
 
     def __init__(self, train, test, scheme='ols', mode='manual', shrinkage_parameter=0):
@@ -30,7 +31,7 @@ class linearRegression:
         test : Prediction
             the SCALED prediction set
         method : str, optional
-            the method (in (global) olsMethods, ridgeMethods or lassoMethods) with which to perform the least squares fitting, by default 'ols'
+            the method (in (global) olsMethods, ridgeMethods or lassoMethods) with which to perform the fitting, by default 'ols'
         mode : str, optional
             the setting (in (global) manualModes or autoModes) for performing least squares fitting, by default 'manual'
         shinkage_parameter : float, optional
@@ -52,7 +53,6 @@ class linearRegression:
         self.nfeatures = self.trainer.nfeatures
 
         self.lmbda = shrinkage_parameter
-
 
     def __setMode(self, mode):
         """
@@ -133,7 +133,8 @@ class linearRegression:
 
     def fit(self, shrinkage_parameter=None):
         """
-        Minimize cost function to find β-parameter.
+        Minimise cost function to find β-parameter.
+        
 
         Parameters
         ----------
@@ -143,8 +144,13 @@ class linearRegression:
         Returns
         -------
         parameterVector
-            the resulting beta from the least squares fitting
-        """ 
+            the resulting beta vector from the least squares fitting
+
+        Raises
+        ------
+        TypeError
+            if the user would be so crazy as to train on the validation data
+        """
 
         self.lmbda = shrinkage_parameter or self.lmbda     
 
@@ -152,6 +158,7 @@ class linearRegression:
             pre = '_skl'
         elif self.mode == 'manual':
             pre = '_man'
+        # Why in the whole wide world does this not work with dunder???
         
         if self.scheme in olsMethods:
             post = f'OLS'
@@ -178,11 +185,19 @@ class linearRegression:
         return self.pV
 
     def setHyperParameter(self, lmbda):
+        """
+        Self-explanatory.
+
+        Parameters
+        ----------
+        lmbda : float
+            hyper parameter in Ridge/Lasso regression
+        """
         self.lmbda = lmbda
 
     def setOptimalbeta(self, beta):
         """
-        Set self-object's parameter β. 
+        Set self-object's parameter β. Compute its variance.
 
         Parameters
         ----------
@@ -243,7 +258,7 @@ class linearRegression:
 
     def _manRidge(self):
         """
-        (intended local) The Ridge Regression algorithm using own code
+        (intended local) The Ridge Regression algorithm using own code.
 
         Returns
         -------
@@ -261,7 +276,8 @@ class linearRegression:
 
     def _sklLasso(self):
         """
-        (intended local) The Lasso Regression algorithm using Scikit learn.
+        (intended local) The Lasso Regression algorithm using Scikit learn. 
+        Maximum number of iterations is set to 10^5. Feel free to increse if you have what in Norway is known as "fritidsproblemer".
 
         Returns
         -------
@@ -281,7 +297,7 @@ class linearRegression:
 
         Returns
         -------
-        ndarray
+        modelVector
             the model
         """
         self.model = self.dM * self.pV  # see __mul__ and __rmul__ in respective classes     
@@ -294,18 +310,40 @@ class linearRegression:
         """   
         self.mean_squared_error()
         self.R2_score()
-
-    
+   
     def mean_squared_error(self):
+        """
+        Calculate the mean squared error of the model.
+
+        Returns
+        -------
+        float
+            MSE-score (attribute 'MSE')
+        """
         self.MSE = np.sum((self.data - self.model)**2)/self.npoints
         return self.MSE
 
     def R2_score(self):
+        """
+        Calculate the R^2-score of the model.
+
+        Returns
+        -------
+        float
+            R^2-score (attribute 'R2')
+        """
         self.R2 = 1 - np.sum((self.data - self.model)**2) / np.sum((self.data - np.mean(self.data))**2)
         return self.R2
 
-
     def betaVariance(self):
+        """
+        Compute the variance of the beta parameter. Save it to the attribute 'pV'.
+
+        Raises
+        ------
+        TypeError
+            if you DARE use the test data for this
+        """
         sigma2 = 1 # as data is scaled
 
         if not isinstance(self, (Training, Prediction)):
@@ -332,6 +370,15 @@ class linearRegression:
         self.pV.setVariance(var)
 
     def __str__(self):
+        """
+        Print the polynomial degree assumed in this regression
+        and the hyper parameter if relevant. 
+
+        Returns
+        -------
+        rawstring
+            plt-friendly string
+        """
         s = r'$d = %i$'%self.polydeg
         if self.scheme != 'ols':
             s += '\n'
@@ -347,7 +394,7 @@ class Training(linearRegression):
 
     def __init__(self, train_target_vector, train_design_matrix):
         """
-        Constructs a training set. 
+        Construct a training set. 
 
         Parameters
         ----------
@@ -357,39 +404,35 @@ class Training(linearRegression):
             the SCALED design matrix corresponding to the (x,y)-points that decides the z-points (i mangel på en bedre forklaring...)
         """   
 
-
         self.tV = targetVector(train_target_vector)
         self.dM = designMatrix(train_design_matrix) 
         self.data = self.tV.z
         self.npoints = len(self.tV)
         self.polydeg = self.dM.polydeg
         self.nfeatures = self.dM.nfeatures
-
-  
        
-    def train(self, lmbda=0):
+    def train(self, lmbda=None):
         """
         Alias for the motherclass's fit-method.
 
         Parameters
         ----------
-        lmbda : int/float, optional
-            the tuning parameter for Ridge/Lasso Regression, by default 0
+        lmbda : float, optional
+            the tuning parameter for Ridge/Lasso Regression, by default self.lmbda
 
         Returns
         -------
-        ParameterVector
+        parameterVector
             the computed β-parameter
-        """        
+        """       
+        lmbda = lmbda or self.lmbda 
         super().fit(lmbda)
         self.setOptimalbeta(self.pV)
         return self.pV
 
-
-
     def randomShuffle(self):
         """
-        Resample data with replacement.
+        Draw data randomly with replacement.
 
         Returns
         -------
@@ -412,7 +455,7 @@ class Prediction(linearRegression):
     """
     def __init__(self, test_target_vector, test_design_matrix):
         """
-        Constructs a prediction set.
+        Construct a prediction set.
 
         Parameters
         ----------
@@ -429,6 +472,14 @@ class Prediction(linearRegression):
         self.nfeatures = self.dM.nfeatures
       
     def predict(self):
+        """
+        Alias for motherclass's 'computeModel()'.
+
+        Returns
+        -------
+        modelVector
+            the model
+        """
         super().computeModel()
         return self.model
 

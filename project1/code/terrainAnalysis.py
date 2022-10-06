@@ -44,13 +44,15 @@ for d in POLYDEGS:
 
 
 HYPERPARAMS = np.logspace(-5, -2, 12)
+HYPERPARAMS_R = np.logspace(-5, -2, 20)
+HYPERPARAMS_L = np.logspace(-4, -2, 10)
 
 goto_polydeg = 6 # or seven
-goto_B = 200
+goto_B = 400
 goto_k = 10
+kLIST = [6, 8, 10]
 
-
-show = False
+show = True
 
 
 def assessModelComplexityBS(B, method, mode, polydegs=POLYDEGS):
@@ -110,12 +112,19 @@ def noneAnalysis():
 
 def finalAnalysis():
 
+
+    # MODEL 1
     d = 18
     lmbda = 1.23e-4
-
-    #d = 15
     scheme = 'Ridge'
+    # MODEL 2 - fav
+    #d = 15
     #lmbda = 1.08e-8
+    #scheme = 'Ridge'
+    # MODEL 3
+    d = 6
+    lmbda = 0
+    scheme = 'ols'
 
     trainer, predictor = TRAININGS[d], PREDICTIONS[d]
 
@@ -159,20 +168,24 @@ def olsAnalysis():
         #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
     #
-    simple_analysis()
+    #simple_analysis()
 
     # Bootstrap 
-    '''print('   > Bootstrap ...\n')
+    print('   > Bootstrap ...\n')
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
     PLOT.train_test_MSE(Bootstrappings, show=show)
     PLOT.BV_Tradeoff(Bootstrappings, show=show)
     idx = goto_polydeg-1
     PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=show)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
 
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
-    Crossvalidations = assessModelComplexityCV(goto_k, 'OLS', 'own')
-    PLOT.train_test_MSE(Crossvalidations, show=show)'''
+    CVgrid = []
+    for k in kLIST:
+        Crossvalidations = assessModelComplexityCV(k, 'OLS', 'own')
+        CVgrid.append(Crossvalidations)
+    PLOT.CV_errors(CVgrid, show=show)
 
 
 
@@ -182,45 +195,31 @@ def ridgeAnalysis():
     print('-'*40)
     print('\n')
     d_R = 18
+    lmbda_R = 1.23e-4
 
     # Bootstrap 
     print('   > Bootstrap ...\n')
     
-    Bootstrappings = assessHyperParamBS(d_R, goto_B, 'Ridge', 'skl', hyperparams=np.logspace(-5, -2, 20))
+    Bootstrappings = assessHyperParamBS(d_R, goto_B, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
     PLOT.train_test_MSE(Bootstrappings, show=show)
     # Trade-off : d = 13, 14, 15, 16
     PLOT.BV_Tradeoff(Bootstrappings, show=show)
+    idx = np.argmin(np.abs(HYPERPARAMS_R-lmbda_R))
+    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=show)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
 
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
-    Crossvalidations = assessHyperParamCV(d_R, goto_k, 'Ridge', 'skl', hyperparams=np.logspace(-5, -2, 20))
-    PLOT.train_test_MSE(Crossvalidations, show=show)
+    CVgrid = []
+    for k in kLIST[1:]:
+        Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
+        CVgrid.append(Crossvalidations)
+    PLOT.CV_errors(CVgrid, show=show)
 
     # Cross validation (grid search)
     print('   > k-fold cross-validation with grid search ...\n')
-    t0 = time()
-    CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS[3:], HYPERPARAMS)
-    t1 = time()
-    print(t1-t0)
-    print('plotting')
-    levels = [0, 0.18] #chnage
-    def fmt(x):
-        if np.abs(x) < 1e-12:
-            s = ''
-        else:
-            s = r'$\text{MSE}^\text{OLS}$'
-        return s
-    PLOT.heatmap(CVgrid,  show=show, mark=f"{len(HYPERPARAMS)} $λ$'s from {HYPERPARAMS[0]:.2e} to {HYPERPARAMS[0]:.2e}")
-    '''# plot for polydegs 1-5
-    hyperparams = np.logspace(-6, 0, 60)
-    t0 = time()
-    CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', range(1,6), hyperparams)
-    t1 = time()
-    print(t1-t0)
-    print('plotting')
-    PLOT.heatmap(CVgrid, tag='_loworder', show=show, mark=f"{len(hyperparams)} $λ$'s from {hyperparams[0]:.2e} to {hyperparams[0]:.2e}")'''
-    
-
+    '''CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS[3:], HYPERPARAMS_R)
+    PLOT.heatmap(CVgrid,  show=show)'''
 
    
 def lassoAnalysis():
@@ -249,7 +248,7 @@ def lassoAnalysis():
     t1 = time()
     print(t1-t0)
     print('plotting')
-    PLOT.heatmap(CVgrid,show=show, mark=f"{len(HYPERPARAMS_L)} $λ$'s from {HYPERPARAMS_L[0]:.2e} to {HYPERPARAMS_L[0]:.2e}")
+    PLOT.heatmap(CVgrid,show=show)
 
 
 
@@ -290,8 +289,9 @@ if __name__ == '__main__':
 
 
     additionalInfo = []
-    additionalInfo.append(f'xy-grid: (Nx) x (Ny) = {Nx} x {Ny}')
+    additionalInfo.append(f'xy-grid: N x N = {Nx} x {Ny}')
     additionalInfo.append(f'Considered {len(POLYDEGS)} polynomial degrees between d = {POLYDEGS[0]} and d = {POLYDEGS[-1]} (linarly spaced).')
-    additionalInfo.append(f'Considered {len(HYPERPARAMS)} λ-values between λ = {HYPERPARAMS[0]:.1e} and λ = {HYPERPARAMS[-1]:.1e} (logarithmically spaced).')
+    additionalInfo.append(f'Ridge: Considered {len(HYPERPARAMS_R)} λ-values between λ = {HYPERPARAMS_R[0]:.1e} and λ = {HYPERPARAMS_R[-1]:.1e} (logarithmically spaced).')
+    additionalInfo.append(f'Lasso: Considered {len(HYPERPARAMS_L)} λ-values between λ = {HYPERPARAMS_L[0]:.1e} and λ = {HYPERPARAMS_L[-1]:.1e} (logarithmically spaced).')
 
     PLOT.update_info(additionalInfo)

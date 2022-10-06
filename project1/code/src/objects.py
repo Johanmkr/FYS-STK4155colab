@@ -2,31 +2,80 @@ from src.utils import *
 
 
 
-class dataType:
+class noneData:
 
-    def __init__(self, data) -> None:
-        self.data = data #ndarray
+    def __init__(self, data):
+        """
+        Superclass (not working superbly...) for targetVector and designMatrix.
 
+        Parameters
+        ----------
+        data : ndarray
+            the data array
+        """
+        self.data = data 
 
     def setScalingParams(self, mu, sigma):
+        """
+        Set the scaling parameters for standard scaling.
+
+        Parameters
+        ----------
+        mu : float/ndarray
+            mean value
+        sigma : float/ndarray
+            standard deviation
+        """
         self.mu = mu
         self.sigma = sigma
 
     def __getitem__(self, index):
+        """
+        Use self-object as list-object.
+
+        Parameters
+        ----------
+        index : int/slice
+            the element(s) of the object
+
+        Returns
+        -------
+        float/ndarray
+            the data values of the given index/indices
+        """
         return self.data[index]
 
     def scale(self):
+        """
+        Scale data (does not work!).
+        """
         data = self.data.copy()
         data -= self.mu
         data /= self.sigma
         self.data = data
 
     def _scale(self, data):
+        """
+        For scaling data, to be used in subclass.
+
+        Parameters
+        ----------
+        data : ndarray
+            the 'data'-attribute of the object
+
+        Returns
+        -------
+        ndarray
+            scaled data
+        """
         data -= self.mu
         data /= self.sigma
         return data
 
     def rescale(self):
+        """
+        Rescale data (does not work!). 
+        """
         data = self.data.copy()
         
         data *= self.sigma
@@ -37,26 +86,32 @@ class dataType:
 
 
 
-class designMatrix(dataType):
-    #FIXME
-    #TODO
+class designMatrix(noneData):
     """
     Class for gathering properties of the design matrix of a 2D polynomial,
         z = f(x, y)  = c0 + c1*x + c2*y + c3*x^2 + c4*xy + c5*y^2 + ...,
     for a given polynomial degree.
     COMPATIBLE CLASSES:
-        * ParameterVector 
-        * LeastSquares (+ subclasses)
+        * parameterVector 
+        * targetVector
+        * modelVector
+        * leastSquares (+ subclasses)
         * Bootstrap
     """
 
-    def __init__(self, X) -> None:
+    def __init__(self, X):
         """
-        Constructor for the 2D polynomial design matrix.
+        Constructor for the 2D polynomial design matrix w/o intercept coloumn.
+
         Parameters
         ----------
-        polydeg : int
-            2D polynomial degree
+        X : ndarray/pd.DataFrame/designMatrix
+            the design matrix 
+
+        Raises
+        ------
+        TypeError
+            if the input is of wrong type
         """
 
         if isinstance(X, (pd.DataFrame, np.ndarray)):
@@ -84,14 +139,25 @@ class designMatrix(dataType):
             self.npoints, self.nfeatures, self.polydeg, self.scaled = X.npoints, X.nfeatures, X.polydeg, X.scaled
 
         else:
-            raise ValueError("X must be ndarray, designMatrix or DataFrame.")
+            raise TypeError("X must be ndarray, designMatrix or DataFrame.")
 
         super().__init__(self.X)
         self.X = self.data
         
-    
-    
     def getScalingParams(self, keepdims=True):
+        """
+        Retrieve the scaling parameters needed for standard scaling.
+
+        Parameters
+        ----------
+        keepdims : bool, optional
+            whether to keep the dimensions of the mean and standard deviation, by default True
+
+        Returns
+        -------
+        ndarray, ndarray
+            the mean per coloumn, the standard deviation per coloumn
+        """
         assert not self.scaled
         mu = np.mean(self.X, axis=0, keepdims=keepdims)
         sigma = np.std(self.X, axis=0, keepdims=keepdims)
@@ -99,27 +165,38 @@ class designMatrix(dataType):
         return mu, sigma
 
     def scale(self):
+        """
+        Scale the data using standard scaling (works).
+        """
         self.X = super()._scale(self.X)
-
- 
 
     def getMatrix(self):
         """
         Get the actual matrix.
+        (For when in doubt.)
+
         Returns
         -------
         ndarray
-            the design matrix of self.p features
+            the design matrix
         """        
         return self.X
 
     def __len__(self):
-        return np.shape(self.X)[1] # self.nfeatures?
+        """
+        Get the number of features in the feature matrix.
 
+        Returns
+        -------
+        int
+            number of features
+        """
+        return np.shape(self.X)[1]
 
     def __str__(self):
         """
         Display X in a nice way using pandas. 
+
         Returns
         -------
         str
@@ -142,7 +219,8 @@ class designMatrix(dataType):
         """
         Special method for performing the matrix multiplication 
             z = Xβ,
-        designed to work with instances of ParameterVector.
+        designed to work with instances of parameterVector.
+
         Parameters
         ----------
         other : ParameterVector
@@ -157,7 +235,16 @@ class designMatrix(dataType):
 
 
 
-class targetVector(dataType):
+class targetVector(noneData):
+    """
+    Class for gathering properties of the z-data.
+    COMPATIBLE CLASSES:
+        * parameterVector
+        * designMatrix 
+        * modelVector
+        * leastSquares (+ subclasses)
+        * Bootstrap
+    """
 
     def __init__(self, z) -> None:
 

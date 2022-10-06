@@ -1,4 +1,5 @@
 
+from audioop import cross
 import numpy as np
 import seaborn as sns
 import os
@@ -140,6 +141,8 @@ def tune_hyper_parameter(resamplings):
     for i, rs in enumerate(resamplings):
         complexity.append(rs.polydeg)
         hyper_parameter.append(rs.lmbda)
+        if i >= 2:
+            break
     
     if complexity[1] != complexity[0]:
         tuning = False
@@ -185,14 +188,26 @@ def MSE_train_test(ax, resamplings, errorbar=False):
         complexity[i] = rs.polydeg
         hyper_parameter[i] = rs.lmbda
         trainMSE[i], testMSE[i] = rs.mean_squared_error()
-    variable, xlabel, xscale = complexity_or_tuning(complexity, hyper_parameter)
+    
+    if tune_hyper_parameter(resamplings):
+        variable = hyper_parameter
+        xlabel = r'hyper parameter $\lambda$'
+        xscale = 'log'
+        elem = -1
+    else:
+        variable = complexity
+        xlabel = r'polynomial degree $d$'
+        xscale = 'linear'
+        elem = 0
+
     if Niter < 20:
         alpha = 0.4
         lw = 0.6
     else:
         alpha = 1/Niter**(1/3)
         lw = 0.2
-
+    
+    
     ax.plot(variable, trainMSE, lw=lw, c='dodgerblue', alpha=alpha) 
     ax.plot(variable, testMSE,  lw=lw, c='salmon',     alpha=alpha)
 
@@ -205,11 +220,53 @@ def MSE_train_test(ax, resamplings, errorbar=False):
         ax.plot(variable, muTrain, 'o-', c='royalblue', lw=1.8, label='train MSE')
         ax.plot(variable, muTest,  'o-', c='orangered', lw=1.8, label='test MSE') 
 
-    ref = [muTrain[0], muTest[0]]
-    ymax = np.max([muTrain[0], muTest[0]])*1.25
+
+    ymax = np.max([muTrain[elem], muTest[elem]])*1.25
     ymin = np.max([0, np.min([muTrain, muTest])*0.90])
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
     ax.set_xscale(xscale)
+
+
+def MSE_test(ax, crossvalidations, errorbar=False):
+
+    colours = {5:'cornflowerblue', 6:'mediumseagreen', 7:'coral', 8:'palevioletred', 9:'darkkhaki', 10:'mediumpurple'}
+    ymin = 10
+    ymax = 0
+    for i in range(len(crossvalidations)):
+        cv_list = crossvalidations[i]
+        N = len(cv_list)
+        if i == 0:
+            tuning = tune_hyper_parameter(cv_list)
+            variable = np.zeros(N)
+        res_error = np.zeros(N)
+        for j in range(N):
+            cv = cv_list[j]
+            k = len(cv) # number of folds
+            if i == 0:
+                if tuning:
+                    variable[j] = cv.lmbda
+                else:
+                    variable[j] = cv.polydeg
+            res_error[j] = cv.resamplingError()
+        
+        ymin = np.min([ymin, np.min(res_error)*0.9])
+        if tuning:
+            ymax = np.max([ymax, res_error[-1]*1.10])
+        else:
+            ymax = np.max([ymax, res_error[0]*1.25])
+        ax.plot(variable, res_error, 'o-', lw=2.2, c=colours[k], alpha=0.75, label=r'$k=%i$'%k)
+
+
+    if tuning:
+        xlabel = r'hyper parameter $\lambda$'
+        xscale = 'log'
+    else:
+        xlabel = r'polynomial degree $d$'
+        xscale = 'linear'
+
+    set_axes_2d(ax, xlabel=xlabel, ylabel='CV accuracy', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
+    ax.set_xscale(xscale)
+
 
 
 
@@ -234,7 +291,11 @@ def bias_variance_tradeoff(ax, bootstrappings):
     ax.plot(variable, bias2, ls='-', lw=2.5, c='b', label='bias$^2$')
     ax.plot(variable, var,   ls='-', lw=2.5, c='g', label='variance')
 
-    ymax = np.max([error[0], bias2[0], var[0]])*1.1
+    if tune_hyper_parameter(bootstrappings):
+        ymax = np.max([error[-1], bias2[-1], var[-1]])*1.1
+    else:
+        ymax = np.max([error[0], bias2[0], var[0]])*1.1
+
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', ylim=(0,ymax))
     ax.set_xscale(xscale)
 
@@ -337,7 +398,7 @@ def compare_data(expected, computed, angles=(40, 30), cmap='default', tag='', sh
 
 
 
-def train_test_MSE(resamplings, tag='', show=False, mark=None):
+def train_test_MSE(resamplings,  tag='', show=False, mark=None):
     fig, ax = plt.subplots(layout="constrained")
     MSE_train_test(ax, resamplings)
     res = resamplings[0]
@@ -354,6 +415,28 @@ def train_test_MSE(resamplings, tag='', show=False, mark=None):
     pdfname = f'MSE_{scheme}_{type}{tag}.pdf'
     save_push(fig, pdfname, show=show, tight=False)
     set_info(pdfname, scheme, resamplings[0].mode, polydeg=polydeg, lmbda=lmbda, resampling_type=type, resampling_iter=Niter, mark=mark)
+
+
+def CV_errors(crossvalidations_list, tag='', show=False, mark=None):
+    fig, ax = plt.subplots(layout="constrained")
+    if not isinstance(crossvalidations_list[0], list):
+        crossvalidations_list = [crossvalidations_list]
+    MSE_test(ax, crossvalidations_list)
+    cv_list = crossvalidations_list[0]
+    cv = cv_list[0]
+    scheme = cv.scheme.lower()
+    if tune_hyper_parameter(cv_list):
+        polydeg = cv.polydeg
+        lmbda = '...'
+        ax.text(0.8, 0.9, r'$d=%i$'%polydeg, transform=ax.transAxes, ha='right', va='top', fontsize=SMALL_SIZE, bbox=boxStyle)
+    else:
+        polydeg = '...'
+        lmbda = cv.lmbda
+    pdfname = f'MSE_{scheme}_CV{tag}.pdf'
+    save_push(fig, pdfname, show=show, tight=False)
+    set_info(pdfname, scheme, cv.mode, polydeg=polydeg, lmbda=lmbda, resampling_type='CV', resampling_iter='...', mark=mark)
+
+
 
 
 def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
