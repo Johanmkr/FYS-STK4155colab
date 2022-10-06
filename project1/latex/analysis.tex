@@ -211,15 +211,16 @@
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/MSE_heatmap_lasso_CV.pdf}
-            \caption{Heatmap of the MSE as function of both polynomial degree $d\in[6,12]$ and penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$, generated with and 8-fold cross validation}
+            \caption{Heatmap of the MSE as function of both polynomial degree $d\in[6,14]$ and penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$, generated with and 8-fold cross validation}
             \label{fig:gridsearch_cv_lasso}
         \end{figure}
 
-        % \begin{figure}
-        %     \includegraphics[width=\linewidth]{Franke/MSE_lasso_CV.pdf}
-        %     \caption{MSE for train and test data for polynomial of degree $d=9$, as function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with an 8-fold cross validation. For small $\lambda$ the train MSE and test MSE are close the OLS values, but both increase when we increase $\lambda$.}
-        %     \label{fig:cross-validation_lasso}
-        % \end{figure}
+
+        \begin{figure} 
+            \includegraphics[width=\linewidth]{Franke/MSE_lasso_CV.pdf}
+            \caption{MSE for train and test data for polynomial of degree $d=9$, as function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with an 8-fold cross validation. For small $\lambda$ the train MSE and test MSE are close the OLS values, but both increase when we increase $\lambda$.}
+            \label{fig:cross-validation_lasso}
+        \end{figure}
 
 
         \begin{figure}
@@ -237,6 +238,9 @@
 
     % \subsection{Applying best fit model}\label{sec:applybestmodel}
 
+        \clearpage
+
+    \newpage
 
     \subsection{Regression analysis for real terrain data}\label{sec:reganalysis_real_data}
 
@@ -274,12 +278,33 @@
 
         % something about lower limig lambda?
         
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/MSE_heatmap_ridge_CV.pdf}
+            \caption{Heatmap ridge}
+            \label{fig:gc_gridseach_ridge}
+        \end{figure}
 
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/MSE_ridge_BS.pdf}
+            \caption{MSE RIDGE BS}
+            \label{fig:gc_mse_ridge_bs}
+        \end{figure}
 
-
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/tradeoff_ridge.pdf}
+            \caption{Bias-variance trade off ridge}
+            \label{fig:gc_bias_variance_ridge}
+        \end{figure}
 
 
         \subsection{Lasso}\label{sec:gc_lassoanalysis}
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/MSE_heatmap_lasso_CV.pdf}
+            \caption{Heatmap lasso}
+            \label{fig:gc_gridseach_lasso}
+        \end{figure}
+
       
 
 
