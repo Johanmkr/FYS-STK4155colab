@@ -39,8 +39,15 @@ POLYDEGS = POLYDEGS[:-2]
 
 
 HYPERPARAMS_R = np.logspace(-6, -2, 20)  # for Ridge (polydeg 5)
+<<<<<<< HEAD
 HYPERPARAMS_L = np.logspace(-6, -2, 20)  # for Lasso
 kLIST = range(5,11)
+=======
+HYPERPARAMS_L = np.logspace(-6, -2, 10)  # for Lasso
+
+show = True
+
+>>>>>>> fff31bef574165ca70a041e81387288230d4cd0f
 goto_polydeg = 5 # 
 goto_B = 400 # no. of bootraps
 goto_k = 8  # no. of folds
