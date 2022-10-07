@@ -2,7 +2,7 @@
 
 
 
-Throughout this project we concern ourselves with some observed values $\vec{y}$ for which we seek to obtain an approximation $\tilde{\vec{y}}$ which predicts the true value. Once we have created a model $\tilde{\vec{y}}$ we need to determine its accuracy somehow. There are numerous way of doing this, we will mostly use the Mean Squared Error (MSE)\footnote{Describe MSE briefly} described in \Eq{MSE}, and the R2-score\footnote{describe R2-score briefly}, described in \Eq{R2}.
+Throughout this project we concern ourselves with some observed values $\vec{y}$ for which we seek to obtain an approximation $\tilde{\vec{y}}$ which predicts the true value. Once we have created a model $\tilde{\vec{y}}$ we need to determine its accuracy somehow. There are numerous way of doing this, we will mostly use the Mean Squared Error (MSE) as in \Eq{MSE}, and the R2-score, as in \Eq{R2}.
 
 
 \begin{align}\label{eq:MSE}
@@ -197,7 +197,7 @@ Let $\lambda \in \RR$ be some small number such that $\lambda >0$. If we add a p
     &= \norm{\vec{y}-\Xb}_2^{2} + \lambda \norm{\svec{\beta}}_2^2 
 \end{align*}
 
-ADD SOME FILLER TEXT HERE
+Solving equation \Eq{general_LS} for $C=C^\mathrm{Ridge}$ yields the Ridge expression for the optimal parameter:
 
 \begin{align*}
     \optbeta^\text{Ridge} = \big(\hessian + \lambda \II\big)^{-1} X\TT\vec{y}
