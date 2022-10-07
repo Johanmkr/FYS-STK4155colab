@@ -11,14 +11,14 @@
 | MSE_heatmap_ridge_CV.pdf | Ridge    | manual |       |                       | CV (8)              |                                                  |
 | MSE_hist_ols.pdf         | OLS      | manual | 5     | 0                     | BS (400)            |                                                  |
 | MSE_hist_ridge.pdf       | Ridge    | manual | 5     | 7.847599703514606e-05 | BS (400)            |                                                  |
-| MSE_lasso_BS.pdf         | Lasso    | skl    | 14    | ...                   | BS (10)             |                                                  |
+| MSE_lasso_BS.pdf         | Lasso    | skl    | 14    | ...                   | BS (100)            |                                                  |
 | MSE_lasso_CV.pdf         | Lasso    | skl    | 14    | ...                   | CV (...)            |                                                  |
 | MSE_ols_BS.pdf           | OLS      | manual | ...   | 0                     | BS (400)            |                                                  |
 | MSE_ols_CV.pdf           | OLS      | manual | ...   | 0                     | CV (...)            |                                                  |
 | MSE_R2_scores_ols.pdf    | OLS      | manual |       | 0                     |                     |                                                  |
 | MSE_ridge_BS.pdf         | Ridge    | manual | 5     | ...                   | BS (400)            |                                                  |
 | MSE_ridge_CV.pdf         | Ridge    | manual | 5     | ...                   | CV (...)            |                                                  |
-| tradeoff_lasso.pdf       | Lasso    | skl    | 14    | ...                   | BS (10)             |                                                  |
+| tradeoff_lasso.pdf       | Lasso    | skl    | 14    | ...                   | BS (100)            |                                                  |
 | tradeoff_ols.pdf         | OLS      | manual | ...   | 0                     | BS (400)            |                                                  |
 | tradeoff_ridge.pdf       | Ridge    | manual | 5     | ...                   | BS (400)            |                                                  |
 
