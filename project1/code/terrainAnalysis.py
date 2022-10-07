@@ -57,14 +57,14 @@ lmbda_O = 0
 
 ### Ridge:
 POLYDEGS_R = POLYDEGS[3:]
-HYPERPARAMS_R = np.logspace(-5, -2, 20)
+HYPERPARAMS_R = np.logspace(-5, -2, 10)
 d_R = 18
 lmbda_R = 1.23e-4
 
 
 ### Lasso:
 POLYDEGS_L = POLYDEGS[3:15]
-HYPERPARAMS_L = np.logspace(-4, -2, 10)
+HYPERPARAMS_L = np.logspace(-5, -2, 10)
 d_L = 11
 lmbda_L = 1e-5
 
@@ -184,13 +184,15 @@ def olsAnalysis():
     #simple_analysis()
 
     # Bootstrap 
-    '''print('   > Bootstrap ...\n')
+    print('   > Bootstrap ...\n')
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own', POLYDEGS_O)
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = goto_polydeg-1
     PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
-    PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)'''
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
+
+    
 
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
@@ -212,26 +214,26 @@ def ridgeAnalysis():
     # Bootstrap 
     print('   > Bootstrap ...\n')
     
-    Bootstrappings = assessHyperParamBS(d_R, goto_B, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
+    Bootstrappings = assessHyperParamBS(d_R, 3, 'Ridge', 'skl', hyperparams=np.logspace(-5, -4, 10))
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     # Trade-off : d = 13, 14, 15, 16
     PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = np.argmin(np.abs(HYPERPARAMS_R-lmbda_R))
     #PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
     #PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
-
+    exit()
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     CVgrid = []
-    for k in kLIST[1:]:
-        Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
+    for k in kLIST[1:3]:
+        Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R[1:])
         CVgrid.append(Crossvalidations)
     PLOT.CV_errors(CVgrid, show=SHOW)
 
     # Cross validation (grid search)
-    print('   > k-fold cross-validation with grid search ...\n')
+    '''print('   > k-fold cross-validation with grid search ...\n')
     CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS_R, HYPERPARAMS_R)
-    PLOT.heatmap(CVgrid, show=SHOW)
+    PLOT.heatmap(CVgrid, show=SHOW)'''
 
    
 def lassoAnalysis():

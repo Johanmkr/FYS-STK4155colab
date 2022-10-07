@@ -80,7 +80,7 @@
         \subsubsection{OLS}\label{sec:olsanalysis}
             We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
 
-            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. We further see that the coefficients of the same features more or less have the same sign for the different polynomial degrees. This is a sign of a stable model, as we do not want these coefficient to change much when we use different polynomial degrees for our model.
+            We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. We further see that the coefficients of the same features more or less have the same sign for the different polynomial degrees. This is a sign of a stable model, as we do not want these coefficient to change much when we use different polynomial degrees for our model. WHY??
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{Franke/beta_ols.pdf}
@@ -320,7 +320,7 @@
         \par
         UNSURE ABOUT THIS:
 
-        There are actually model with $d=15\pm 1, \lambda\sim  10^{-8}$ which give cross-validation accuracy $\lesssim 0.16$ for various choices of $k$. However, when confirming these models using bootstrap, the prediciton errors grow huge, as do both the variance and squared bias, in the regime of $\lambda\sim 10^{-8}$. There is a sudden drop in error and variance for $\lambda \simeq 8.5 \cdot 10^{-9}$ for $d=15$, but this now seems random.
+        There are actually models with $d=15\pm 1, \lambda\sim  10^{-8}$ which give cross-validation accuracy $\lesssim 0.16$ for various choices of $k$. However, when confirming these models using bootstrap, the prediciton errors grow huge, as do both the variance and squared bias, in the regime of $\lambda\sim 10^{-8}$. There is a sudden drop in error and variance for $\lambda \simeq 8.5 \cdot 10^{-9}$ for $d=15$, but this now seems random.
 
 
         \subsubsection{Lasso}\label{sec:gc_lassoanalysis}
@@ -333,11 +333,11 @@
             \label{fig:gc_gridsearch_lasso}
         \end{figure}
 
-        There is little point in continuing with validation of this model. In this report, we omit the rest of the Lasso analysis due to 
+        There is little point in continuing with validation of this model. In this paper, we omit the rest of the Lasso analysis due to 
 
         \begin{enumerate}[label=(\roman*)]
             \item the computational expense of the bootstrap and Lasso algorithm combined is very large, and even larger for smaller $\lambda$'s, and
-            \item a wish to reduce the number of figures for the sake of a legible paper.
+            \item a wish to reduce the number of figures for the sake of a legibility.
         \end{enumerate}
 
       

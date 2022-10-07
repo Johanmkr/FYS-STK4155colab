@@ -99,6 +99,11 @@ def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
 
 
 def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xlim='none', ylim='none'):
+    if xlim != 'none':
+        ax.set_xlim(xlim)
+    if ylim != 'none':
+        ax.set_ylim(ylim)
+
     if xlabel != 'none':
         if xlabel == 'Complexity':
             ax.set_xlabel(r'polynomial degree $d$')
@@ -117,15 +122,12 @@ def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xli
             ax.set_yscale('log')
         else:
             ax.set_ylabel(ylabel)
+
     if title != 'none':
         ax.set_title(title)
     if legend:
         ax.legend()
-
-    if xlim != 'none':
-        ax.set_xlim(xlim)
-    if ylim != 'none':
-        ax.set_ylim(ylim)
+    
     
 
 
@@ -591,27 +593,45 @@ def heatmap(resampling_grid, ref_error=0, tag='', show=False, mark=None):
             hparams[j, i] = rs.lmbda
 
 
-    # cmaps: Accent, magma, plasma,c ividis
+
     L = 30
     levels0 = np.linspace(pred_error.min(), pred_error.max(), L)
     CS = ax.contourf(polydegs, hparams, pred_error, cmap=cm.magma, levels=levels0)
-    #
     j0, i0 = np.unravel_index(np.argmin(pred_error), np.shape(pred_error))
     d0, l0, err0 = polydegs[j0,i0], hparams[j0,i0], pred_error[j0,i0]
+    
     # contours
     if ref_error>err0:
-        #fmt1 = {levels[0]:'', levels[1]:'MSE'}
-        #ax.clabel(cntr, fmt=fmt1, colors='springgreen', fontsize=SMALL_SIZE)
         ii = np.argmin(np.abs(levels0-ref_error))
         cntr = ax.contour(CS, levels=[levels0[0], levels0[ii]], colors='springgreen')
+
+    # check if we are at the limits
+    tol = 1e-15
+
+    if np.abs(d0-np.max(polydegs))<tol:
+        textstr_d = r'$d \geq %i$'%d0
+    elif np.abs(d0-np.min(polydegs))<tol:
+        textstr_d = r'$d \leq %i$'%d0
+    else: 
+        textstr_d = r'$d = %i$'%d0
+    
+    if np.abs(l0-np.max(hparams))<tol:
+        textstr_lmbda = r'$\lambda \geq %.2e$'%l0
+    elif np.abs(l0-np.min(hparams))<tol:
+        textstr_lmbda = r'$\lambda \leq %.2e$'%l0
+    else: 
+        textstr_lmbda = r'$\lambda = %.2e$'%l0
+
+    
         
 
     cbar = fig.colorbar(CS)
-    cbar.ax.set_ylabel(r'prediction error')
+    cbar.ax.set_ylabel(r'CV accuracy')
     ax.axhline(l0, ls='--', lw=0.8, color='r', alpha=0.7)
     ax.axvline(d0, ls='--', lw=0.8, color='r', alpha=0.7)
-    ax.text(polydegs[j0,int(N_polydegs/5)], l0, r'$\lambda = %.2e$'%l0,   fontsize=SMALL_SIZE, color='r', bbox=boxStyle)
-    ax.text(d0, hparams[int(3*N_params/5),i0], r'$d = %i$'%d0,fontsize=SMALL_SIZE, color='r', rotation=-90, bbox=boxStyle)
+
+    ax.text(polydegs[j0,int(N_polydegs/5)], l0, textstr_lmbda, fontsize=SMALL_SIZE, color='r', bbox=boxStyle)
+    ax.text(d0, hparams[int(3*N_params/5),i0],  textstr_d,     fontsize=SMALL_SIZE, color='r', rotation=-90, bbox=boxStyle)
 
     set_axes_2d(ax, xlabel='Complexity', ylabel='HyperParameter', legend=False, ylim=(np.min(hparams), np.max(hparams)), xlim=(np.min(polydegs)-0.02, np.max(polydegs)+0.02))
     
