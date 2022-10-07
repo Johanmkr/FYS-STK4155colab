@@ -7,7 +7,7 @@ from src.Resampling import Bootstrap, CrossValidation
 from imageio.v2 import imread
 
 import plot as PLOT
-PLOT.init('off')
+PLOT.init('on')
 
 PLOT.add_path('terrain')
 
@@ -37,25 +37,41 @@ PREDICTIONS = {}
 
 POLYDEGS = range(1, maxPolydeg+1)
 
+# nice params
+goto_polydeg = 6 # or seven
+goto_B = 400
+goto_k = 10
+kLIST = [6, 8, 10]
+
 
 for d in POLYDEGS:
     TRAININGS[d] = Training(*prepper.getTrain(d))
     PREDICTIONS[d] = Prediction(*prepper.getTest(d))
 
 
-HYPERPARAMS = np.logspace(-5, -2, 12)
+
+### OLS:
+POLYDEGS_O = POLYDEGS
+d_O = 6
+lmbda_O = 0
+
+### Ridge:
+POLYDEGS_R = POLYDEGS[3:]
 HYPERPARAMS_R = np.logspace(-5, -2, 20)
+d_R = 18
+lmbda_R = 1.23e-4
+
+
+### Lasso:
+POLYDEGS_L = POLYDEGS[3:15]
 HYPERPARAMS_L = np.logspace(-4, -2, 10)
+d_L = 11
+lmbda_L = 1e-5
 
-goto_polydeg = 6 # or seven
-goto_B = 400
-goto_k = 10
-kLIST = [6, 8, 10]
-
-show = True
+SHOW = True
 
 
-def assessModelComplexityBS(B, method, mode, polydegs=POLYDEGS):
+def assessModelComplexityBS(B, method, mode, polydegs):
     Bootstrappings = []
     for d in polydegs:
         BS = Bootstrap(TRAININGS[d], PREDICTIONS[d], B, scheme=method, mode=mode)
@@ -64,7 +80,7 @@ def assessModelComplexityBS(B, method, mode, polydegs=POLYDEGS):
         Bootstrappings.append(BS)
     return Bootstrappings
 
-def assessModelComplexityCV(k, method, mode, polydegs=POLYDEGS):
+def assessModelComplexityCV(k, method, mode, polydegs):
     Crossvalidations = []
     for d in polydegs:
         CV = Bootstrap(TRAININGS[d], PREDICTIONS[d], k, scheme=method, mode=mode)
@@ -73,7 +89,7 @@ def assessModelComplexityCV(k, method, mode, polydegs=POLYDEGS):
 
     return Crossvalidations
 
-def assessHyperParamBS(polydeg, B, method, mode, hyperparams=HYPERPARAMS):
+def assessHyperParamBS(polydeg, B, method, mode, hyperparams):
     Bootstrappings = []
     for lmbda in hyperparams:
         BS = Bootstrap(TRAININGS[polydeg], PREDICTIONS[polydeg], B, scheme=method, mode=mode, hyper_param=lmbda)
@@ -83,7 +99,7 @@ def assessHyperParamBS(polydeg, B, method, mode, hyperparams=HYPERPARAMS):
 
     return Bootstrappings
 
-def assessHyperParamCV(polydeg, k, method, mode, hyperparams=HYPERPARAMS):
+def assessHyperParamCV(polydeg, k, method, mode, hyperparams):
     Crossvalidations = []
     for lmbda in hyperparams:
         CV = CrossValidation(TRAININGS[polydeg], PREDICTIONS[polydeg], k, scheme=method, mode=mode, hyper_param=lmbda)
@@ -92,7 +108,7 @@ def assessHyperParamCV(polydeg, k, method, mode, hyperparams=HYPERPARAMS):
     return Crossvalidations
 
 
-def grid_searchCV(k, method, mode, polydegs=POLYDEGS, hyperparams=HYPERPARAMS):
+def grid_searchCV(k, method, mode, polydegs, hyperparams):
     CVgrid = []
     CVgrid = []
     for d in polydegs:
@@ -106,7 +122,7 @@ def grid_searchCV(k, method, mode, polydegs=POLYDEGS, hyperparams=HYPERPARAMS):
 
 
 def noneAnalysis():
-    PLOT.visualise_data(*prepper.dump(), show=show, cmap='terrain')
+    PLOT.visualise_data(*prepper.dump(), show=SHOW, cmap='terrain')
     #PLOT.visualise_data(*prepper.getTrain(goto_polydeg), show=show)
 
 
@@ -117,11 +133,8 @@ def finalAnalysis():
     d = 18
     lmbda = 1.23e-4
     scheme = 'Ridge'
-    # MODEL 2 - fav
-    #d = 15
-    #lmbda = 1.08e-8
-    #scheme = 'Ridge'
-    # MODEL 3
+
+    # MODEL 2
     d = 6
     lmbda = 0
     scheme = 'ols'
@@ -131,7 +144,7 @@ def finalAnalysis():
     reg = linearRegression(trainer, predictor, mode='own', scheme=scheme, shrinkage_parameter=lmbda)
     reg.fit()
     predictor.predict()
-    PLOT.compare_data(predictor, predictor, angles=(6, 49), cmap='terrain', show=show, mark='prediction set')
+    PLOT.compare_data(predictor, predictor, angles=(6, 49), cmap='terrain', show=SHOW, mark='prediction set')
     #trainer.computeModel()
     #PLOT.compare_data(trainer, trainer, angles=(6, 49), cmap='terrain', tag='train', show=show, mark='training set')
 
@@ -160,32 +173,32 @@ def olsAnalysis():
             T.computeExpectationValues()
             P.computeExpectationValues()
         
-        PLOT.train_test_MSE_R2(workouts, forecasts, show=show)
-        PLOT.beta_params(workouts, grouped=True, show=show, mark="$β$'s grouped by order $d$") 
+        PLOT.train_test_MSE_R2(workouts, forecasts, show=SHOW)
+        PLOT.beta_params(workouts, grouped=True, show=SHOW, mark="$β$'s grouped by order $d$") 
         
         # Select one polydeg to visualise for
-        #T, P = workouts[goto_polydeg], forecasts[goto_polydeg]
+        #T, P = workouts[d_O], forecasts[d_O]
         #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
     #
     #simple_analysis()
 
     # Bootstrap 
-    print('   > Bootstrap ...\n')
-    Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own')
-    PLOT.train_test_MSE(Bootstrappings, show=show)
-    PLOT.BV_Tradeoff(Bootstrappings, show=show)
+    '''print('   > Bootstrap ...\n')
+    Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own', POLYDEGS_O)
+    PLOT.train_test_MSE(Bootstrappings, show=SHOW)
+    PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = goto_polydeg-1
-    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=show)
-    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
+    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)'''
 
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     CVgrid = []
     for k in kLIST:
-        Crossvalidations = assessModelComplexityCV(k, 'OLS', 'own')
+        Crossvalidations = assessModelComplexityCV(k, 'OLS', 'own', POLYDEGS_O)
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=show)
+    PLOT.CV_errors(CVgrid, show=SHOW)
 
 
 
@@ -194,19 +207,18 @@ def ridgeAnalysis():
     print('\nPerforming analysis using Ridge regression\n')
     print('-'*40)
     print('\n')
-    d_R = 18
-    lmbda_R = 1.23e-4
+
 
     # Bootstrap 
     print('   > Bootstrap ...\n')
     
     Bootstrappings = assessHyperParamBS(d_R, goto_B, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
-    PLOT.train_test_MSE(Bootstrappings, show=show)
+    PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     # Trade-off : d = 13, 14, 15, 16
-    PLOT.BV_Tradeoff(Bootstrappings, show=show)
+    PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = np.argmin(np.abs(HYPERPARAMS_R-lmbda_R))
-    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=show)
-    PLOT.mse_hist_resampling(Bootstrappings[idx], show=show)
+    #PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
+    #PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
 
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
@@ -214,12 +226,12 @@ def ridgeAnalysis():
     for k in kLIST[1:]:
         Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R)
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=show)
+    PLOT.CV_errors(CVgrid, show=SHOW)
 
     # Cross validation (grid search)
     print('   > k-fold cross-validation with grid search ...\n')
-    '''CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS[3:], HYPERPARAMS_R)
-    PLOT.heatmap(CVgrid,  show=show)'''
+    CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS_R, HYPERPARAMS_R)
+    PLOT.heatmap(CVgrid, show=SHOW)
 
    
 def lassoAnalysis():
@@ -230,14 +242,14 @@ def lassoAnalysis():
 
     # Bootstrap
     '''print('   > Bootstrap ...\n')
-    Bootstrappings = assessHyperParamBS(goto_polydeg, 50, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Bootstrappings, show=show)
+    Bootstrappings = assessHyperParamBS(goto_polydeg, 50, 'Lasso', 'skl', hyperparams=HYPERPARAMS_L)
+    PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
-    Crossvalidations = assessHyperParamCV(goto_polydeg, 8, 'Lasso', 'skl')
-    PLOT.train_test_MSE(Crossvalidations, show=show)
-    PLOT.BV_Tradeoff(Bootstrappings, show=show)'''
+    Crossvalidations = assessHyperParamCV(goto_polydeg, 8, 'Lasso', 'skl', hyperparams=HYPERPARAMS_L)
+    PLOT.train_test_MSE(Crossvalidations, show=SHOW)
+    PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)'''
     HYPERPARAMS_L = np.logspace(-5, -2, 10)
     POLYDEGS_L = POLYDEGS[3:]
     k_L = 7
@@ -248,7 +260,7 @@ def lassoAnalysis():
     t1 = time()
     print(t1-t0)
     print('plotting')
-    PLOT.heatmap(CVgrid,show=show)
+    PLOT.heatmap(CVgrid,show=SHOW)
 
 
 

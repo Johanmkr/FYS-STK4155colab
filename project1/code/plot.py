@@ -100,9 +100,23 @@ def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
 
 def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xlim='none', ylim='none'):
     if xlabel != 'none':
-        ax.set_xlabel(xlabel)
+        if xlabel == 'Complexity':
+            ax.set_xlabel(r'polynomial degree $d$')
+            ax.xaxis.get_major_locator().set_params(integer=True)
+        elif xlabel == 'HyperParameter':
+            ax.set_xlabel(r'hyper parameter $\lambda$')
+            ax.set_xscale('log')
+        else:
+            ax.set_xlabel(xlabel)
     if ylabel != 'none':
-        ax.set_ylabel(ylabel)
+        if ylabel == 'Complexity':
+            ax.set_ylabel(r'polynomial degree $d$')
+            ax.yaxis.get_major_locator().set_params(integer=True)
+        if ylabel == 'HyperParameter':
+            ax.set_ylabel(r'hyper parameter $\lambda$')
+            ax.set_yscale('log')
+        else:
+            ax.set_ylabel(ylabel)
     if title != 'none':
         ax.set_title(title)
     if legend:
@@ -156,25 +170,6 @@ def tune_hyper_parameter(resamplings):
 def complexity_measure(resamplings):
     return not tune_hyper_parameter(resamplings)
 
-def complexity_or_tuning(complexity, hyper_parameter):
-
-    complexity_measure, tune_hyper_parameter = False, False
-    if complexity[1] != complexity[0]:
-        complexity_measure = True
-        variable = complexity
-        xlabel = r'polynomial degree $d$'
-        xscale = 'linear'
-    elif hyper_parameter[1] != hyper_parameter[0]:
-        tune_hyper_parameter = True
-        variable = hyper_parameter
-        xlabel = r'hyper parameter $\lambda$'
-        xscale = 'log'
-    else:
-        raise TypeError("Make sure that either the model complexity or the hyper parameter stays constant in the resampling.")
-    
-    return variable, xlabel, xscale
-
-
 
 def MSE_train_test(ax, resamplings, errorbar=False):
     N = len(resamplings) # no of models
@@ -191,13 +186,11 @@ def MSE_train_test(ax, resamplings, errorbar=False):
     
     if tune_hyper_parameter(resamplings):
         variable = hyper_parameter
-        xlabel = r'hyper parameter $\lambda$'
-        xscale = 'log'
+        xlabel = 'HyperParameter'
         elem = -1
     else:
         variable = complexity
-        xlabel = r'polynomial degree $d$'
-        xscale = 'linear'
+        xlabel = 'Complexity'
         elem = 0
 
     if Niter < 20:
@@ -224,7 +217,6 @@ def MSE_train_test(ax, resamplings, errorbar=False):
     ymax = np.max([muTrain[elem], muTest[elem]])*1.25
     ymin = np.max([0, np.min([muTrain, muTest])*0.90])
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
-    ax.set_xscale(xscale)
 
 
 def MSE_test(ax, crossvalidations, errorbar=False):
@@ -258,14 +250,11 @@ def MSE_test(ax, crossvalidations, errorbar=False):
 
 
     if tuning:
-        xlabel = r'hyper parameter $\lambda$'
-        xscale = 'log'
+        xlabel = 'HyperParameter'
     else:
-        xlabel = r'polynomial degree $d$'
-        xscale = 'linear'
+        xlabel = 'Complexity'
 
     set_axes_2d(ax, xlabel=xlabel, ylabel='CV accuracy', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
-    ax.set_xscale(xscale)
 
 
 
@@ -285,19 +274,24 @@ def bias_variance_tradeoff(ax, bootstrappings):
         bias2[i] = bs.bias2
         var[i] = bs.var
 
-    variable, xlabel, xscale = complexity_or_tuning(complexity, hyper_parameter)
-    
+    tuning = tune_hyper_parameter(bootstrappings)
+    if tuning:
+        variable = hyper_parameter
+        xlabel = 'HyperParameter'
+    else:
+        variable = complexity
+        xlabel = 'Complexity'
+
     ax.plot(variable, error, ls='-', lw=2.5, c='r', label='error')
     ax.plot(variable, bias2, ls='-', lw=2.5, c='b', label='bias$^2$')
     ax.plot(variable, var,   ls='-', lw=2.5, c='g', label='variance')
 
-    if tune_hyper_parameter(bootstrappings):
+    if tuning:
         ymax = np.max([error[-1], bias2[-1], var[-1]])*1.1
     else:
         ymax = np.max([error[0], bias2[0], var[0]])*1.1
 
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', ylim=(0,ymax))
-    ax.set_xscale(xscale)
 
 
 
@@ -533,12 +527,10 @@ def train_test_MSE_R2(trainings, predictions, tag='', show=False, mark=None):
     ax1.plot(polydegs, R2[0],  lw=2.5, ls='--', c='teal',        label='train $R^2$')
     ax1.plot(polydegs, R2[1],  lw=2.5, ls='-',  c='darkgreen',   label='test $R^2$')
 
-    ax2.set_xticks(list(polydegs))
-    ax2.set_xticklabels([f'{d:.0f}' for d in polydegs])
 
     set_axes_2d(ax1, ylabel='score')
     pad = 1/5
-    set_axes_2d(ax2, xlabel='polynomial degree', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
+    set_axes_2d(ax2, xlabel='Complexity', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
     scheme = trainings[d].scheme.lower()
     pdfname = f'MSE_R2_scores_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
@@ -571,12 +563,9 @@ def error_vs_noise(trainings, predictions, eta_vals, tag='', show=False, mark=No
     ax.plot(-2,0, 'o--', lw=1.5, c='k', alpha=0.5, label='train MSE')
     ax.plot(-2,0, 'o-',  lw=1.5, c='k', alpha=0.5, label='test MSE')
 
-    ax.set_xticks(list(polydegs))
-    ax.set_xticklabels([f'{d:.0f}' for d in polydegs])
-
     pad = 1/4
     ax.set_yscale('log')
-    set_axes_2d(ax, xlabel=r'polynomial degree $d$', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
+    set_axes_2d(ax, xlabel='Complexity', ylabel='score', xlim=(polydegs[0]-pad, polydegs[-1]+pad))
     scheme = trainings[d][0].scheme.lower()
     pdfname = f'error_vs_noise_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show)
@@ -624,8 +613,7 @@ def heatmap(resampling_grid, ref_error=0, tag='', show=False, mark=None):
     ax.text(polydegs[j0,int(N_polydegs/5)], l0, r'$\lambda = %.2e$'%l0,   fontsize=SMALL_SIZE, color='r', bbox=boxStyle)
     ax.text(d0, hparams[int(3*N_params/5),i0], r'$d = %i$'%d0,fontsize=SMALL_SIZE, color='r', rotation=-90, bbox=boxStyle)
 
-    set_axes_2d(ax, xlabel=r'polynomial degree $d$', ylabel=r'hyper parameter $\lambda$', legend=False, ylim=(np.min(hparams), np.max(hparams)), xlim=(np.min(polydegs)-0.02, np.max(polydegs)+0.02))
-    ax.set_yscale('log')
+    set_axes_2d(ax, xlabel='Complexity', ylabel='HyperParameter', legend=False, ylim=(np.min(hparams), np.max(hparams)), xlim=(np.min(polydegs)-0.02, np.max(polydegs)+0.02))
     
 
     scheme = rs.scheme.lower()

@@ -294,7 +294,7 @@ def lassoAnalysis():
 
         for lmbda in HYPERPARAMS_L[HYPERPARAMS_L>=1e-5]:
             print(f'   > λ = {lmbda:.3e} ...')
-            BS = Bootstrap(trainer, predictor, goto_B, scheme='Lasso', mode='skl', hyper_param=lmbda)
+            BS = Bootstrap(trainer, predictor, goto_B/4, scheme='Lasso', mode='skl', hyper_param=lmbda)
             BS()
             BS.bias_varianceDecomposition()
             Bootstrappings.append(BS)
