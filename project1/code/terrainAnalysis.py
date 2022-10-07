@@ -7,7 +7,7 @@ from src.Resampling import Bootstrap, CrossValidation
 from imageio.v2 import imread
 
 import plot as PLOT
-PLOT.init('on')
+PLOT.init('off')
 
 PLOT.add_path('terrain')
 
@@ -68,7 +68,7 @@ HYPERPARAMS_L = np.logspace(-5, -2, 10)
 d_L = 11
 lmbda_L = 1e-5
 
-SHOW = True
+SHOW = False
 
 
 def assessModelComplexityBS(B, method, mode, polydegs):
@@ -124,17 +124,29 @@ def grid_searchCV(k, method, mode, polydegs, hyperparams):
 def noneAnalysis():
     PLOT.visualise_data(*prepper.dump(), show=SHOW, cmap='terrain')
     #PLOT.visualise_data(*prepper.getTrain(goto_polydeg), show=show)
+    def simple_analysis():
+        workouts = {d:deepcopy(TRAININGS[d]) for d in [d_O, d_R]}
+        forecasts = {d:deepcopy(PREDICTIONS[d]) for d in [d_O, d_R]}
+        
+
+        reg = linearRegression(workouts[d_O], forecasts[d_O], mode='own', scheme='OLS')
+        reg.fit()
+        reg = linearRegression(workouts[d_R], forecasts[d_R], mode='own', scheme='Ridge', shrinkage_parameter=lmbda_R)
+        reg.fit()
+        PLOT.beta_params(workouts, grouped=True, show=SHOW, tag='_ols', mark="comparison of $β$'s between Ridge and OLS") 
+    
+    simple_analysis()
 
 
 def finalAnalysis():
 
 
-    # MODEL 1
+    # Ridge MODEL
     d = 18
     lmbda = 1.23e-4
     scheme = 'Ridge'
 
-    # MODEL 2
+    # OLS MODEL
     d = 6
     lmbda = 0
     scheme = 'ols'
@@ -145,8 +157,25 @@ def finalAnalysis():
     reg.fit()
     predictor.predict()
     PLOT.compare_data(predictor, predictor, angles=(6, 49), cmap='terrain', show=SHOW, mark='prediction set')
-    #trainer.computeModel()
-    #PLOT.compare_data(trainer, trainer, angles=(6, 49), cmap='terrain', tag='train', show=show, mark='training set')
+
+    MSE_un = predictor.mean_squared_error()
+
+    BS = Bootstrap(trainer, predictor, 600, scheme=scheme, mode='own', hyper_param=lmbda)
+    BS()
+    MSE_BS = BS.resamplingError()
+
+    CV = CrossValidation(trainer, predictor, goto_k, scheme=scheme, mode='own', hyper_param=lmbda)
+    CV()
+    MSE_CV = CV.resamplingError()
+
+
+    MSE_str = f'\n {scheme} scheme with d = {d} and λ = {lmbda}\n'
+    MSE_str += '-'*40
+    MSE_str += f'\n        unresampled MSE = {MSE_un:.4f}'
+    MSE_str += f'\n          bootstrap MSE = {MSE_BS:.4f}'
+    MSE_str += f'\n   cross-validation MSE = {MSE_CV:.4f}\n'
+    MSE_str += '-'*40
+    print(MSE_str)
 
 
 
@@ -181,8 +210,9 @@ def olsAnalysis():
         #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
     #
-    #simple_analysis()
-
+    simple_analysis()
+    
+    '''
     # Bootstrap 
     print('   > Bootstrap ...\n')
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own', POLYDEGS_O)
@@ -200,7 +230,7 @@ def olsAnalysis():
     for k in kLIST:
         Crossvalidations = assessModelComplexityCV(k, 'OLS', 'own', POLYDEGS_O)
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=SHOW)
+    PLOT.CV_errors(CVgrid, show=SHOW)'''
 
 
 
@@ -210,25 +240,33 @@ def ridgeAnalysis():
     print('-'*40)
     print('\n')
 
+    def simple_analysis():
+        workout = {d:deepcopy(TRAININGS[d]) for d in [d_R]}
+        forecast = {d:deepcopy(PREDICTIONS[d]) for d in [d_R]}
 
+        reg = linearRegression(workout[d_R], forecast[d_R], mode='skl', scheme='Ridge', shrinkage_parameter=lmbda_R)
+        reg.fit()
+        PLOT.beta_params(workout, grouped=True, show=SHOW, mark="$β$'s grouped by order $d$") 
+
+    simple_analysis()
+    
     # Bootstrap 
-    print('   > Bootstrap ...\n')
+    '''print('   > Bootstrap ...\n')
     
     Bootstrappings = assessHyperParamBS(d_R, 3, 'Ridge', 'skl', hyperparams=np.logspace(-5, -4, 10))
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     # Trade-off : d = 13, 14, 15, 16
     PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = np.argmin(np.abs(HYPERPARAMS_R-lmbda_R))
-    #PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
-    #PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
-    exit()
+    PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
+    PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     CVgrid = []
     for k in kLIST[1:3]:
         Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R[1:])
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=SHOW)
+    PLOT.CV_errors(CVgrid, show=SHOW)'''
 
     # Cross validation (grid search)
     '''print('   > k-fold cross-validation with grid search ...\n')

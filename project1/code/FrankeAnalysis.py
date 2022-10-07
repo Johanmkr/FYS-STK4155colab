@@ -44,7 +44,6 @@ for d in POLYDEGS:
 
 
 
-ref_MSE = {'simple':0.14848043170413214, 'BS':0.16646991921908658, 'CV':0.17656214912552667} #ols
 
 ### OLS:
 POLYDEGS_O = POLYDEGS[:-2]
@@ -68,7 +67,7 @@ lmbda_L = 2.15e-05
 
 
 
-SHOW = False
+SHOW = True
 
 def noneAnalysis():
     # Data with noise
@@ -98,23 +97,27 @@ def finalAnalysis():
     reg = linearRegression(trainer, predictor, mode='own', scheme=scheme, shrinkage_parameter=lmbda)
     reg.fit()
     predictor.predict()
-    PLOT.compare_data(predictor, predictor, angles=(20, 30), show=SHOW, mark='prediction set')
+    PLOT.compare_data(predictor, predictor, angles=(17, -25), show=SHOW, mark='prediction set')
+
+    MSE_un = predictor.mean_squared_error()
 
     BS = Bootstrap(trainer, predictor, goto_B, scheme=scheme, mode='own', hyper_param=lmbda)
     BS()
     MSE_BS = BS.resamplingError()
 
-
     CV = CrossValidation(trainer, predictor, goto_k, scheme=scheme, mode='own', hyper_param=lmbda)
     CV()
     MSE_CV = CV.resamplingError()
 
-    MSE_un = predictor.mean_squared_error()
+
+    MSE_str = f'\n {scheme} scheme with d = {d} and λ = {lmbda}\n'
+    MSE_str += '-'*40
+    MSE_str += f'\n        unresampled MSE = {MSE_un:.4f}'
+    MSE_str += f'\n          bootstrap MSE = {MSE_BS:.4f}'
+    MSE_str += f'\n   cross-validation MSE = {MSE_CV:.4f}\n'
+    MSE_str += '-'*40
+    print(MSE_str)
     
-    print(MSE_un, MSE_BS, MSE_CV) # This could have been done smarter, but now I am running out of time (and space on my machine)
-
-
-
 
 def olsAnalysis():
 
@@ -329,7 +332,7 @@ def lassoAnalysis():
                 CV_l.append(CV)
             CVgrid.append(CV_l)
         
-        PLOT.heatmap(CVgrid, ref_error=ref_MSE['CV'],  show=SHOW)
+        PLOT.heatmap(CVgrid, show=SHOW)
 
     #cv_analysis()
     bootstrap_analysis()
