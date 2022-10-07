@@ -243,7 +243,7 @@ FUNCTION {field.or.null}
  if$
 }
 
-FUNCTION {emphasize}
+FUNCTION {emphasise}
 { skip$ }
 
 FUNCTION {capitalize}
@@ -768,7 +768,7 @@ FUNCTION {format.bvolume}
    { bbl.volume volume tie.or.space.connect
      series empty$
        'skip$
-       { bbl.of space.word * series emphasize * }
+       { bbl.of space.word * series emphasise * }
      if$
      "volume and number" number either.or.check
    }
@@ -939,8 +939,8 @@ FUNCTION {format.in.ed.booktitle}
 { booktitle empty$
    { "" }
    { editor empty$
-       { word.in booktitle emphasize * }
-       { word.in booktitle emphasize *
+       { word.in booktitle emphasise * }
+       { word.in booktitle emphasise *
          ", " *
          editor num.names$ #1 >
            { bbl.editors }
