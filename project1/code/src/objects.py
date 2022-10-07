@@ -422,6 +422,14 @@ class parameterVector:
         return self.beta[index]
 
     def __len__(self):
+        """
+        Get the number of features.
+
+        Returns
+        -------
+        int
+            number of features
+        """
         return len(self.beta)
 
     def __rmul__(self, other):
