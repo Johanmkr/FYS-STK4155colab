@@ -220,14 +220,16 @@
         \end{figure}
 
 
-        % \begin{figure}
-        %     \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
-        %     \caption{MSE for train and test data for polynomial of degree $d=9$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated using a $k=10$ bootstrap. }
-        %     \label{fig:bootstrapping_lasso}
-        % \end{figure}
+        If we then consider the MSE found by a $k=10$ bootstrap as seen in \Fig{bootstrapping_lasso} for larger $\lambda$ we see that there is perhaps a more optimal $\lambda$ around $10^{-3}$ which yield a lower MSE of $\approx 0.15$. 
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
+            \caption{MSE for train and test data for polynomial of degree $d=9$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated using a $k=10$ bootstrap. }
+            \label{fig:bootstrapping_lasso}
+        \end{figure}
 
 
-        \Fig{bias_variance_lasso} show the bias variance trade off for the lasso regression for $d=14$ made with a $k=10$ bootstrap, for computational efficiency. We draw from this that the lasso regression scheme has a low variance, but high bias for the $\lambda$ values considered.  
+        \Fig{bias_variance_lasso} show the bias variance trade off for the lasso regression for $d=14$ made with the same $k=10$ bootstrap, for computational efficiency. We draw from this that the lasso regression scheme has a low variance, but high bias for the $\lambda$ values considered, with perhaps the same optimal $\lambda$ at around $10^{-3}$.
 
 
         \begin{figure}
