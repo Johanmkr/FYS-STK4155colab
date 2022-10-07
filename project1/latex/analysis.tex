@@ -264,9 +264,14 @@
             \label{fig:gc_beta_with_standard_deviation}
         \end{figure}
 
-        CV?????
+        
+        \begin{figure}
+            \includegraphics[width=\linewidth]{terrain/MSE_ols_CV.pdf}
+            \caption{CV accuracy FIXME, maybe remove this}
+            \label{fig:gc_cv_errors_ols}
+        \end{figure}
 
-        After performing a simple $k$-fold cross-validation to optimise the model, we see that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_comlexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
+        After performing a simple $k$-fold cross-validation to optimise the model, we see from \Fig{gc_cv_errors_ols} that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_complexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
         
 
         \begin{figure}
@@ -275,7 +280,7 @@
             \label{fig:gc_model_complexity}
         \end{figure}
 
-        
+        The choice $d=6$ still seems sensible, but let us decompose the bootstrap prediction error into bias and variance as in section XXXX. The plot in \Fig{gc_bias_variance_ols} points to a conclusion that OLS-estimations with $d\geq 7$ is overfitting the data. However, that might not be the case if we are able to penalise the $\beta_j$'s. We move on to the penilised estimation models.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/tradeoff_ols.pdf}
@@ -287,12 +292,16 @@
         \subsubsection{Ridge}\label{sec:gc_ridgeanalysis}
 
         % something about lower limig lambda?
+
+        The search for an optimal model begins with a grid search where we limit ourselves to $d\in[4, 20]$ and $\lambda=10^{-\gamma}, 5 \geq \gamma \geq 2$. The grid search is somewhat computationally expensive, at least for large $d$ and small $\lambda$.
         
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_heatmap_ridge_CV.pdf}
             \caption{Heatmap ridge}
-            \label{fig:gc_gridseach_ridge}
+            \label{fig:gc_gridsearch_ridge}
         \end{figure}
+
+        The error heatmap in \Fig{gc_gridsearch_ridge} favourises the combination $d=18, \lambda = 1.23\cdot 10^{-4}$. In an attempt to verify this model, we do the bootstrap for this polynomial degree and the same hyper parameters. The resulting train and test MSE is shown in \Fig{gc_mse_ridge_bs}.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_ridge_BS.pdf}
@@ -300,11 +309,18 @@
             \label{fig:gc_mse_ridge_bs}
         \end{figure}
 
+        We investigate the bias-variance tradeoff by the same bootstrap session. The tradeoff is shown in \Fig{gc_bias_variance_ridge}. It shows nothing to indicate precisely which hyper parameter is best, but it does not contradict the model found by the grid search.
+
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/tradeoff_ridge.pdf}
             \caption{Bias-variance trade off ridge}
             \label{fig:gc_bias_variance_ridge}
         \end{figure}
+
+        \par
+        UNSURE ABOUT THIS:
+
+        There is actually a model with $d=15, \lambda\simeq 8.5 \cdot 10^{-9}$ giving cross-validation accuracy $\lesssim 0.16$ for various choices of $k$. However, when confirming this model using bootstrap, the prediciton error is huge, and so is both the variance and squared bias, in the regime of $\lambda\sim 10^{-8}$. There is a sudden drop in error and variance for $8.5 \cdot 10^{-9}$, but this now seems random.
 
 
         \subsubsection{Lasso}\label{sec:gc_lassoanalysis}
