@@ -43,11 +43,7 @@
         \begin{align*}
             P_d(x,y) = \beta_0 + \sum_{l=1}^d\sum_{k=0}^{l} \beta_jx^{l-k}y^k
         \end{align*}
-        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)/2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms NANNA CONFIRM THIS:
-        \begin{align}\label{eq:designmatrixequation}
-            X_{ij} = \sum_{i=1}^n\sum_{l=1}^d\sum_{k=0}^{l} x_i^{l-k}y_i^k
-        \end{align}
-        The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
+        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)/2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). The design matrix is set up without an intercept (constant term). 
 
 
 
@@ -128,7 +124,7 @@
 
             \begin{figure}
                 \includegraphics[width=\linewidth]{Franke/MSE_ols_CV.pdf}
-                \caption{MSE for train and test data for polynomials up to order $d=12$ for the OLS analysis of the Franke function ($N=20$, $\eta=0.1$) generated with an $8-$fold cross validation. We observe a similar behaviour with \Fig{model_complexity_ols} where the MSE for the test data reaches a minimum at $d=5$ and then seem to diverge. }
+                \caption{MSE for test data for polynomials up to order $d=12$ for the OLS analysis of the Franke function ($N=20$, $\eta=0.1$) generated with an $k\in[5,10]$-fold cross validation. We observe a similar behaviour with \Fig{model_complexity_ols} where the MSE for the test data reaches a minimum at $d=5$ and then seem to diverge. }
                 \label{fig:cross-validation_ols}
             \end{figure} 
             
@@ -162,7 +158,7 @@
             \label{fig:cross-validation_ridge}
         \end{figure}
 
-        However, when we repeat the analysis but generate the plot using a $k=400$ bootstrap instead, as shown in \Fig{bootstrapping_ridge}, we see that the test MSE decrease to a minimum and remain low when we increase $\lambda$. We also note that the $\lambda$ which minimised the test MSE is found numerically to be $\lambda^\mathrm{ridge}_\mathrm{min} = 8.86\cdot 10^{-4}$ given to two significant figures. 
+        However, when we repeat the analysis but generate the plot using a $k=400$ bootstrap instead, as shown in \Fig{bootstrapping_ridge}, we see that the test MSE decrease to a minimum and remain low when we increase $\lambda$. We also note that the $\lambda$ which minimised the test MSE is found numerically to be $\lambda_\mathrm{min}^\mathrm{ridge} = 7.85\cdot10^{-5}$ given to two significant figures. 
 
 
         \begin{figure}
@@ -207,33 +203,39 @@
         \subsubsection{Lasso}\label{sec:lassoanalysis}
 
         We now make a similar analysis, but we use the lasso regression analysis instead, with a slightly different approach. Instead of looking for the optimal penalty parameter $\lambda$ for a given polynomial degree $d$, we seek to find them at them simultaneously, by performing a grid search on a grid of MSE values, which are function of both $\lambda$ and $d$. The result is shown in \Fig{gridsearch_cv_lasso}, where we perform an 8-fold cross validation and present the resulting MSE as a heatmap. 
-        DISCUSS HEATMAP BRIEFLY
+        What we draw from this heatmap is that the there seem to be an optimal band across polynomial degrees for the penalty parameter $\lambda =2.15\cdot10^{-5}$. Our grid search yield the border value of the polynomial degree($d=14$) which could indicate that the true best fit is of a higher polynomial degree. However, due to the fact that a polynomial of degree $d=14$ is high for a $N=20$ grid, and it becomes very computationally expensive to run the lasso analysis on such models, we restrict ourselves to not go beyond this. On the other hand, higher polynomial degrees seem plausible with the lasso regression scheme, as the penalty parameter is able to drive unimportant features to zero, reducing the dimensionality of the model. We thus take a closer look at the results of such a model ($d=14$). 
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/MSE_heatmap_lasso_CV.pdf}
-            \caption{Heatmap of the MSE as function of both polynomial degree $d\in[6,14]$ and penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$, generated with and 8-fold cross validation}
+            \caption{Heatmap of the MSE as function of both polynomial degree $d\in[6,14]$ and penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$), generated with and 8-fold cross validation.}
             \label{fig:gridsearch_cv_lasso}
         \end{figure}
 
+        \Fig{cross-validation_lasso} shows the MSE for the test data predictions for two different cross validations: 6-fold and 8-fold. This plot confirms that there is an optimal value for $\lambda\in[10^{-5}, 10^{-4}]$ that minimise the MSE, and we have reason to believe it is the same $\lambda$ that we found in \Fig{gridsearch_cv_lasso}.
 
         \begin{figure} 
             \includegraphics[width=\linewidth]{Franke/MSE_lasso_CV.pdf}
-            \caption{MSE for train and test data for polynomial of degree $d=9$, as function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with an 8-fold cross validation. For small $\lambda$ the train MSE and test MSE are close the OLS values, but both increase when we increase $\lambda$.}
+            \caption{MSE for test data for polynomial of degree $d=14$, as function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with both a 6-fold and 8-fold cross validation. For small $\lambda$ the train MSE and test MSE are close the OLS values.}
             \label{fig:cross-validation_lasso}
         \end{figure}
 
 
-        \begin{figure}
-            \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
-            \caption{MSE for train and test data for polynomial of degree $d=9$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated using a $k=10$ bootstrap. }
-            \label{fig:bootstrapping_lasso}
-        \end{figure}
+        % \begin{figure}
+        %     \includegraphics[width=\linewidth]{Franke/MSE_lasso_BS.pdf}
+        %     \caption{MSE for train and test data for polynomial of degree $d=9$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated using a $k=10$ bootstrap. }
+        %     \label{fig:bootstrapping_lasso}
+        % \end{figure}
+
+
+        \Fig{bias_variance_lasso} show the bias variance trade off for the lasso regression for $d=14$ made with a $k=10$ bootstrap, for computational efficiency. We draw from this that the lasso regression scheme has a low variance, but high bias for the $\lambda$ values considered.  
+
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/tradeoff_lasso.pdf}
-            \caption{Bias, variance and residual error for polynomial of degree $d=9$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with a $k=10$ bootstrap.}
+            \caption{Bias, variance and residual error for polynomial of degree $d=14$, as a function of the penalty parameter $\lambda$ for the lasso analysis of the Franke function ($N=20, \eta=0.1$) generated with a $k=10$ bootstrap.}
             \label{fig:bias_variance_lasso}
         \end{figure} 
+        
 
 
     % \subsection{Applying best fit model}\label{sec:applybestmodel}
