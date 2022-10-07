@@ -43,9 +43,9 @@
         \begin{align*}
             P_d(x,y) = \beta_0 + \sum_{l=1}^d\sum_{k=0}^{l} \beta_jx^{l-k}y^k
         \end{align*}
-        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)/2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms (THIS IS WRONG; CORRECT THIS):
+        where $j\in[1,p]$ and $p=(d+1)\cdot\left[(d+2)/2\right]$ is the number of features, or number of terms in a two dimensional polynomial. $\beta_0$ is our intercept (constant term). From this we set up the design matrix with the following terms NANNA CONFIRM THIS:
         \begin{align}\label{eq:designmatrixequation}
-            X_{ij} = \sum_{l=1}^d\sum_{k=0}^{l} x^{l-k}y^k
+            X_{ij} = \sum_{i=1}^n\sum_{l=1}^d\sum_{k=0}^{l} x_i^{l-k}y_i^k
         \end{align}
         The design matrix is set up without an intercept (constant term) (WHY?). Since we need to set up to design matrices, they account for a different amount of data points, and thus $n$ will be different between the two, but $p$ is the same. 
 
@@ -266,7 +266,7 @@
 
         CV?????
 
-        After performing a simple $k$-fold cross-validation to optimise the model, we see that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_comlexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
+        After performing a simple $k$-fold cross-validation to optimise the model, we see that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_complexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
         
 
         \begin{figure}
