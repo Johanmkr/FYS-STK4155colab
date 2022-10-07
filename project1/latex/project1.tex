@@ -13,11 +13,7 @@
 Nanna Bryne
 \inst{1,2}
 }
-<<<<<<< HEAD
-\institute{Institute of Theoretical Astrophysics, University of Oslo, Norway
-=======
 \institute{Institute of Theoretical Astrophysics (ITA), University of Oslo, Norway%P.O. Box 1029 Blindern, N-0315 Oslo, Norway
->>>>>>> 630c5313c5336b80c6def970d7462d0522a85246
 \and
 Center for Computing in Science Education (CCSE), University of Oslo, Norway}
 %\email{nanna.bryne@fys.uio.no}}
@@ -27,14 +23,10 @@ Center for Computing in Science Education (CCSE), University of Oslo, Norway}
 \abstract{
 We perform linear regression on two different data sets in an attempt to fit a twodimensional polynomial onto them.
 
-<<<<<<< HEAD
 The first data set is a $20\cross20$ grid for which we compute values using the Franke function. We investigate the effect of adding normally distributed noise $\epsilon \sim \mathcal{N}(0,1)$ to the function. The whole data set is z-score normalised. We perform OLS regression, Ridge regression and Lasso regression on the data, and we optimise and in turn assess the validity using (5-10)-fold cross-validation and bootstrap resampling techniques. For the OLS regression we find an optimal model with polynomial degree $d^\text{OLS}=5$, and by using the same polynomial degree for the Ridge regression we also find an optimal penalty parameter $\lambda^\mathrm{Ridge} = 7.58\cdot10^{-5}$. For the Lasso regression we allow the model to find a new optimal polynomial degree. It finds the end degree, for a $d\cross\lambda$ grid so we cannot determine the validity of this. However, the MSE values found from Lasso and Ridge regression are not sufficiently smaller than that for OLS. The conclusion is thus that OLS with $d^\text{OLS}=5$ yields the best model for the Franke function data. 
 
 We repeat the analysis for the terrain data, which is a part from the Grand Canyon in the United States, and find the Lasso regression to be very computationally expensive, especially for small $\lambda$, and it does not yield a significantly better result than OLS and Ridge. We therefore conclude for the terrain data that we have to viable models: The first found with OLS giving a model with $d^\text{OLS}=6$ and the second with Ridge giving a model with $d^\text{Ridge}=18$ and $\lambda^\text{Ridge} = 1.23\cdot10^{-4}$. The Ridge model is arguably favourable since it is able to reproduce the canyon's plateauing.
-=======
-We repeat the analysis for the terrain data, which is a part from the Grand Canyon in the United States, and find the lasso regression to be very computationally expensive, especially for low $\lambda$, and it does not yield a significantly better result than OLS and ridge. We therefore conclude for the terrain data that we have to viable models: THe first found with OLS giving a model with $d=6$ and the second with ridge giving a model with $d=18$ and $\lambda = 1.23\cdot10^{-4}$. Link to GitHub repo: \url{https://github.com/Johanmkr/FYS-STK4155colab/tree/main/project1}
->>>>>>> 630c5313c5336b80c6def970d7462d0522a85246
-}
+
 
 \maketitle
 
