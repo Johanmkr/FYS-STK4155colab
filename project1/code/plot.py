@@ -208,17 +208,17 @@ def MSE_train_test(ax, resamplings, errorbar=False):
         lw = 0.2
     
     
-    ax.plot(variable, trainMSE, lw=lw, c='dodgerblue', alpha=alpha) 
-    ax.plot(variable, testMSE,  lw=lw, c='salmon',     alpha=alpha)
+    ax.plot(variable, trainMSE, ls='--', lw=lw, c='dodgerblue', alpha=alpha) 
+    ax.plot(variable, testMSE,  ls='-',  lw=lw, c='salmon',     alpha=alpha)
 
     muTrain, muTest = np.mean(trainMSE, axis=1), np.mean(testMSE, axis=1)
     if errorbar:
         errTrain, errTest = np.std(trainMSE, axis=1), np.std(testMSE, axis=1)
-        markers, caps, bars = ax.errorbar(variable, muTrain, errTrain, c='royalblue', lw=1.8, label='train MSE')
-        markers, caps, bars = ax.errorbar(variable, muTest,  errTest,  c='orangered', lw=1.8, label='test MSE')  
+        markers, caps, bars = ax.errorbar(variable, muTrain, errTrain, c='royalblue', lw=1.8, ls='--', label='train MSE')
+        markers, caps, bars = ax.errorbar(variable, muTest,  errTest,  c='orangered', lw=1.8, ls='-',  label='test MSE')  
     else:
-        ax.plot(variable, muTrain, 'o-', c='royalblue', lw=1.8, label='train MSE')
-        ax.plot(variable, muTest,  'o-', c='orangered', lw=1.8, label='test MSE') 
+        ax.plot(variable, muTrain, 'o--', c='royalblue', lw=1.8, label='train MSE')
+        ax.plot(variable, muTest,  'o-',  c='orangered', lw=1.8, label='test MSE') 
 
 
     ymax = np.max([muTrain[elem], muTest[elem]])*1.25
