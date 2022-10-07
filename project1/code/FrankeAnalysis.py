@@ -60,7 +60,7 @@ lmbda_R = 7.85e-05
 
 ### Lasso:
 POLYDEGS_L = POLYDEGS[5:]
-HYPERPARAMS_L = np.logspace(-6, -4, 10)
+HYPERPARAMS_L = np.logspace(-6, -2, 10)
 d_L = 14
 lmbda_L = 2.15e-05
 
@@ -281,20 +281,17 @@ def lassoAnalysis():
     print('\nPerforming analysis using Lasso regression\n')
     print('-'*40)
     print('\n')
-
-    d_L = 14
     
     trainer = TRAININGS[d_L]
     predictor = PREDICTIONS[d_L]
-
 
     def bootstrap_analysis():
         print('   > Bootstrap ...\n')
         Bootstrappings = []
 
-        for lmbda in HYPERPARAMS_L[HYPERPARAMS_L>=1e-5]:
+        for lmbda in HYPERPARAMS_L:
             print(f'   > λ = {lmbda:.3e} ...')
-            BS = Bootstrap(trainer, predictor, goto_B/4, scheme='Lasso', mode='skl', hyper_param=lmbda)
+            BS = Bootstrap(trainer, predictor, goto_B/10, scheme='Lasso', mode='skl', hyper_param=lmbda)
             BS()
             BS.bias_varianceDecomposition()
             Bootstrappings.append(BS)
@@ -336,7 +333,6 @@ def lassoAnalysis():
 
     #cv_analysis()
     bootstrap_analysis()
-    
     #grid_search()
     
 
