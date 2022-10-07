@@ -252,7 +252,11 @@
         \label{fig:gc_data}
     \end{figure}
 
+    Moving forward, we essentially repeat the analysis in \Sec{reganalysis_franke} for the terrain data. Starting with the OLS method, we expect the need of a higher order polynomial than for the Franke funtion.
+
         \subsubsection{OLS}\label{sec:gc_olsanalysis}
+
+        We perform the least squares fitting as elaborated in \Sec{OLS} on the training data for polynomials of order $d=1,2,..., 20$. For $d\leq 7$, the resulting $\optbeta^\text{OLS}$ is plotted in \Fig{gc_beta_with_standard_deviation}, where we have grouped the parameters such that $\beta^{(d_i)}$ is the mean of the elements belonging to the same order $d_i$, i.e. $\beta^{(1)} = \nicefrac{1}{2}(\beta_1 + \beta_2)$, $\beta^{(2)} = \nicefrac{1}{3}(\beta_3 + \beta_4 + \beta_5)$, etc. 
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/beta_ols.pdf}
@@ -260,12 +264,18 @@
             \label{fig:gc_beta_with_standard_deviation}
         \end{figure}
 
+        CV?????
+
+        After performing a simple $k$-fold cross-validation to optimise the model, we see that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_comlexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
+        
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_ols_BS.pdf}
             \caption{Bootstrap training and prediction errors FIXME.}
             \label{fig:gc_model_complexity}
         \end{figure}
+
+        
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/tradeoff_ols.pdf}
@@ -274,7 +284,7 @@
         \end{figure}
 
 
-        \subsection{Ridge}\label{sec:gc_ridgeanalysis}
+        \subsubsection{Ridge}\label{sec:gc_ridgeanalysis}
 
         % something about lower limig lambda?
         
@@ -297,7 +307,7 @@
         \end{figure}
 
 
-        \subsection{Lasso}\label{sec:gc_lassoanalysis}
+        \subsubsection{Lasso}\label{sec:gc_lassoanalysis}
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_heatmap_lasso_CV.pdf}
