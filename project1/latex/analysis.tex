@@ -273,13 +273,13 @@
             \label{fig:gc_cv_errors_ols}
         \end{figure}
 
-        After performing a simple $k$-fold cross-validation to optimise the model, we see from \Fig{gc_cv_errors_ols} that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_complexity} we see the expected behavoiur of the training and prediction error per increasing model complexity.
+        After performing a simple $k$-fold cross-validation to optimise the model, we see from \Fig{gc_cv_errors_ols} that it clearly prefers order $d=6$. We continue with the bootstrap resampling technique to verify that this complexity is preferable for our test data as well. In \Fig{gc_model_complexity_ols} we see the expected behavoiur of the training and prediction error per increasing model complexity.
         
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_ols_BS.pdf}
             \caption{Bootstrap training and prediction errors FIXME.}
-            \label{fig:gc_model_complexity}
+            \label{fig:gc_model_complexity_ols}
         \end{figure}
 
         The choice $d=6$ still seems sensible, but let us decompose the bootstrap prediction error into bias and variance as in section XXXX. The plot in \Fig{gc_bias_variance_ols} points to a conclusion that OLS-estimations with $d\geq 7$ is overfitting the data. However, that might not be the case if we are able to penalise the $\beta_j$'s. We move on to the penilised estimation models.
@@ -303,12 +303,12 @@
             \label{fig:gc_gridsearch_ridge}
         \end{figure}
 
-        The error heatmap in \Fig{gc_gridsearch_ridge} favourises the combination $d=18, \lambda = 1.23\cdot 10^{-4}$. In an attempt to verify this model, we do the bootstrap for this polynomial degree and the same hyper parameters. The resulting train and test MSE is shown in \Fig{gc_mse_ridge_bs}.
+        The error heatmap in \Fig{gc_gridsearch_ridge} favourises the combination $d=18, \lambda = 1.23\cdot 10^{-4}$. In an attempt to verify this model, we do the bootstrap for this polynomial degree and the same hyper parameters. The resulting train and test MSE is shown in \Fig{gc_model_complexity_ridge}.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{terrain/MSE_ridge_BS.pdf}
             \caption{MSE RIDGE BS}
-            \label{fig:gc_mse_ridge_bs}
+            \label{fig:gc_model_complexity_ridge}
         \end{figure}
 
         We investigate the bias-variance tradeoff by the same bootstrap session. The tradeoff is shown in \Fig{gc_bias_variance_ridge}. It shows nothing to indicate precisely which hyper parameter is best, but it does not contradict the model found by the grid search.

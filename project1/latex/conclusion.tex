@@ -26,8 +26,13 @@ We check this and plot the prediction model alongside the scaled data points. Th
 
 \subsection{Grand Canyon terrain}
 
+We got two models that in terms of MSE were almost equally good. The OLS model has $d^\text{OLS}=6$ and the Ridge model has $d^\text{Ridge}=18$ and $\lambda^\text{Ridge}=1.23\cdot10^{-4}$. The analysis yielded very similar prediciton errors for the two, see \Fig{gc_model_complexity_ols} and \Fig{gc_model_complexity_ridge}. However, as introduced in \Sec{Ridge}, the variance of the $\beta_j$'s are generally lower for the Ridge scheme than for the OLS scheme, and this is why we choose the former. The resulting terrain prediction is shown in \Fig{gc_final_model}.
+
+
 \begin{figure}
     \includegraphics[width=\linewidth]{terrain/comparison3D_ridge.pdf}
-    \caption{FIXME.}
+    \caption{The triangular points are the scaled test data points, whilst the surface represents the corresponding prediction we get from a Ridge estimation with $d^\text{Ridge}=18$ and $\lambda^\text{Ridge}=1.23\cdot 10^{-4}$.}
     \label{fig:gc_final_model}
 \end{figure}
+
+The terrain is definitely recognisable to the Grand Canyon (\Fig{gc_data}, mind the angle). There is a tendency to flatten out by the edges as opposed to continuing downwards, which was the typical case with the OLS-models.
