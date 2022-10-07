@@ -221,7 +221,15 @@ We follow the same argument as with \Eq{ols_svd} and obtain:
 
 If we now compare \Eq{ols_svd} to \Eq{ridge_svd} we see that they are fairly similar but the prediction $\tilde{\vec{y}}^{\text{ridge}}$ contains a factor $\sigma_i^2/(\sigma_i^2 + \lambda)$ where $\sigma_i$ are the singular values of the design matrix $X$ (follows from the singular value decomposition, section \Sec{SVD}), and $\lambda$ is the penalty term which effectively shrinks the predicted values. The shrinkage is large when $\sigma_i^2$ is small, and thus adding this penalty term means that we are emphasizing the parts of $X$ (and thereby the prediction), whose corresponding singular values are the largest. This is called \textit{principal component analysis}.
 
-CAN ADD MORE HERE IF WE WANT
+
+We state here, without derivation, that the variance of $\svec{\beta}^\text{Ridge}$ is 
+
+\begin{align*}
+    \variance{\svec{\beta}^\text{Ridge}} = \sigma^2 (\hessian + \lambda\II )^{-1} \hessian \big(\hessian + \lambda \II\big)\TT,
+\end{align*}
+
+which is generally smaller than for OLS, $\variance{\svec{\beta}^\text{Ridge}} <\variance{\svec{\beta}^\text{OLS}}$ \citep{mhjensen}.
+
 
 
 \subsubsection{Lasso regression}\label{sec:Lasso}
