@@ -247,6 +247,19 @@ class targetVector(noneData):
     """
 
     def __init__(self, z) -> None:
+        """
+        Constructor for the z-data.
+
+        Parameters
+        ----------
+        z : ndarray/targetVector
+            the z-data
+
+        Raises
+        ------
+        TypeError
+            if the input is of wrong type
+        """
 
         if isinstance(z, np.ndarray):
             self.z = z.ravel()
@@ -268,6 +281,14 @@ class targetVector(noneData):
         self.z = self.data
 
     def __str__(self) -> str:
+        """
+        Simple terminal output.
+
+        Returns
+        -------
+        str
+            terminal print
+        """
         s = '\n'
         for zi in self.z:
             s += f'{zi:8.4f}, '
@@ -276,13 +297,31 @@ class targetVector(noneData):
         return s
 
     def __len__(self):
+        """
+        Get the number of data points.
+
+        Returns
+        -------
+        int
+            number of data points
+        """
         return len(self.z)
     
     def scale(self):
+        """
+        Scale z-data using standard scaling.
+        """
         self.z = super()._scale(self.z)
 
-
     def getScalingParams(self):
+        """
+        Retrieve the scaling parameters needed for standard scaling.
+
+        Returns
+        -------
+        float, float
+            the mean, the standard deviation
+        """
         assert not self.scaled
         self.mu = np.mean(self.z)
         self.sigma = np.std(self.z)
@@ -451,14 +490,6 @@ class groupedVector(parameterVector):
         self.idx_tex = [r'$\beta^{(%i)}$'%d for d in polydegs]
         if VAR:
             self.setVariance(var)
-
-        
-        #betapd = pd.DataFrame(beta, index=[f'β^({d})' for d in polydegs], columns=['β'])
-
-        
-
-
-
 
 
 

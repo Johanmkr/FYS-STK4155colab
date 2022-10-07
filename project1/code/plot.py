@@ -135,11 +135,11 @@ def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xli
 
 boxStyle = {'facecolor':'lavender', 'alpha':0.7, 'boxstyle':'round'}
 
-def surface_plot(ax, x, y, z, angles, cmap=cm.coolwarm):
+def surface_plot(ax, x, y, z, angles, cmap=cm.coolwarm, alpha=1):
     if len(np.shape(x)) == 2:
-        surf = ax.plot_surface(x, y, z, cmap=cmap, linewidth=0, antialiased=False)
+        surf = ax.plot_surface(x, y, z, cmap=cmap, linewidth=0, antialiased=False, alpha=alpha)
     else: 
-        surf = ax.plot_trisurf(x, y, z, cmap=cmap, linewidth=0, antialiased=False)
+        surf = ax.plot_trisurf(x, y, z, cmap=cmap, linewidth=0, antialiased=False, alpha=alpha)
     ax.view_init(*angles)
     ax.set_zlim(np.min(z), np.max(z))
     ax.xaxis.set_ticklabels([])
@@ -329,7 +329,7 @@ def make_histogram(ax, bootstrap, which):
    
 
 def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles, cmap):
-    ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles, cmap) #computed
+    ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles, cmap, 0.8) #computed
     ax.scatter(X_exp[:,0], X_exp[:,1], z_exp[:], marker='^', c='navy') #expected
     return ax
 
