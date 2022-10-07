@@ -96,12 +96,50 @@ The optimal estimator of the coefficients $\svec{\beta}_j$, call it $\optbeta$, 
     \label{eq:general_LS}
 \end{align}
 
+
+
+
 \subsubsection{Bias-variance tradeoff}\label{sec:bias_variance_tradeoff}
+In order to understand the error of our function, we often divide the error into different classifications. This is commonly referred to as bias and variance. When deriving it, we consider 
 When considering the bias-variance trad off we take into account the mean squared error of the cost function: . 
 \begin{align*}
     C(X, \svec{\beta}) = \frac{1}{n}\sum_{i=0}^{n-1}(y_i-\tilde{y}_i)^2 = \EE{(\vec{y}-\tilde{\vec{y}})^2},
 \end{align*}
-which is a measure of the expected error in our model. 
+which is a measure of the expected error in our model. Having a model like $\vec{y} = \svec{f} + \svec{\epsilon}$ where $\svec{f} = f(\vec{x})$ yields:
+\begin{align*}
+    C(X, \svec{\beta})  &= \EE{(\svec{f} + \svec{\epsilon} - \tilde{\vec{y}})^2} = \EE{\svec{\epsilon}^2 + 2\svec{\epsilon}(\svec{f}-\tilde{\vec{y}}) + (\svec{f}-\tilde{\vec{y}})^2} \\
+    &= \svec{\sigma}^2 + \EE{(\svec{f}-\tilde{\vec{y}})^2}
+\end{align*}
+where we have used that $\EE{\svec{\epsilon}^2} = \svec{\sigma}^2$ and $\EE{\svec{\epsilon}} = 0$ We then add and subtract $\EE{\tilde{\vec{y}}}$ to the last term and obtain:
+\begin{align*}
+    \EE{(\svec{f}-\tilde{\vec{y}})^2} &= \EE{\left(\svec{f}-\tilde{\vec{y}}+\EE{\tilde{\vec{y}}}-\EE{\tilde{\vec{y}}}\right)^2} \\
+    &= \EE{\left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2+ \left(\EE{\tilde{\vec{y}}}-\tilde{\vec{y}}\right)^2} \\
+    &+ \EE{2\left(\svec{f}-\EE{\tilde{\vec{y}}}\right)\left(\EE{\tilde{\vec{y}}}-\tilde{\vec{y}}\right)} \\
+    &=\left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2+ \EE{\left(\tilde{\vec{y}}-\EE{\tilde{\vec{y}}}\right)^2}
+\end{align*}
+where $\EE{\EE{\tilde{\vec{y}}} - \tilde{\vec{y}}} = 0$ and $\EE{\left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2}=\left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2$
+
+We are then left with the following expression:
+\begin{align*}
+    \EE{(\vec{y}-\tilde{\vec{y}})^2} &= \left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2+ \EE{\left(\tilde{\vec{y}}-\EE{\tilde{\vec{y}}}\right)^2} + \svec{\sigma}^2 \\
+    &= (\mathrm{Bias}[\tilde{\vec{y}}])^2 + \mathrm{Var}[{\tilde{\vec{y}}}]+ \svec{\sigma}^2,
+\end{align*}
+where the bias of our model $\tilde{\vec{y}}$ compared to the continuous function we try to replicate $\svec{f}$ is given by:
+\begin{align*}
+    (\mathrm{Bias}[\tilde{\vec{y}}])^2 = \left(\svec{f}-\EE{\tilde{\vec{y}}}\right)^2
+\end{align*}
+and the variance of $\tilde{\vec{y}}$ is:
+\begin{align*}
+    \mathrm{Var}[{\tilde{\vec{y}}}] = \EE{\left(\tilde{\vec{y}}-\EE{\tilde{\vec{y}}}\right)^2}
+\end{align*}
+and the irreductible error that arises as a result of stochastic noise is $\svec{\sigma}^2$
+Having a high bias means that our model predicts the wrong results, even if there is a small spread (small variance) in the predictions. Having a low bias, but a high variance means that the predictions made by our model vary a lot, but are centred around the true value. An exercise when creating a viable model is to perform a bias-variance trade off, as too much of either will make the predictions less trustworthy. 
+
+
+
+
+
+
 
 \subsubsection{Ordinary Least Squares (OLS)}\label{sec:OLS}
 
