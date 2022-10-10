@@ -8,7 +8,6 @@ import os
 import pandas as pd
 
 from copy import deepcopy
-#import warnings as warn
 
 from sklearn.utils import check_random_state
 
@@ -74,7 +73,7 @@ def features2polydeg(features):
         order of 2D polynomial
     """    
     p = features + 1
-    
+    # There has to be a better way ...
     coeff = [1, 3, 2-2*p]
     ns = np.roots(coeff)
     n = int(np.max(ns))
@@ -84,7 +83,24 @@ def features2polydeg(features):
 
 
 def featureMatrix_2Dpolynomial(x, y, max_polydeg=maxPolydeg):
-    # plan to add option intercept coloumn
+    """
+    Set up a design matrix for a 2D polynomial of some maximum degree.
+    Slice it for lower orders.
+
+    Parameters
+    ----------
+    x : ndarray
+        x-points
+    y : ndarray
+        y-points
+    max_polydeg : int, optional
+        maximum polynomial degree one cares to consider, by default maxPolydeg
+
+    Returns
+    -------
+    DataFrame
+        a DataFrame representing the design matrix 
+    """
     xx = x.ravel(); yy = y.ravel()
     n = len(xx)
     cols = []

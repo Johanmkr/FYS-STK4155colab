@@ -6,9 +6,9 @@ from src.Resampling import Bootstrap, CrossValidation
 
 
 import plot as PLOT
-PLOT.init('off')
-
+PLOT.init() # arg. 'on' initiates testMode
 PLOT.add_path('Franke')
+
 
 def datapointsFranke(eta=.1, N=20):
     x = np.sort( np.random.rand(N))
@@ -44,12 +44,10 @@ for d in POLYDEGS:
 
 
 
-
 ### OLS:
 POLYDEGS_O = POLYDEGS[:-2]
 d_O = 5
 lmbda_O = 0
-
 
 ### Ridge:
 POLYDEGS_R = POLYDEGS_O
@@ -64,9 +62,7 @@ d_L = 14
 lmbda_L = 2.15e-05
 
 
-
-
-
+# show plots or only save
 SHOW = True
 
 def noneAnalysis():
@@ -84,13 +80,10 @@ def noneAnalysis():
     PLOT.visualise_data(*prepper2.dump(), angles=angles, tag='_no_noise', show=SHOW, mark="$η=0$")
     
 
-
-
 def finalAnalysis():
-
-    d = 5
+    d = d_O
     scheme = 'OLS'
-    lmbda = 0
+    lmbda = d_O
 
     trainer, predictor = TRAININGS[d], PREDICTIONS[d]
 
@@ -223,7 +216,6 @@ def ridgeAnalysis():
     print('-'*40)
     print('\n')
 
-
     trainer = TRAININGS[d_R]
     predictor= PREDICTIONS[d_R]
 
@@ -277,7 +269,7 @@ def ridgeAnalysis():
 
     bootstrap_analysis()
     cv_analysis()
-    #grid_search()
+    grid_search()
 
 def lassoAnalysis():
 
@@ -334,9 +326,9 @@ def lassoAnalysis():
         
         PLOT.heatmap(CVgrid, show=SHOW)
 
-    #cv_analysis()
+    cv_analysis()
     bootstrap_analysis()
-    #grid_search()
+    grid_search()
     
 
 
