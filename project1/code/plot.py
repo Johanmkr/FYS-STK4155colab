@@ -1,5 +1,3 @@
-
-from audioop import cross
 import numpy as np
 import seaborn as sns
 import os
@@ -21,8 +19,8 @@ plt.rc('figure', figsize=(12,7))
 SMALL_SIZE = 22
 MEDIUM_SIZE = 26
 BIGGER_SIZE = 30
-plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+plt.rc('font', size=MEDIUM_SIZE)         # controls default text sizes
+plt.rc('axes', titlesize=MEDIUM_SIZE)    # fontsize of the axes title
 plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
 plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
@@ -43,6 +41,16 @@ def init(test_mode='off'):
         testMode = False
     elif testmode in ['on', 'true']:
         testMode = True
+
+
+
+'''
+Local functions, not to be called after import
+'''
+
+'''
+    > for consistency and saving-purposes:
+'''
 
 def read_info():
     global INFO
@@ -65,8 +73,6 @@ def add_path(folder, read=True):
 
     if read:
         read_info()
-
-
 
 def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
     """
@@ -95,9 +101,22 @@ def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
             plt.clf()
 
         plt.close()
+
+def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
+    if scheme == 'ols':
+        scheme = 'OLS'
+    elif scheme == 'ridge':
+        scheme = 'Ridge'
+    elif scheme == 'lasso':
+        scheme = 'Lasso'
+
+    INFO[pdfname] = {'scheme':scheme, 'mode':mode, '$d$':polydeg, '$\lambda$':lmbda}
+    if resampling_type == None:
+        INFO[pdfname]['resampling (iter)'] = None
+    else:
+        INFO[pdfname]['resampling (iter)'] = f'{resampling_type} ({resampling_iter})'
+    INFO[pdfname]['mark'] = mark
         
-
-
 def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xlim='none', ylim='none'):
     if xlim != 'none':
         ax.set_xlim(xlim)
@@ -128,10 +147,11 @@ def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xli
     if legend:
         ax.legend()
     
-    
 
 
-
+'''
+    > for consistency-purposes ++:
+'''
 
 boxStyle = {'facecolor':'lavender', 'alpha':0.7, 'boxstyle':'round'}
 
@@ -149,7 +169,6 @@ def surface_plot(ax, x, y, z, angles, cmap=cm.coolwarm, alpha=1):
     ax.set_ylabel(r"$y$")
     ax.set_zlabel(r"$z$")
     return ax, surf
-
 
 def tune_hyper_parameter(resamplings):
     complexity = []
@@ -171,7 +190,6 @@ def tune_hyper_parameter(resamplings):
     
 def complexity_measure(resamplings):
     return not tune_hyper_parameter(resamplings)
-
 
 def MSE_train_test(ax, resamplings, errorbar=False):
     N = len(resamplings) # no of models
@@ -220,7 +238,6 @@ def MSE_train_test(ax, resamplings, errorbar=False):
     ymin = np.max([0, np.min([muTrain, muTest])*0.90])
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
 
-
 def MSE_test(ax, crossvalidations, errorbar=False):
 
     colours = {5:'cornflowerblue', 6:'mediumseagreen', 7:'coral', 8:'palevioletred', 9:'darkkhaki', 10:'mediumpurple'}
@@ -258,9 +275,6 @@ def MSE_test(ax, crossvalidations, errorbar=False):
 
     set_axes_2d(ax, xlabel=xlabel, ylabel='CV accuracy', xlim=(variable[0], variable[-1]),  ylim=(ymin,ymax))
 
-
-
-
 def bias_variance_tradeoff(ax, bootstrappings):
     N = len(bootstrappings)
     complexity = np.zeros(N) 
@@ -295,9 +309,6 @@ def bias_variance_tradeoff(ax, bootstrappings):
 
     set_axes_2d(ax, xlabel=xlabel, ylabel='score', ylim=(0,ymax))
 
-
-
-
 def make_histogram(ax, bootstrap, which):
 
     B = bootstrap.B
@@ -327,7 +338,6 @@ def make_histogram(ax, bootstrap, which):
     if which.lower() != 'beta_mean':
         ax.legend(loc='center right')
    
-
 def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles, cmap):
     ax, surf = surface_plot(ax, X_comp[:,0], X_comp[:,1], z_comp[:], angles, cmap, 0.8) #computed
     ax.scatter(X_exp[:,0], X_exp[:,1], z_exp[:], marker='^', c='navy') #expected
@@ -338,26 +348,13 @@ def data_model_comparison(ax, z_exp, X_exp, z_comp, X_comp, angles, cmap):
 
 
 
+'''
+Functions to be called by user
+'''
 
-def set_info(pdfname, scheme=None, mode=None, polydeg=None, lmbda=None, resampling_type=None, resampling_iter='', mark=None):
-    if scheme == 'ols':
-        scheme = 'OLS'
-    elif scheme == 'ridge':
-        scheme = 'Ridge'
-    elif scheme == 'lasso':
-        scheme = 'Lasso'
-
-    INFO[pdfname] = {'scheme':scheme, 'mode':mode, '$d$':polydeg, '$\lambda$':lmbda}
-    if resampling_type == None:
-        INFO[pdfname]['resampling (iter)'] = None
-    else:
-        INFO[pdfname]['resampling (iter)'] = f'{resampling_type} ({resampling_iter})'
-    INFO[pdfname]['mark'] = mark
-
-
-
-
-
+'''
+    > very task-specific functions:
+'''
 
 def visualise_data(z_data, X_data, angles=(40, 30), cmap='default', tag='', show=False, mark=None):
     x = X_data[:,0]; y = X_data[:,1]; z = z_data[:]
@@ -374,9 +371,6 @@ def visualise_data(z_data, X_data, angles=(40, 30), cmap='default', tag='', show
     set_info(pdfname, mark=mark)
 
 
-
-
-
 def compare_data(expected, computed, angles=(40, 30), cmap='default', tag='', show=False, mark=None):
     fig, ax = plt.subplots(subplot_kw={'projection':'3d'}, figsize=(9,7))
     if cmap == 'default':
@@ -390,8 +384,6 @@ def compare_data(expected, computed, angles=(40, 30), cmap='default', tag='', sh
     fig.subplots_adjust(left=0.02, bottom=0.04, right=0.96, top=0.96)
     save_push(fig, pdfname, show=show, tight=False)
     set_info(pdfname, scheme, mode=computed.mode, polydeg=computed.polydeg, lmbda=computed.lmbda, mark=mark)
-
-
 
 
 def train_test_MSE(resamplings,  tag='', show=False, mark=None):
@@ -433,8 +425,6 @@ def CV_errors(crossvalidations_list, tag='', show=False, mark=None):
     set_info(pdfname, scheme, cv.mode, polydeg=polydeg, lmbda=lmbda, resampling_type='CV', resampling_iter='...', mark=mark)
 
 
-
-
 def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
     fig, ax = plt.subplots(layout="constrained")
     bias_variance_tradeoff(ax, bootstrappings)
@@ -450,7 +440,6 @@ def BV_Tradeoff(bootstrappings, tag='', show=False, mark=None):
     pdfname = f'tradeoff_{scheme}{tag}.pdf'
     save_push(fig, pdfname, show=show, tight=False)
     set_info(pdfname, scheme, bs.mode, polydeg=polydeg, lmbda=lmbda, resampling_type='BS', resampling_iter=bs.B, mark=mark)
-
 
 
 def beta_params(trainings, grouped=False, tag='', show=False, mark=None):
@@ -648,24 +637,17 @@ def heatmap(resampling_grid, ref_error=0, tag='', show=False, mark=None):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+"""
 def remove_pdf(info, pdfname):
     infoT = info.transpose()
     infoT.pop(pdfname)
     info = infoT.transpose()
     return info
+"""
 
-
+'''
+    > update the .pkl-file with newly generated plots:
+'''
 
 def update_info(additional_information='none'):
     if testMode:

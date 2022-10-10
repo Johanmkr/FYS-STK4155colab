@@ -1,4 +1,3 @@
-
 from src.utils import *
 from src.objects import dataPrepper, groupedVector
 from src.Regression import Training, Prediction, linearRegression
@@ -7,16 +6,13 @@ from src.Resampling import Bootstrap, CrossValidation
 from imageio.v2 import imread
 
 import plot as PLOT
-PLOT.init('off')
-
+PLOT.init() # arg. 'on' initiates testMode
 PLOT.add_path('terrain')
 
 
-
 def datapointsTerrain(location='GrandCanyon', sx=slice(2500, 3400, 30), sy=slice(2500, 3400, 30)):
-    
-    terrain1 = imread(f"../data/SRTM_data_{location}.tif")
-    z = terrain1[sx, sy].astype('float64')
+    terrain = imread(f"../data/SRTM_data_{location}.tif")
+    z = terrain[sx, sy].astype('float64')
     Ny, Nx = np.shape(z)
     x = np.sort( np.random.rand(Nx))
     y = np.sort( np.random.rand(Ny))
@@ -30,15 +26,13 @@ prepper = dataPrepper(x, y, z)
 prepper.prep(True)
 
 
-
-
 TRAININGS = {}
 PREDICTIONS = {}
 
 POLYDEGS = range(1, maxPolydeg+1)
 
 # nice params
-goto_polydeg = 6 # or seven
+goto_polydeg = 6 
 goto_B = 400
 goto_k = 10
 kLIST = [6, 8, 10]
@@ -57,7 +51,7 @@ lmbda_O = 0
 
 ### Ridge:
 POLYDEGS_R = POLYDEGS[3:]
-HYPERPARAMS_R = np.logspace(-5, -2, 10)
+HYPERPARAMS_R = np.logspace(-5, -2, 12)
 d_R = 18
 lmbda_R = 1.23e-4
 
@@ -68,7 +62,9 @@ HYPERPARAMS_L = np.logspace(-5, -2, 10)
 d_L = 11
 lmbda_L = 1e-5
 
-SHOW = False
+
+# show plots or only save
+SHOW = True
 
 
 def assessModelComplexityBS(B, method, mode, polydegs):
@@ -119,16 +115,13 @@ def grid_searchCV(k, method, mode, polydegs, hyperparams):
     return CVgrid
 
 
-
-
 def noneAnalysis():
     PLOT.visualise_data(*prepper.dump(), show=SHOW, cmap='terrain')
-    #PLOT.visualise_data(*prepper.getTrain(goto_polydeg), show=show)
+
     def simple_analysis():
         workouts = {d:deepcopy(TRAININGS[d]) for d in [d_O, d_R]}
         forecasts = {d:deepcopy(PREDICTIONS[d]) for d in [d_O, d_R]}
         
-
         reg = linearRegression(workouts[d_O], forecasts[d_O], mode='own', scheme='OLS')
         reg.fit()
         reg = linearRegression(workouts[d_R], forecasts[d_R], mode='own', scheme='Ridge', shrinkage_parameter=lmbda_R)
@@ -140,31 +133,32 @@ def noneAnalysis():
 
 def finalAnalysis():
 
+    # OLS MODEL
+    d = d_O
+    lmbda = lmbda_O
+    scheme = 'ols'
+    mode = 'own'
 
     # Ridge MODEL
-    d = 18
-    lmbda = 1.23e-4
+    d = d_R
+    lmbda = lmbda_R
     scheme = 'Ridge'
-
-    # OLS MODEL
-    d = 6
-    lmbda = 0
-    scheme = 'ols'
+    mode = 'skl'
 
     trainer, predictor = TRAININGS[d], PREDICTIONS[d]
 
-    reg = linearRegression(trainer, predictor, mode='own', scheme=scheme, shrinkage_parameter=lmbda)
+    reg = linearRegression(trainer, predictor, mode=mode, scheme=scheme, shrinkage_parameter=lmbda)
     reg.fit()
     predictor.predict()
     PLOT.compare_data(predictor, predictor, angles=(6, 49), cmap='terrain', show=SHOW, mark='prediction set')
 
     MSE_un = predictor.mean_squared_error()
 
-    BS = Bootstrap(trainer, predictor, 600, scheme=scheme, mode='own', hyper_param=lmbda)
+    BS = Bootstrap(trainer, predictor, 600, scheme=scheme, mode=mode, hyper_param=lmbda)
     BS()
     MSE_BS = BS.resamplingError()
 
-    CV = CrossValidation(trainer, predictor, goto_k, scheme=scheme, mode='own', hyper_param=lmbda)
+    CV = CrossValidation(trainer, predictor, goto_k, scheme=scheme, mode=mode, hyper_param=lmbda)
     CV()
     MSE_CV = CV.resamplingError()
 
@@ -176,8 +170,6 @@ def finalAnalysis():
     MSE_str += f'\n   cross-validation MSE = {MSE_CV:.4f}\n'
     MSE_str += '-'*40
     print(MSE_str)
-
-
 
 
 def olsAnalysis():
@@ -204,34 +196,27 @@ def olsAnalysis():
         
         PLOT.train_test_MSE_R2(workouts, forecasts, show=SHOW)
         PLOT.beta_params(workouts, grouped=True, show=SHOW, mark="$β$'s grouped by order $d$") 
-        
-        # Select one polydeg to visualise for
-        #T, P = workouts[d_O], forecasts[d_O]
-        #PLOT.compare_data(P, P, cmap='terrain', show=show, mark="prediction set")
 
-    #
+    
     simple_analysis()
     
-    '''
     # Bootstrap 
     print('   > Bootstrap ...\n')
     Bootstrappings = assessModelComplexityBS(goto_B, 'OLS', 'own', POLYDEGS_O)
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
-    idx = goto_polydeg-1
+    idx = d_O-1
     PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
     PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
 
     
-
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     CVgrid = []
     for k in kLIST:
         Crossvalidations = assessModelComplexityCV(k, 'OLS', 'own', POLYDEGS_O)
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=SHOW)'''
-
+    PLOT.CV_errors(CVgrid, show=SHOW)
 
 
 def ridgeAnalysis():
@@ -240,38 +225,39 @@ def ridgeAnalysis():
     print('-'*40)
     print('\n')
 
+    mode = 'skl' # 'skl' is a bit faster ...
+
     def simple_analysis():
         workout = {d:deepcopy(TRAININGS[d]) for d in [d_R]}
         forecast = {d:deepcopy(PREDICTIONS[d]) for d in [d_R]}
 
-        reg = linearRegression(workout[d_R], forecast[d_R], mode='skl', scheme='Ridge', shrinkage_parameter=lmbda_R)
+        reg = linearRegression(workout[d_R], forecast[d_R], mode=mode, scheme='Ridge', shrinkage_parameter=lmbda_R)
         reg.fit()
         PLOT.beta_params(workout, grouped=True, show=SHOW, mark="$β$'s grouped by order $d$") 
 
     simple_analysis()
     
     # Bootstrap 
-    '''print('   > Bootstrap ...\n')
-    
-    Bootstrappings = assessHyperParamBS(d_R, 3, 'Ridge', 'skl', hyperparams=np.logspace(-5, -4, 10))
+    print('   > Bootstrap ...\n')
+    Bootstrappings = assessHyperParamBS(d_R, goto_B, 'Ridge', mode, hyperparams=HYPERPARAMS_R)
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
-    # Trade-off : d = 13, 14, 15, 16
     PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
     idx = np.argmin(np.abs(HYPERPARAMS_R-lmbda_R))
     PLOT.beta_hist_resampling(Bootstrappings[idx], grouped=False, show=SHOW)
     PLOT.mse_hist_resampling(Bootstrappings[idx], show=SHOW)
+   
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
     CVgrid = []
     for k in kLIST[1:3]:
-        Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', 'skl', hyperparams=HYPERPARAMS_R[1:])
+        Crossvalidations = assessHyperParamCV(d_R, k, 'Ridge', mode, hyperparams=HYPERPARAMS_R)
         CVgrid.append(Crossvalidations)
-    PLOT.CV_errors(CVgrid, show=SHOW)'''
+    PLOT.CV_errors(CVgrid, show=SHOW)
 
     # Cross validation (grid search)
-    '''print('   > k-fold cross-validation with grid search ...\n')
-    CVgrid = grid_searchCV(goto_k, 'Ridge', 'skl', POLYDEGS_R, HYPERPARAMS_R)
-    PLOT.heatmap(CVgrid, show=SHOW)'''
+    print('   > k-fold cross-validation with grid search ...\n')
+    CVgrid = grid_searchCV(goto_k, 'Ridge', mode, POLYDEGS_R, HYPERPARAMS_R)
+    PLOT.heatmap(CVgrid, show=SHOW)
 
    
 def lassoAnalysis():
@@ -281,32 +267,20 @@ def lassoAnalysis():
     print('\n')
 
     # Bootstrap
-    '''print('   > Bootstrap ...\n')
+    print('   > Bootstrap ...\n')
     Bootstrappings = assessHyperParamBS(goto_polydeg, 50, 'Lasso', 'skl', hyperparams=HYPERPARAMS_L)
     PLOT.train_test_MSE(Bootstrappings, show=SHOW)
     
     # Cross-validation
     print('   > k-fold cross-validation ...\n')
-    Crossvalidations = assessHyperParamCV(goto_polydeg, 8, 'Lasso', 'skl', hyperparams=HYPERPARAMS_L)
+    Crossvalidations = assessHyperParamCV(goto_polydeg, goto_k, 'Lasso', 'skl', hyperparams=HYPERPARAMS_L)
     PLOT.train_test_MSE(Crossvalidations, show=SHOW)
-    PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)'''
-    HYPERPARAMS_L = np.logspace(-5, -2, 10)
-    POLYDEGS_L = POLYDEGS[3:]
-    k_L = 7
+    PLOT.BV_Tradeoff(Bootstrappings, show=SHOW)
+
     # Cross validation (grid search)
     print('   > k-fold cross-validation with grid search ...\n')
-    t0 = time()
-    CVgrid = grid_searchCV(k_L, 'Lasso', 'skl', POLYDEGS_L, HYPERPARAMS_L)
-    t1 = time()
-    print(t1-t0)
-    print('plotting')
+    CVgrid = grid_searchCV(goto_k, 'Lasso', 'skl', POLYDEGS_L, HYPERPARAMS_L)
     PLOT.heatmap(CVgrid,show=SHOW)
-
-
-
-
-
-
 
 
 

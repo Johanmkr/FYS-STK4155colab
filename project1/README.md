@@ -1,6 +1,8 @@
 # **Project 1**: Regression analysis and resampling methods
 
-We present the work of Johan Mylius Kroken and Nanna Bryne in the first project in Applied Data Analysis and Machine Learning (autumn 2022). The report is found in the `latex`-folder. The input data is located in `data` and you will find the output plots in `output/figures/**`.
+We present the work of Johan Mylius Kroken and Nanna Bryne in the first project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project1.pdf`) is found in the `latex`-folder. 
+
+The input data is located in `data` and you will find the output plots in `output/figures/**`.
 
 
 ## **CODE**
@@ -31,18 +33,18 @@ python3 FrankeAnalysis.py all
 ```
 
 ### Prerequisities
-- `numpy`, `matplotlib`, etc. (FIX)
-- `imageio`
-- `pandas`
+In addition to the regular libraries, such as `numpy` and `matplotlib`, the user needs the below-listed libraries downloaded on beforehand to properly run the codes.
 - `sklearn`
+- `pandas`
+- `seaborn`
+- `iamgeio`
 - `tabulate`
 - `collections`
-
-
+- `copy`
 
 ## Structure
-
-The scripts for plotting are stashed away into `plot.py` for your visual pleasure. The file includes, amongst other functionalities, options for saving figures into sub-directories (`../output/figures/Franke` or `../output/figures/terrain`) toghether with useful information about how they were obtained to a README-file. The plotting code is polluted with many quite unnecessary functionalities which may have been useful in the trying-and-failing-part of the process.
+ 
+The scripts for plotting are stashed away into `plot.py` for your visual pleasure. The file includes, amongst other functionalities, options for saving figures into sub-directories (`../output/figures/Franke` or `../output/figures/terrain`) toghether with useful information about how they were obtained to a README-file. The plotting code is polluted with many quite unnecessary functionalities which may have been useful in the trying-and-failing-part of the process. An attempt to understand this task-specific code is not recommended and at your sole risk.
 
 The main `.py`-files import various source files. We present a short description of each of them.
 
@@ -69,7 +71,7 @@ from srd.objects import dataPrepper
 prepper = dataPrepper(x, y, z) # some x, y, z data 
 prepper.prep()
 ```
-and the data is splitted, scaled and (???). One can esily extract the train and test sets for desired polynomial degree.
+and the data is splitted, scaled and created for given polynomial degrees. One can esily extract the train and test sets for desired polynomial degree.
 
 ### **`src/Regression.py`**
 

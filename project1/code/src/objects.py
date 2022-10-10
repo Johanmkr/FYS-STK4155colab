@@ -93,10 +93,10 @@ class designMatrix(noneData):
     for a given polynomial degree.
     COMPATIBLE CLASSES:
         * parameterVector 
-        * targetVector
-        * modelVector
+        * targetVector, modelVector
         * leastSquares (+ subclasses)
         * Bootstrap
+        * CrossValidation
     """
 
     def __init__(self, X):
@@ -241,9 +241,9 @@ class targetVector(noneData):
     COMPATIBLE CLASSES:
         * parameterVector
         * designMatrix 
-        * modelVector
         * leastSquares (+ subclasses)
         * Bootstrap
+        * CrossValidation
     """
 
     def __init__(self, z) -> None:
@@ -328,20 +328,54 @@ class targetVector(noneData):
         return self.mu, self.sigma
 
     def __sub__(self, other):
-        if isinstance(other, targetVector):
+        """
+        Ability to subtract without retrieving array.
+
+        Parameters
+        ----------
+        other : targetVector/modelVector/ndarray
+            the data points to subtract
+
+        Returns
+        -------
+        ndarray
+            subtracted data points
+        """
+        if isinstance(other, (targetVector, modelVector)):
             return self.z - other.z
         else: 
             return self.z - other
 
 
 class modelVector(targetVector):
+    """
+    Replica of motherclass. Somewhat useless.
+    """
     def __init__(self, z) -> None:
+        """
+        Constructor for the modelled data.
+
+        Parameters
+        ----------
+        z : ndarray
+            predicted data points
+        """
         super().__init__(z)
 
 
 
 
 class parameterVector:
+    """
+    Class for containing the parameter vector 'β' as in
+        z = Xβ.
+    COMPATIBLE CLASSES:
+        * targetVector, modelVector
+        * designMatrix 
+        * leastSquares (+ subclasses)
+        * Bootstrap
+        * CrossValidation
+    """
 
 
     def __init__(self, beta) -> None:
@@ -422,6 +456,14 @@ class parameterVector:
         return self.beta[index]
 
     def __len__(self):
+        """
+        Get the number of features.
+
+        Returns
+        -------
+        int
+            number of features
+        """
         return len(self.beta)
 
     def __rmul__(self, other):
@@ -443,6 +485,14 @@ class parameterVector:
         return other.X @ self.beta
 
     def setVariance(self, var):
+        """
+        Save variance of beta to object.
+
+        Parameters
+        ----------
+        var : ndarray
+            variance of beta parameter
+        """
         tol = 1e-14
         try: 
             self.var = np.where(var>tol, var, np.nan)
@@ -451,19 +501,47 @@ class parameterVector:
             self.var = None
             self.stdv = None
 
-
-
     def group(self):
+        """
+        Group elements by their polynomial order.
+        
+        Example:
+            grouped β index 3 = mean of β_6, β_7, β_8, β_9
+
+        Returns
+        -------
+        groupedVector
+            the grouped paramter vector
+        """
         self.pV_grouped = groupedVector(self)
         return self.pV_grouped
 
     def mean(self):
+        """
+        Calculate the mean value of the β elements
+
+        Returns
+        -------
+        float
+            mean of β elements
+        """
         return np.mean(self.beta)
 
 
 class groupedVector(parameterVector):
+    """
+    Dummy class for a very specific purpose.
+    """
 
     def __init__(self, beta) -> None:
+        """
+        Constructor for the grouped β. 
+
+        Parameters
+        ----------
+        beta : ndarray/parameterVector
+            _description_
+        """
         super().__init__(beta)
 
         polydegs = range(1, self.polydeg+1)
