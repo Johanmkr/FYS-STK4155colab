@@ -8,7 +8,7 @@
 | beta_ridge_ols.pdf                | Ridge    | manual |       | 0.000123               |                     | comparison of $β$'s between Ridge and OLS |
 | comparison3D.pdf                  |          |        |       |                        |                     | visualise x, y, z data                    |
 | comparison3D_ols.pdf              | OLS      | manual | 6     | 0                      |                     | prediction set                            |
-| comparison3D_ridge.pdf            | Ridge    | manual | 18    | 0.000123               |                     | prediction set                            |
+| comparison3D_ridge.pdf            | Ridge    | auto   | 18    | 0.000123               |                     | prediction set                            |
 | comparison3D_ridgetrain.pdf       | Ridge    | manual | 15    | 1.08e-08               |                     | training set                              |
 | data3D.pdf                        |          |        |       |                        |                     | visualise x, y, z data                    |
 | MSE_heatmap_lasso_CV.pdf          | Lasso    | skl    |       |                        | CV (10)             | 10 $λ$'s from 1.00e-05 to 1.00e-05        |
@@ -32,5 +32,5 @@
 
 * xy-grid: N x N = 30 x 30
 * Considered 20 polynomial degrees between d = 1 and d = 20 (linarly spaced).
-* Ridge: Considered 10 λ-values between λ = 1.0e-05 and λ = 1.0e-02 (logarithmically spaced).
+* Ridge: Considered 12 λ-values between λ = 1.0e-05 and λ = 1.0e-02 (logarithmically spaced).
 * Lasso: Considered 10 λ-values between λ = 1.0e-05 and λ = 1.0e-02 (logarithmically spaced).
