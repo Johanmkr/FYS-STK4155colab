@@ -1,7 +1,7 @@
 \section{Analysis}\label{sec:analysis}
 
     \subsection{Data and noise}\label{sec:data}
-        The function, onto which we are trying to fit a model, is the Franke Function(cite this). It is defined as follows:
+        The function, onto which we are trying to fit a model, is the Franke Function. It is defined as follows:
         \begin{align}\label{eq:francefunc}
             f(x,y) &= \frac{3}{4}\exp{-\frac{(9x-2)^2}{4}-\frac{(9y-2)^2}{4}} \nonumber\\
             &+ \frac{3}{4}\exp{-\frac{(9x+1)^2}{49}-\frac{(9y+1)}{10}} \nonumber\\
@@ -14,9 +14,9 @@
             &= f(\vec{x}) + \epsilon
         \end{align}
         where $\vec{x} = (x,y)$. 
-        From section \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
+        From \Sec{regression} we have a model for this data: $\tilde{\vec{y}} = X\hat{\svec{\beta}}$ where $X$ is the design matrix and $\hat{\svec{\beta}}$ are the optimal parameters which we are trying to determine. 
 
-        We visualise the data both with and without noise. Figure \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=20$. We could use more data points, but for the sake computational efficiency we use a $20\cross20$ grid throughout this analysis.  Figure \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
+        We visualise the data both with and without noise. \Fig{franke_function} shows the Franke function without any noise ($\eta=0$), plotted for uniformly distributed $x$ and $y$, where $N=20$. We could use more data points, but for the sake of computational efficiency we use a $20\cross20$ grid throughout this analysis. \Fig{franke_function_noise} show the same function, for the same points but now with an added noise of $\eta=0.1$.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{Franke/data3D_no_noise.pdf}
@@ -31,7 +31,7 @@
         \end{figure}
 
     \subsection{Data splitting}\label{sec:splitting}
-        In order to test our estimate of $\hat{\svec{\beta}}$ we reserve some of the data for testing. We thus divide our data set into a part for testing a part for training. We select 80 \% of the data for training and the remaining 20 \% for testing the data. The data is split at random. 
+        In order to test our estimate of $\hat{\svec{\beta}}$ we reserve some of the data for testing. We thus divide our data set into a part for testing and a part for training. We select 80 \% of the data for training and the remaining 20 \% for testing the data. The data is split at random. 
 
 
 
@@ -74,7 +74,7 @@
     \subsection{Regression analysis for Franke function}\label{sec:reganalysis_franke}
 
         \subsubsection{OLS}\label{sec:olsanalysis}
-            We start by performing an Ordinary Least Square regression analysis, as outlined in section \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
+            We start by performing an Ordinary Least Square regression analysis, as outlined in \Sec{OLS}, where we find $\hat{\svec{\beta}}^\text{OLS}$ from \Eq{optimal_beta_ols} and $\variance{\optbeta^{\text{OLS}}}$ from \Eq{variance_of_optimal_beta_ols}. The error can be estimated with the standard deviation $\vec{\sigma}_{\beta} = \variance{\optbeta^{\text{OLS}}}^{1/2}$. 
 
             We have scaled the data and removed the intercept, thus we do not concern ourselves with $\beta_0$, so $\svec{\beta}^{\text{OLS}} = (\beta_1, \beta_2, \beta_3, \dots, \beta_{p-1})$. We train models, i.e. we find $\optbeta^{\text{OLS}}$ for polynomials up to order $5$. The values of these optimal parameters are plotted in \Fig{beta_with_standard_deviation}, with error bars of one standard deviation. We notice that the variation of the feature parameters increase as the polynomial degree of the model increase. This is expected because when the complexity of the model increase, it want to traverse more points exactly. We further see that the coefficients of the same features more or less have the same sign for the different polynomial degrees. This is a sign of a stable model, as we do not want these coefficient to change much when we use different polynomial degrees for our model. WHY??
 
