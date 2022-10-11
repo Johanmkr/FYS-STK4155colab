@@ -1,0 +1,105 @@
+\documentclass{aa} 
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+\usepackage{physics,amssymb}  
+\usepackage{graphicx} 
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{hyperref} 
+\usepackage{array}
+%\usepackage{tikz} 
+\usepackage{listings}   
+\usepackage{url}
+\usepackage{upgreek}
+\usepackage[super]{nth}
+\usepackage{enumitem}
+\usepackage{color,soul}
+\usepackage{stackengine}
+\usepackage{textgreek}
+\usepackage{bookmark}
+\usepackage{mathrsfs}
+\usepackage{nicefrac}
+\usepackage[caption=false]{subfig}
+\usepackage{bbold}
+
+\graphicspath{{../output/figures}}
+
+
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+\makeatletter
+\renewcommand*\aa@pageof{, page \thepage{} of \pageref*{LastPage}}
+\makeatother
+
+%\newcommand{\Table}[1]{Table \ref{table:#1}}
+%\newcommand{\Fig}[1]{Figure \ref{fig:#1}}
+%\newcommand{\Eq}[1]{eq. (\ref{eq:#1})}
+%\newcommand{\Sec}[1]{section \ref{sec:#1}}
+
+
+\definecolor{codegray}{gray}{0.9}
+\newcommand{\code}[1]{\colorbox{codegray}{\texttt{#1}}}
+
+
+\newcommand{\unitC}{ $^\circ$C}
+\newcommand{\degs}{$^\circ$}
+\newcommand{\pwr}[1]{$^{#1}$} %power
+\newcommand{\idx}[1]{$_{#1}$} %index
+\newcommand{\stdf}[1]{$\cross 10^{#1}$} %standard form
+\newcommand{\unit}[1]{\text{ {#1}}}
+\newcommand{\about}{$\sim$}
+\newcommand{\ds}{\text{d}}
+
+\renewcommand{\vec}{\mathbf}
+\newcommand{\svec}{\boldsymbol}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\kappa}{\varkappa}
+\renewcommand{\rho}{\varrho}
+
+\newcommand{\F}{\mathscr{F}} %Fourier
+\newcommand{\Sun}{_\odot} %Sun mark
+\newcommand{\Sk}{\mathcal{S}} %S-function
+
+\newcommand{\hatx}{ \vec{\hat{e}_x} } %unit vec x
+\newcommand{\haty}{ \vec{\hat{e}_y} } %unit vec y
+\newcommand{\hatz}{ \vec{\hat{e}_z} } %unit vec z
+
+\newcommand{\lap}{\nabla^2 } %Laplacian
+\newcommand{\dal}{\Box } %d'Alembertian
+
+\newcommand{\bnabla}{\boldsymbol{\nabla}}
+
+
+\newcommand{\TT}{^\intercal} % transpose
+\newcommand{\RR}[1][]{\mathbb{R}^{#1}} %real numbers
+\newcommand{\II}[1][]{\mathbb{1}_{#1}} %identity matrix
+
+
+
+
+
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}}
+    
+\lstset{ %
+	inputpath=,
+	backgroundcolor=\color{white!88!black},
+	basicstyle={\ttfamily\scriptsize},
+	commentstyle=\color{magenta},
+	language=Python,
+	morekeywords={True,False},
+	tabsize=4,
+	stringstyle=\color{green!55!black},
+	frame=single,
+	keywordstyle=\color{blue},
+	showstringspaces=false,
+	columns=fullflexible,
+	keepspaces=true}   
