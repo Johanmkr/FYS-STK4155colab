@@ -1,13 +1,28 @@
 \section{Theory}\label{sec:theory}
 
+In linear regression we have the famous assumption that 
+
+\begin{align}
+    y_i = f(\vec{x}_i) + \epsilon_i \simeq \vec{x}_i\TT \svec{\beta} + \epsilon_i,
+\end{align}
+
+where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allow said function to represent discrete outputs, we would benefit from moving on to \textit{logsitic} regression.} \comment{Maybe move to intro?}
+
+\fillertext[smooth transition to steepest descent]
+
 \subsection{Gradient descent}\label{sec:gradient_descent}
-Gradient descent \citep{mhjensen}
+Gradient descent \citep{mhjensen} \fillertext
 The most basic concept is that of steepest descent. In order to find a minimum of a function $f(\vec{x})$ (allow multivariability of $\vec{x}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla f(\vec{x})$. We thus have an iterative scheme to find minima:
 \begin{align}\label{eq:steepest_descent}
     \vec{x}_{k+1} = \vec{x}_k - \gamma_k\nabla f(\vec{x}_k),
 \end{align}
 where $\gamma_k$ may be referred to as the step length or learning rate, which
 
-\subsubsection{Plain Gradient Descent}\label{sec:plain_gradient_descent}
+\subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
 
-\subsubsection{Stochastic Gradient Descent}\label{sec:stochastic_gradient_descent}
+\subsubsection{Stochastic gradient deprojescent (SGD)}\label{sec:stochastic_gradient_descent}
+
+
+\subsection{Tuning}
+
+\comment{Something about hyper parameters $\lambda$ and $\gamma$}

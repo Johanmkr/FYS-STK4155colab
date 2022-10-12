@@ -40,6 +40,16 @@
 %\newcommand{\Eq}[1]{eq. (\ref{eq:#1})}
 %\newcommand{\Sec}[1]{section \ref{sec:#1}}
 
+\newcommand{\rephrase}[1]{\textcolor{olive}{#1}}
+\newcommand{\checkthis}[1]{\textcolor{orange}{#1}}
+\newcommand{\comment}[1]{\par \textcolor{yellow}{* \textit{#1}}}
+\newcommand{\fillertext}[1][]{\par \colorbox{lime}{add filler text} \textcolor{lime}{#1}\par}
+\newcommand{\wtf}[1][WTF]{\textcolor{purple}{#1}}
+%\newcommand{\beginfeltcute}{\begin{tcolorbox}[width=\textwidth,colback={pink},title={Felt cute, might delete later},outer arc=0mm,colupper=black] }
+%\newcommand{\endfeltcute}{\end{tcolorbox}}
+
+
+
 
 \definecolor{codegray}{gray}{0.9}
 \newcommand{\code}[1]{\colorbox{codegray}{\texttt{#1}}}
@@ -61,9 +71,8 @@
 \renewcommand{\kappa}{\varkappa}
 \renewcommand{\rho}{\varrho}
 
-\newcommand{\F}{\mathscr{F}} %Fourier
+\newcommand{\FF}{\mathscr{F}} %Fourier
 \newcommand{\Sun}{_\odot} %Sun mark
-\newcommand{\Sk}{\mathcal{S}} %S-function
 
 \newcommand{\hatx}{ \vec{\hat{e}_x} } %unit vec x
 \newcommand{\haty}{ \vec{\hat{e}_y} } %unit vec y
@@ -79,15 +88,18 @@
 \newcommand{\RR}[1][]{\mathbb{R}^{#1}} %real numbers
 \newcommand{\II}[1][]{\mathbb{1}_{#1}} %identity matrix
 
+\newcommand{\lnorm}[1][2]{$\ell^{#1}$-norm} % l1/l2 norm, default l2
+\newcommand{\EE}[1]{\mathbb{E}\big[#1\big]}  %expectation value
+\newcommand{\VVar}[1]{\text{Var}\big[#1\big]} %variance
 
 
 
 
 \hypersetup{
     colorlinks,
-    linkcolor={red!50!black},
+    linkcolor={orange!50!black},
     citecolor={blue!50!black},
-    urlcolor={blue!80!black}}
+    urlcolor={magenta!70!black}}
     
 \lstset{ %
 	inputpath=,
