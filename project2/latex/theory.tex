@@ -11,16 +11,22 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 \fillertext[smooth transition to steepest descent]
 
 \subsection{Gradient descent}\label{sec:gradient_descent}
-Gradient descent \citep{mhjensen} \fillertext
+Gradient descent \citep{mhjensen} \fillertext[aim is to find beta etc]
+
+\subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
 The most basic concept is that of steepest descent. In order to find a minimum of a function $f(\vec{x})$ (allow multivariability of $\vec{x}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla f(\vec{x})$. We thus have an iterative scheme to find minima:
 \begin{align}\label{eq:steepest_descent}
     \vec{x}_{k+1} = \vec{x}_k - \gamma_k\nabla f(\vec{x}_k),
 \end{align}
-where $\gamma_k$ may be referred to as the step length or learning rate, which
+where $\gamma_k$ may be referred to as the step length or learning rate, which \fillertext
 
-\subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
+What we would like to minimise is the cost function $C(\svec{\beta})$ which is a function of the parameters $\svec{\beta}$ which we are trying to estimate. This means that \Eq{steepest_descent} translates into:
+\begin{align}\label{eq:steepest_descent_cost_function}
+    \svec{\beta}_{k+1} = \svec{\beta}_k - \gamma_k\nabla C(\svec{\beta})
+\end{align}
+For a sufficiently small $\gamma_k$, this method will converge to a minimum of $\svec{\beta}$. However, since we may not know the natur of $\svec{\beta}$ ,there is a risk that this is just a local and not a global minimum. The steepest descent method in \Eq{steepest_descent_cost_function} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent. 
 
-\subsubsection{Stochastic gradient deprojescent (SGD)}\label{sec:stochastic_gradient_descent}
+\subsubsection{Stochastic gradient descent (SGD)}\label{sec:stochastic_gradient_descent}
 
 
 \subsection{Tuning}
