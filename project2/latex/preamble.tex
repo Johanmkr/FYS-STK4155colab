@@ -37,17 +37,20 @@
 
 \newcommand{\Table}[1]{Table \ref{table:#1}}
 \newcommand{\Fig}[1]{Figure \ref{fig:#1}}
-\newcommand{\Eq}[1]{eq. (\ref{eq:#1})}
+\newcommand{\Eq}[1]{eq. \eqref{eq:#1}}
 \newcommand{\Sec}[1]{section \ref{sec:#1}}
 
 \newcommand{\rephrase}[1]{\textcolor{olive}{#1}}
 \newcommand{\checkthis}[1]{\textcolor{orange}{#1}}
-\newcommand{\comment}[1]{\par \textcolor{yellow}{* \textit{#1}}}
-\newcommand{\fillertext}[1][]{\par \colorbox{lime}{add filler text} \textcolor{lime}{#1}\par}
+\newcommand{\comment}[1]{\par\noindent\textcolor{yellow}{* \textit{#1}}}
+\newcommand{\fillertext}[1][]{\par\noindent\colorbox{lime}{add filler text} \textcolor{lime}{#1}\par}
 \newcommand{\wtf}[1][WTF]{\textcolor{purple}{#1}}
-%\newcommand{\beginfeltcute}{\begin{tcolorbox}[width=\textwidth,colback={pink},title={Felt cute, might delete later},outer arc=0mm,colupper=black] }
-%\newcommand{\endfeltcute}{\end{tcolorbox}}
 
+\newcommand{\feltcute}[1]{
+	\noindent\textcolor{pink}{\textbf{Felt cute, might delete later}:}\par\noindent\textcolor{pink}{\rule{8.4cm}{1mm}}
+	\par #1 
+	\par\noindent\textcolor{pink}{\rule{8.4cm}{1mm}}
+}
 
 
 
@@ -80,8 +83,7 @@
 
 \newcommand{\lap}{\nabla^2 } %Laplacian
 \newcommand{\dal}{\Box } %d'Alembertian
-
-\newcommand{\bnabla}{\boldsymbol{\nabla}}
+\newcommand{\bnabla}{\boldsymbol{\nabla}} %bold gradient, idk what is correct
 
 
 \newcommand{\TT}{^\intercal} % transpose

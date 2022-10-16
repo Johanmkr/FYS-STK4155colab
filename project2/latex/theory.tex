@@ -42,8 +42,8 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         The main idea is that we have $n$ data points, that we divide into $M$ minibatches (subsets), meaning that we have $n/M$ data points in each minibatch, denoted $B_j$ for $j\in[1,2,\dots,n/M]$. We also recognize that we may write the total cost function as a sum over all data points $\vec{x}_i$ for $i\in[1,n]$, and thus approximate the gradient of the cost function by only summing over the data points in a minibatch picked at random:
         \begin{align}
             C(\svec{\beta}) &= \sum_{i=1}^nc_i(\vec{x}_i, \svec{\beta}) \nonumber \\
-            \nabla_\beta C(\svec{\beta}) &= \sum_{i=1}^n \nabla_{\beta}c_i(\vec{x}_i,\svec{\beta}) \nonumber \\
-            \tilde{\vec{g}}_k &= \sum_{i\in B_j}\nabla_\beta c_i(\vec{x}_i, \svec{\beta}_k)
+            \nabla_{\!\beta} C(\svec{\beta}) &= \sum_{i=1}^n \nabla_{\!\beta}c_i(\vec{x}_i,\svec{\beta}) \nonumber \\
+            \tilde{\vec{g}}_k &= \sum_{i\in B_j}\nabla_{\!\beta} c_i(\vec{x}_i, \svec{\beta}_k)
         \end{align}
     \subsubsection{Tuning}\label{sec:tuning}
         \comment{Something about hyper parameters $\lambda$ and $\eta$}
