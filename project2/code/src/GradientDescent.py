@@ -53,29 +53,43 @@ class MGD(GD):
         return theta
 
     
-
 class plain_SGD(GradientDescent):
-    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=10, nr_minibatches=5, t0=5, t1=50):
-        GradientDescent.__init__(LF, eta)
+    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=40):
+        GradientDescent.__init__(self, LF=LF, eta=eta)
         self.gamma = gamma
         self.nr_epochs = nr_epochs
         self.m = nr_minibatches
-        self.t0 = t0
-        self.t1 = t1
         self.X = X
-        self.M = int(len(X)/m)
+        self.M = int(len(X)/self.m)
+        self.tau = 1* self.nr_epochs * self.m
+        self.eta0 = eta
+        self.eta_tau = 0.01 * self.eta0
+
+    def learning_schedule(self, k):
+        self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
     
     def find_A(self, LFargument):
         self.A = egrad(self.LF)(LFargument)
 
+    def find_v(self):
+        self.v = -self.eta*self.A
+
     def __call__(self, theta):
         #   This is a wack way of doing this, needs improvement soon
-        j = 0
+        k = 1
         for epoch in range(self.nr_epochs):
             for i in range(self.m):
-                random_index = self.M*np.random.randint(self.m)
-                xi = self.X[random_index:random_index+self.M]
-                find()
+                random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
+                xi = self.X[random_indecies]
+                self.find_A(xi)
+                self.learning_schedule(k)
+                self.find_v()
+                theta = theta + self.v
+                k += 1
+            # plt.scatter(theta, f(theta), marker="1")
+        return np.min(theta)
+
+
 
 
 
@@ -85,26 +99,31 @@ if __name__=="__main__":
     # def f(x):
     #     return 0.1 * x * np.cos(x)
     f = lambda x: 0.1 *x * np.cos(x)
+    y = f(x)
     # fx = 0.1*x*np.cos(x)
     # Lf = lambda y, fx: (y-fx)**2
     plt.plot(x,f(x))
 
-    gd = MGD(f, eta=0.01, gamma=0.9, NAG=True)
+    # gd = MGD(f, eta=0.01, gamma=0.9, NAG=True)
     # gd = GD(f, eta=0.01)
+    gd = plain_SGD(X=x, LF=f)
 
-    x0 = -9.4
+    x0 = 0.0
     plt.scatter(x0, f(x0), marker="x")
-    MAXiter = 10000
-    Niter = 0
-    for _ in range(MAXiter):
-        xnew = gd(x0)
-        if abs(gd.A) < 1e-2:
-            break
-        else:
-            x0 = xnew
-        Niter += 1
+    # MAXiter = 20
+    # Niter = 0
+    # for _ in range(MAXiter):
+    #     xnew = gd(x0)
+    #     if abs(xnew-np.min(f(x))) < 1e-1:
+    #         break
+    #     else:
+    #       x0 = xnew
+    #       plt.scatter(x0,  f(x0), marker="1")
+    #     # x0 = xnew
+    #     Niter += 1
+    # print(Niter)
+    x0 = gd(x0)
     plt.scatter(x0, f(x0), marker="o")
-    print(Niter)
     plt.show()
     # print(x0)
 
