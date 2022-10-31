@@ -154,23 +154,25 @@ if __name__=="__main__":
     batch_size = 100
     epochs = 100
     eta = 0.01
-    lmbd = 0
+    lmbd = 0.1
     N = 1000
     net = NeuralNetwork(x_data.T, y_data.T, n_hidden_neurons=10, output_length=y_data.T.shape[1], epochs=epochs, batch_size=batch_size, eta=eta, lmbd=lmbd)
     net.train(N)
+    # from IPython import embed; embed()
     prediction = net.predict(x_data.T).T
     # print(f"Iterations: {net.iterations}")
     plt.plot(x_data, prediction, color="red", label="prediction", alpha=0.7)
     plt.legend()
+    plt.show()
 
 
     #Franke
-    FrankeNet = NeuralNetwork(FrankeX, FrankeY, n_hidden_neurons=10, output_length=FrankeY.shape[1], epochs=epochs, batch_size=batch_size, eta=eta, lmbd=lmbd)
-    FrankeNet.train(N)
-    FrankePred = FrankeNet.predict(FrankeX)
-    fig = plt.figure(figsize=(15,15))
-    ax = fig.gca(projection='3d')
-    surf = ax.plot_surface(xx, yy, np.reshape(FrankePred[0], (20,20)), cmap="coolwarm", alpha=0.7)
-    scatter = ax.scatter(xx,yy,zzr, color="green")
-    plt.show()
+    # FrankeNet = NeuralNetwork(FrankeX, FrankeY, n_hidden_neurons=10, output_length=FrankeY.shape[1], epochs=epochs, batch_size=batch_size, eta=eta, lmbd=lmbd)
+    # FrankeNet.train(N)
+    # FrankePred = FrankeNet.predict(FrankeX)
+    # fig = plt.figure(figsize=(15,15))
+    # ax = fig.gca(projection='3d')
+    # surf = ax.plot_surface(xx, yy, np.reshape(FrankePred[0], (20,20)), cmap="coolwarm", alpha=0.7)
+    # scatter = ax.scatter(xx,yy,zzr, color="green")
+    # plt.show()
     # print(net.predict(np.array([[7.5]])))
