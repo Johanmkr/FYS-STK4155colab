@@ -55,15 +55,28 @@ class MGD(GD):
     
 
 class plain_SGD(GradientDescent):
-    def __init__(self, LF, eta=0.01, gamma=0.9, nr_epochs=10, nr_minibatches=5, t0=5, t1=50):
+    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=10, nr_minibatches=5, t0=5, t1=50):
         GradientDescent.__init__(LF, eta)
         self.gamma = gamma
         self.nr_epochs = nr_epochs
-        self.m = nr_minibatches 
+        self.m = nr_minibatches
         self.t0 = t0
         self.t1 = t1
+        self.X = X
+        self.M = int(len(X)/m)
     
-    def find_A
+    def find_A(self, LFargument):
+        self.A = egrad(self.LF)(LFargument)
+
+    def __call__(self, theta):
+        #   This is a wack way of doing this, needs improvement soon
+        j = 0
+        for epoch in range(self.nr_epochs):
+            for i in range(self.m):
+                random_index = self.M*np.random.randint(self.m)
+                xi = self.X[random_index:random_index+self.M]
+                find()
+
 
 
 
