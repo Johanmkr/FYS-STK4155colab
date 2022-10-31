@@ -25,20 +25,20 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \comment{Explain different parts}
 
     \subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
-        The most basic concept is that of steepest descent. In order to find a minimum of a function $f(\vec{x})$ (allow multivariability of $\vec{x}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla f(\vec{x})$. We thus have an iterative scheme to find minima:
+        The most basic concept is that of steepest descent. In order to find a minimum of a function $\rho(\svec{\xi})$ (allow multivariability of $\svec{\xi}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have an iterative scheme to find minima:
         \begin{align}\label{eq:steepest_descent}
-            \vec{x}_{k+1} = \vec{x}_k - \eta_k\nabla f(\vec{x}_k),
+            \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla \rho(\svec{\xi}_k),
         \end{align}
         where $\eta_k$ may be referred to as the step length or learning rate, which \fillertext
 
-        What we would like to minimise is the cost function $C(\svec{\beta})$ which is a function of the parameters $\svec{\beta}$ which we are trying to estimate. This means that \Eq{steepest_descent} translates into:
+        What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. This means that \Eq{steepest_descent} translates into:
         \begin{align}\label{eq:steepest_descent_cost_function}
             \mathcal{A}_k &\equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k) \nonumber \\
             \vec{v}_k &= -\eta_k\mathcal{A}_k \nonumber \\
             \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k
         \end{align}
         Where we define $\mathcal{A}_k$ to be the direction and magnitude of the steepest ascent in parameter space. 
-        For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\beta}$. (However, since we may not know the nature of $\svec{\beta}$ ,there is a risk that this is just a local and not a global minimum. The steepest descent method in \Eq{steepest_descent_cost_function} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
+        For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\theta}$. (However, since we may not know the nature of $\svec{\theta}$ ,there is a risk that this is just a local and not a global minimum. The steepest descent method in \Eq{steepest_descent_cost_function} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
 
     \subsubsection{Momentum}\label{sec:momentum}
         From \Eq{steepest_descent_cost_function} we have that the movement in parameter space is given by $\vec{v}_k$ (the negative of which), which describes the direction and magnitude of the steepest ascent in parameter space. Sometimes we might want to move larger distances in one step. This can be achieved by introduction momentum, where we add an addition term to $\vec{v}_k$:
@@ -56,18 +56,40 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \subsubsection{Stochasticity}\label{sec:stochasticity}
         There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\svec{\theta}$ have numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
 
-        The main idea is that we have $n$ data points, that we divide into $M$ minibatches (subsets), meaning that we have $n/M$ data points in each minibatch, denoted $B_j$ for $j\in[1,2,\dots,n/M]$. We also recognize that we may write the total cost function as a sum over all data points $\vec{x}_i$ for $i\in[1,n]$, and thus approximate the gradient of the cost function by only summing over the data points in a minibatch picked at random:
+        The main idea is that we have $n$ data points, that we divide into $M$ minibatches (subsets), meaning that we have $n/M$ data points in each minibatch, denoted $B_j$ for $j\in\{1,2,\dots,n/M\}$. We also recognize that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
+        \begin{equation}
+            \mathcal{L}(\svec{\theta}) =\sum_{(\vec{x}, y)\in \mathcal{D}} l(f(\vec{x};\svec{\theta}), y) = \sum_{i=1}^n l_i(\svec{\theta}),
+        \end{equation}
+
+        where $l_i = l(f(\vec{x}^{(i)};\svec{\theta}); y^{(i)})$, and thus approximate the gradient of the cost function by only summing over the data points in a minibatch picked at random:
         \begin{align}
-            \mathcal{L}(\svec{\theta}) &= \sum_{i=1}^nl_i(\vec{x}_i, \svec{\theta}) \nonumber \\
-            \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) &= \sum_{i=1}^n \nabla_{\!\theta}l_i(\vec{x}_i,\svec{\theta}) \nonumber \\
-            \mathcal{A}^j_k &= \sum_{i\in B_j}\nabla_{\!\theta} l_i(\vec{x}_i, \svec{\theta}_k)
+            \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) &= \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}) \\
+            \mathcal{A}^j_k &= \sum_{i\in B_j}\nabla_{\!\theta} l_i(\svec{\theta}_k)
         \end{align}
+
+        
+    
     \subsubsection{Tuning}\label{sec:tuning}
         \comment{Something about hyper parameters $\lambda$ and $\eta$}
 
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
     \subsubsection{Basics}\label{sec:basics}
+
+    A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of a FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
+
+    The structure of such a chain-based architecture is described by the hidden layers $\vec{h}^l,\,l=1,2, \dots, H$ given by
+    \begin{subequations}
+        \begin{align} 
+            \vec{h}^0 &= \vec{x} % dunno
+            \vec{h}^1 &= g^1 \big(\TT{W}^1 \vec{h}^0 + \vec{b}^1\big); \\
+            \vec{h}^2 &= g^2 \big(\TT{W}^2 \vec{h}^1 + \vec{b}^2\big); \\
+            &\dots \nonumber \\
+            \vec{h}^{H} &= g^2 \big(\TT{W}^{H} \vec{h}^{H-1} + \vec{b}^H\big);             
+        \end{align}
+    \end{subequations}
+    
+
 
     \subsubsection{Activation functions}\label{sec:activation_function}
 
