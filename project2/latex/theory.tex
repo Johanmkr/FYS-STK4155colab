@@ -27,7 +27,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
         The most basic concept is that of steepest descent. In order to find a minimum of a function $\rho(\svec{\xi})$ (allow multivariability of $\svec{\xi}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have an iterative scheme to find minima:
         \begin{align}\label{eq:steepest_descent}
-            \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla \rho(\svec{\xi}_k),
+            \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} \rho(\svec{\xi}_k),
         \end{align}
         where $\eta_k$ may be referred to as the step length or learning rate, which \fillertext
 
@@ -78,18 +78,30 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 
     A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of a FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
 
-    The structure of such a chain-based architecture is described by the hidden layers $\vec{h}^l,\,l=1,2, \dots, H$ given by
+    The structure of such a chain-based architecture is described by the $L$ hidden layers $\vec{h}^l,\,l=1,2, \dots, L$, given by
+
     \begin{subequations}
         \begin{align} 
-            \vec{h}^0 &= \vec{x} \\% dunno
-            \vec{h}^1 &= g^1 \big(\TT{W}^1 \vec{h}^0 + \vec{b}^1\big); \\
-            \vec{h}^2 &= g^2 \big(\TT{W}^2 \vec{h}^1 + \vec{b}^2\big); \\
-            &\dots \nonumber \\
-            \vec{h}^{H} &= g^2 \big(\TT{W}^{H} \vec{h}^{H-1} + \vec{b}^H\big);             
+            \vec{h}^0 &= \vec{x}\,; \\% dunno
+            \vec{h}^1 &= g^1 \big((W^1)\TT \vec{h}^0 + \vec{b}^1\big)\,; \\
+            \vec{h}^2 &= g^2 \big( (W^2)\TT \vec{h}^1 + \vec{b}^2\big)\,; \\
+            &\vdots \nonumber \\
+            \vec{h}^{L} &= g^L \big((W^{L})\TT \vec{h}^{L-1} + \vec{b}^L\big)\,;             
         \end{align}
     \end{subequations}
-    
 
+    where we defined $\vec{h}^0$ to be the input layer. The activation function $g$ \fillertext
+
+    We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
+
+    \begin{enumerate}[label=(\roman*)]
+        \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. \comment{Do we scale???}
+        \item\label{item:build2} Define the model and desgin its architecture  \fillertext[number of layers etc?]
+        \item\label{item:build3} Choose loss function and optimiser \wtf[please send help]
+        \item\label{item:solve1} Train the network \rephrase{(find the right weights and biases)}
+        \item\label{item:solve2} Validate model, i.e. assess model performance by applying it on the test data.
+        \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture, 
+    \end{enumerate}
 
     \subsubsection{Activation functions}\label{sec:activation_function}
 
