@@ -2,6 +2,7 @@ import autograd.numpy as np
 from autograd import elementwise_grad as egrad 
 from autograd import grad 
 import matplotlib.pyplot as plt
+from IPython import embed
 
 class GradientDescent:
     def __init__(self, LF, eta):
@@ -54,7 +55,7 @@ class MGD(GD):
 
     
 class plain_SGD(GradientDescent):
-    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=40):
+    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=10):
         GradientDescent.__init__(self, LF=LF, eta=eta)
         self.gamma = gamma
         self.nr_epochs = nr_epochs
@@ -77,17 +78,28 @@ class plain_SGD(GradientDescent):
     def __call__(self, theta):
         #   This is a wack way of doing this, needs improvement soon
         k = 1
+        # embed()
         for epoch in range(self.nr_epochs):
-            for i in range(self.m):
-                random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
-                xi = self.X[random_indecies]
+            indecies = np.arange(self.M*self.m)
+            np.random.shuffle(indecies)
+            batches = np.array_split(indecies, self.m)
+            # for i in range(self.m):
+            for batch in batches:
+                xi = self.X[batch]
+                # random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
+                # random_indecies = np.random.choice(self.M*self.m, size=self.M, replace=False)
+                # xi = self.X[random_indecies]
                 self.find_A(xi)
                 self.learning_schedule(k)
                 self.find_v()
+                # embed()
                 theta = theta + self.v
                 k += 1
+                # print(self.v)
             # plt.scatter(theta, f(theta), marker="1")
-        return np.min(theta)
+        embed()
+        theta_out = theta[np.argmin(self.LF(theta))]
+        return theta_out
 
 
 
@@ -95,10 +107,11 @@ class plain_SGD(GradientDescent):
 
 
 if __name__=="__main__":
-    x = np.linspace(-10,10, 1000)
+    x = np.linspace(-20,20, 1000)
     # def f(x):
     #     return 0.1 * x * np.cos(x)
     f = lambda x: 0.1 *x * np.cos(x)
+    # f = lambda x: x**2
     y = f(x)
     # fx = 0.1*x*np.cos(x)
     # Lf = lambda y, fx: (y-fx)**2
@@ -108,7 +121,7 @@ if __name__=="__main__":
     # gd = GD(f, eta=0.01)
     gd = plain_SGD(X=x, LF=f)
 
-    x0 = 0.0
+    x0 = -4
     plt.scatter(x0, f(x0), marker="x")
     # MAXiter = 20
     # Niter = 0
