@@ -2,6 +2,7 @@ import autograd.numpy as np
 from autograd import elementwise_grad as egrad 
 from autograd import grad 
 import matplotlib.pyplot as plt
+from IPython import embed
 
 class GradientDescent:
     def __init__(self, LF, eta):
@@ -54,40 +55,57 @@ class MGD(GD):
 
     
 class plain_SGD(GradientDescent):
-    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=40):
+    def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=10):
         GradientDescent.__init__(self, LF=LF, eta=eta)
         self.gamma = gamma
         self.nr_epochs = nr_epochs
         self.m = nr_minibatches
         self.X = X
         self.M = int(len(X)/self.m)
-        self.tau = 1* self.nr_epochs * self.m
+        self.tau = 200* len(self.X)
         self.eta0 = eta
         self.eta_tau = 0.01 * self.eta0
+        # self.v_prev = 0
 
     def learning_schedule(self, k):
-        self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
+        if k>self.tau:
+            self.eta = self.eta_tau
+        else:
+            self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
     
     def find_A(self, LFargument):
         self.A = egrad(self.LF)(LFargument)
 
     def find_v(self):
-        self.v = -self.eta*self.A
+        self.v = - self.eta*self.A
 
     def __call__(self, theta):
         #   This is a wack way of doing this, needs improvement soon
         k = 1
+        # embed()
         for epoch in range(self.nr_epochs):
-            for i in range(self.m):
-                random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
-                xi = self.X[random_indecies]
+            indecies = np.arange(self.M*self.m)
+            np.random.shuffle(indecies)
+            batches = np.array_split(indecies, self.m)
+            # for i in range(self.m):
+            for batch in batches:
+                xi = self.X[batch]
+                # random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
+                # random_indecies = np.random.choice(self.M*self.m, size=self.M, replace=False)
+                # xi = self.X[random_indecies]
                 self.find_A(xi)
                 self.learning_schedule(k)
                 self.find_v()
+                # embed()
                 theta = theta + self.v
+                # self.v_prev = self.v
                 k += 1
+                # print(self.v)
             # plt.scatter(theta, f(theta), marker="1")
-        return np.min(theta)
+        # embed()
+        
+        theta_out = theta[np.argmin(self.LF(theta))]
+        return theta_out
 
 
 
@@ -99,6 +117,7 @@ if __name__=="__main__":
     # def f(x):
     #     return 0.1 * x * np.cos(x)
     f = lambda x: 0.1 *x * np.cos(x)
+    # f = lambda x: x**2
     y = f(x)
     # fx = 0.1*x*np.cos(x)
     # Lf = lambda y, fx: (y-fx)**2
@@ -108,7 +127,7 @@ if __name__=="__main__":
     # gd = GD(f, eta=0.01)
     gd = plain_SGD(X=x, LF=f)
 
-    x0 = 0.0
+    x0 = 0
     plt.scatter(x0, f(x0), marker="x")
     # MAXiter = 20
     # Niter = 0
