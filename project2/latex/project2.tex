@@ -1,6 +1,5 @@
 \input{preamble.tex}
 
-
 \begin{document}
 
 
@@ -51,7 +50,7 @@ ABSTRACT
 
 
 \section*{Nomenclature}
-\subsection*{Datasets ??}
+\noindent\subsection{Datasets ??}
 \begin{itemize}
     \item[$\svec{\theta}$] Parameter vector
     \item[$\mathcal{L}$] \rephrase{Loss function $\mathcal{L}(\svec{\theta}; f, \mathcal{D})$ of $\svec{\theta}$ parametrised by the coordinates in the data set $\mathcal{D}$ and the function $f$ (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)}
@@ -59,35 +58,41 @@ ABSTRACT
     \item[$\vec{y}$] Vector of $n$ input targets $y^{(i)} \in \RR$ associated with $\vec{x}^{(i)}$
     \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n\in \mathbb{N}$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
     \item[$n$] Number of samples in a datasets  
-    
-\subsection*{Network components}
+\end{itemize}
+\subsection{Network components}
+\begin{itemize}
     \item[$\vec{h}$] Hidden layer of a neural network
     \item[$g$] Activation function associated with a layer in a neural network, affine transformation \checkthis{$\RR[xxx]\to\RR[yyy]$}
     \item[$W$] Matrix of weights describing the mapping from a layer to the next
-    \item[$b$] Bias \comment{More!}
+    \item[$\vec{b}$] Bias \comment{More!}
 \end{itemize}
 
-\subsection*{Hyperparameter syntax}
+\subsection{Hyperparameter syntax}
 \begin{itemize}
     \item[$\eta$] Learning rate
     \item[$\gamma$] Momentum factor
     \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space
     \item[$\vec{v}$] Momentum in parameter space  
+    \item[$L$] Number of layers, not counting the input 
     \item[$\lambda$] Penalty parameter in Ridge regression 
 \end{itemize}
-\subsection*{Indexing and iteration variables}
+
+
+\subsection{Indexing and iteration variables}
 \begin{itemize}
     \item[$k$] Iteration variable when optimising as \textbf{subscript}
     \item[$(i)$] The $i^\mathrm{th}$ example of a sample as \textbf{superscript}
 \end{itemize}
 
-\subsection*{Miscellaneous}
+
+\subsection{Miscellaneous}
+
 \begin{itemize}
     \item[$\norm{\vec{u}}_q$] \lnorm[q]\, of $\vec{u}$
     \item[$\nabla_{\!\xi} \rho$] gradient of $\rho$ with respect to $\xi$
 \end{itemize}
 
-\subsection*{Forkortelser på engelsk}
+\subsection{Forkortelser på engelsk}
 \begin{itemize}
     \item[DAG] Directed acyclic graph
     \item[FFNN] Feedforward neural network
@@ -95,6 +100,7 @@ ABSTRACT
     \item[MSE] Mean squared error 
     \item[NN] Neural network 
     \item[OLS] Ordinary least squares 
+    \item[ReLU] Rectified linear unit
     \item[SGD] Stochastic gradient descent 
 \end{itemize}
 

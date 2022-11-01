@@ -76,9 +76,9 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 
     \subsubsection{Basics}\label{sec:basics}
 
-    A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of a FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
+    A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of an FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
 
-    The structure of such a chain-based architecture is described by the $L$ hidden layers $\vec{h}^l,\,l=1,2, \dots, L$, given by
+    The structure of such a chain-based architecture is described by the $L-1$ hidden layers $\vec{h}^l,\,l=1,2, \dots, L-1$, given by
 
     \begin{subequations}
         \begin{align} 
@@ -90,22 +90,52 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         \end{align}
     \end{subequations}
 
-    where we defined $\vec{h}^0$ to be the input layer. The activation function $g$ \fillertext
+    where we defined $\vec{h}^0$ and $\vec{h}^L$ to be the input and output layer, respectively. The activation function $g$ \fillertext
 
     We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
 
     \begin{enumerate}[label=(\roman*)]
         \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. \comment{Do we scale???}
-        \item\label{item:build2} Define the model and desgin its architecture  \fillertext[number of layers etc?]
+        \item\label{item:build2} Define the model and design its architecture. In practice, this means to decide on hyperparameters of the NN such as depth ($L$), 
         \item\label{item:build3} Choose loss function and optimiser \wtf[please send help]
-        \item\label{item:solve1} Train the network \rephrase{(find the right weights and biases)}
+        \item\label{item:solve1} Train the network to find the right weights and biases.
         \item\label{item:solve2} Validate model, i.e. assess model performance by applying it on the test data.
-        \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture, 
+        \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture.
     \end{enumerate}
+
+
 
     \subsubsection{Activation functions}\label{sec:activation_function}
 
+    
+    \begin{equation}\label{eq:sigmoid}
+        \sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi)
+    \end{equation}
+
+    \begin{equation}\label{eq:tanh}
+        \tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1
+    \end{equation}
+
+    \begin{equation}\label{eq:relu}
+        \mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
+            \xi,\quad &\mathrm{if } \xi >0 \\
+            0,\quad &\mathrm{else}
+        \end{cases}
+    \end{equation}
+
+    \begin{equation}\label{eq:softmax}
+        \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
+    \end{equation}
+
+
+
+
+
     \subsubsection{Back propagation}\label{sec:back_propagation}
+
+
+    The information in an FFNN accepting input $\vec{x}$ to produce output $\hat{y}$ \checkthis{(check consistency!)} is flowing \textit{forward} \citep{Goodfellow2016}, hence the name. The initial information from $\vec{x}$ propagates through the hidden layers resulting in the production of $\hat{y}$. This information flow is called forward propagation. During training, we let forward propagation yield a cost, $\mathcal{L}(\svec{\theta})$. We may reverse this process, i.e. let $\mathcal{L}(\svec{\theta})$ provide infomation that propagates backwards through the network in order to compute the gradient, \checkthis{$\nabla_{\!\theta}\mathcal{L}(\svec{\theta})$}, corresponding to an algorithm called back-propagation.
+
 
 \subsection{Classification}\label{sec:classification}
 
