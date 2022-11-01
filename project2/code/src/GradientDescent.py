@@ -62,18 +62,22 @@ class plain_SGD(GradientDescent):
         self.m = nr_minibatches
         self.X = X
         self.M = int(len(X)/self.m)
-        self.tau = 1* self.nr_epochs * self.m
+        self.tau = 200* len(self.X)
         self.eta0 = eta
         self.eta_tau = 0.01 * self.eta0
+        # self.v_prev = 0
 
     def learning_schedule(self, k):
-        self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
+        if k>self.tau:
+            self.eta = self.eta_tau
+        else:
+            self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
     
     def find_A(self, LFargument):
         self.A = egrad(self.LF)(LFargument)
 
     def find_v(self):
-        self.v = -self.eta*self.A
+        self.v = - self.eta*self.A
 
     def __call__(self, theta):
         #   This is a wack way of doing this, needs improvement soon
@@ -94,10 +98,12 @@ class plain_SGD(GradientDescent):
                 self.find_v()
                 # embed()
                 theta = theta + self.v
+                # self.v_prev = self.v
                 k += 1
                 # print(self.v)
             # plt.scatter(theta, f(theta), marker="1")
-        embed()
+        # embed()
+        
         theta_out = theta[np.argmin(self.LF(theta))]
         return theta_out
 
@@ -107,7 +113,7 @@ class plain_SGD(GradientDescent):
 
 
 if __name__=="__main__":
-    x = np.linspace(-20,20, 1000)
+    x = np.linspace(-10,10, 1000)
     # def f(x):
     #     return 0.1 * x * np.cos(x)
     f = lambda x: 0.1 *x * np.cos(x)
@@ -121,7 +127,7 @@ if __name__=="__main__":
     # gd = GD(f, eta=0.01)
     gd = plain_SGD(X=x, LF=f)
 
-    x0 = -4
+    x0 = 0
     plt.scatter(x0, f(x0), marker="x")
     # MAXiter = 20
     # Niter = 0
