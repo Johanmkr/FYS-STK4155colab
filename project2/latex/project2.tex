@@ -54,6 +54,7 @@ ABSTRACT
 \begin{itemize}
     \item[$\svec{\theta}$] Parameter vector
     \item[$\mathcal{L}$] \rephrase{Loss function $\mathcal{L}(\svec{\theta}; f, \mathcal{D})$ of $\svec{\theta}$ parametrised by the coordinates in the data set $\mathcal{D}$ and the function $f$ (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)}
+    \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space
     \item[$X$] Feature matrix of $n$ row vectors $\vec{x}^{(i)} \in \RR[p]$, where $p$ denotes the number of features we are considering
     \item[$\vec{y}$] Vector of $n$ input targets $y^{(i)} \in \RR$ associated with $\vec{x}^{(i)}$
     \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n\in \mathbb{N}$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
@@ -71,7 +72,6 @@ ABSTRACT
 \begin{itemize}
     \item[$\eta$] Learning rate
     \item[$\gamma$] Momentum factor
-    \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space
     \item[$\vec{v}$] Momentum in parameter space  
     \item[$L$] Number of layers, not counting the input 
     \item[$\lambda$] Penalty parameter in Ridge regression 
