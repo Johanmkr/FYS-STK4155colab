@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 from IPython import embed
 
 class GradientDescent:
-    def __init__(self, LF, eta):
+    def __init__(self, LF, eta, theta, nr_epochs):
         self.LF = LF  #Loss function as function of theta
         self.eta = eta  #Learning rate
+        self.theta = theta
+        self.nr_epochs = nr_epochs
 
-    
 class GD(GradientDescent):
-    def __init__(self, LF, eta=0.01):
-        GradientDescent.__init__(self, LF=LF, eta=eta)
+    def __init__(self, LF, eta, theta, nr_epochs):
+        GradientDescent.__init__(self, LF=LF, eta=eta, theta=theta, nr_epochs=nr_epochs)
 
     def find_A(self, LFargument):
         # grd = grad(self.LF)

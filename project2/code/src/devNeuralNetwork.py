@@ -82,42 +82,31 @@ class devNeuralNetwork:
 
     def feedForward(self):
         for i in range(1, self.nrOfLayers):
-            activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i-1].bias
-            self.layer[i].a = activator
+            activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
+            self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
         
     def backPropagation(self):
-        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h)
+        eta = 0.01
+        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h, self.outputData)
 
-        for l in range(self.nrOfLayers-1, 1, -1):
-            self.layers[l].delta = self.layer[l+1].delta @ self.weights[l+1].w * self.activationFunction.derivative(self.layers[l].a)
-        
-    # def updateNetwork(self,
-    #                 inputData  = None,
-    #                 outputData = None,
-    #                 layers = None,
-    #                 neuronsInEachLayer = None,
-    #                 activationFunction = None,
-    #                 lossFunction = None):
-    #     # some check to see whether they are None or not perhaps?
-    #     self.inputData = inputData
-    #     self.outputData = outputData
-    #     self.hiddenLayers = hiddenLayers
-    #     self.neuronsInEachLayer = neuronsInEachLayer
-    #     self.activationFunction = activationFunction
-    #     self.lossFunction = lossFunction
+        for l in range(self.nrOfLayers, 1, -1):
+            self.layers[l].delta = self.layers[l+1].delta @ self.weights[l].w * self.activationFunction.derivative(self.layers[l].a)
+            self.weights[l] = self.weights[l] - eta * self.layers[l].delta @ self.layers[l-1].h
+            self.layers[l].bias = self.layers[l] -eta * self.layers[l].delta
 
+            #this must be tied together with the gradient descent code.
+    def train(self, N):
+        for _ in range(N):
+            self.feedForward()
+            self.backPropagation()
 
 
 if __name__=="__main__":
     x = np.linspace(-10,10, 5)
     y = x**2
     dummy = devNeuralNetwork(x, y, hiddenLayers=3, neuronsInEachLayer=4, activationFunction=ActivationFunction('sigmoid'))
-    print(dummy)
-    dummy.addLayer(neurons=6)
-    print(dummy)
-    dummy.addLayer(idx=2, neurons=10)
-    print(dummy)
 
+    dummy.train(1)
     # embed()
     # print(dummy.weights[0].w.shape)
