@@ -2,6 +2,10 @@ import numpy as np
 from Layer import Layer
 from LossFunctions import LossFunctions
 from WeightMatrix import WeightMatrix
+from ActivationFunction import ActivationFunction
+import GradientDescent as GD
+from IPython import embed
+
 
 class devNeuralNetwork:
     def __init__(self,
@@ -25,9 +29,15 @@ class devNeuralNetwork:
             self.outputNeurons = len(outputData)
         self.lossFunction = LossFunctions(lossFunctionType)
 
-        #   Make list of layer object
+        #   Make list of layer objects
         self.layers = []
+        
         self.setInitialisedLayers()
+        self.nrOfLayers = len(self.layers)
+
+        #   Initialise the weights
+        self.initialiseWeights()
+
 
     def __str__(self):
         stringToReturn = 'Feed Forward Neural Network\n'
@@ -38,7 +48,6 @@ class devNeuralNetwork:
         
         return stringToReturn
 
-        
     
     def setInitialisedLayers(self):
         #   Append input layer
@@ -60,11 +69,29 @@ class devNeuralNetwork:
         else:
             LayerToAdd = Layer(neurons=neurons, activationFunction=self.activationFunction)
         self.layers.insert(idx, LayerToAdd)
+        self.nrOfLayers += 1
+        self.initialiseWeights()
 
-    
-            
 
+    def initialiseWeights(self):
+        self.weights = []
+        for i in range(self.nrOfLayers-1):
+            nIn = self.layers[i].neurons
+            nOut = self.layers[i+1].neurons
+            self.weights.append(WeightMatrix(nIn, nOut))
 
+    def feedForward(self):
+        for i in range(1, self.nrOfLayers):
+            activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i-1].bias
+            self.layer[i].a = activator
+            self.layers[i].h = self.activationFunction(activator)
+        
+    def backPropagation(self):
+        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h)
+
+        for l in range(self.nrOfLayers-1, 1, -1):
+            self.layers[l].delta = self.layer[l+1].delta @ self.weights[l+1].w * self.activationFunction.derivative(self.layers[l].a)
+        
     # def updateNetwork(self,
     #                 inputData  = None,
     #                 outputData = None,
@@ -80,17 +107,17 @@ class devNeuralNetwork:
     #     self.activationFunction = activationFunction
     #     self.lossFunction = lossFunction
 
-    # def makeWeigths(self, )
-
-    # def backpropagation(self, something):
 
 
 if __name__=="__main__":
-    x = np.linspace(-10,10, 100)
+    x = np.linspace(-10,10, 5)
     y = x**2
-    dummy = devNeuralNetwork(x, y, hiddenLayers=3, neuronsInEachLayer=4)
+    dummy = devNeuralNetwork(x, y, hiddenLayers=3, neuronsInEachLayer=4, activationFunction=ActivationFunction('sigmoid'))
     print(dummy)
     dummy.addLayer(neurons=6)
     print(dummy)
     dummy.addLayer(idx=2, neurons=10)
     print(dummy)
+
+    # embed()
+    # print(dummy.weights[0].w.shape)

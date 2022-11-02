@@ -16,23 +16,23 @@ plt.plot(x_data,y_data, ".", color="blue",label="data")
 
 #franke data
 # Make data.
-space = np.linspace(0,1,20)
-xx, yy = np.meshgrid(space,space)
+# space = np.linspace(0,1,20)
+# xx, yy = np.meshgrid(space,space)
 
-def FrankeFunction(x,y):
-    term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
-    term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
-    term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
-    term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-    return term1 + term2 + term3 + term4
+# def FrankeFunction(x,y):
+#     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
+#     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
+#     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
+#     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
+#     return term1 + term2 + term3 + term4
 
-zz = FrankeFunction(xx, yy)
-zzr = zz.ravel()
-zzr = (zzr-np.mean(zzr))/np.std(zzr)
-FrankeX = np.zeros((2,len(zzr)))
-FrankeX[0,:] = xx.ravel()
-FrankeX[1,:] = yy.ravel()
-FrankeY = zzr[:,np.newaxis].T
+# zz = FrankeFunction(xx, yy)
+# zzr = zz.ravel()
+# zzr = (zzr-np.mean(zzr))/np.std(zzr)
+# FrankeX = np.zeros((2,len(zzr)))
+# FrankeX[0,:] = xx.ravel()
+# FrankeX[1,:] = yy.ravel()
+# FrankeY = zzr[:,np.newaxis].T
 
 
 
@@ -67,8 +67,8 @@ class NeuralNetwork:
         self.X_data = X_data    #for testing
         self.Y_data = Y_data    #for testing
 
-        self.n_inputs = X_data.shape[0]
-        self.n_features = X_data.shape[1]
+        # self.n_inputs = X_data.shape[0]
+        self.n_features = len(X_data)
         self.n_hidden_neurons = n_hidden_neurons
         self.output_length = output_length
 
