@@ -29,56 +29,50 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         \begin{align}\label{eq:steepest_descent}
             \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} \rho(\svec{\xi}_k),
         \end{align}
-        where $\eta_k$ may be referred to as the step length or learning rate, which goes as
-
+        where the learning rate $\eta_k$ goes as
         \begin{equation}\label{eq:learning_schedule}
             \eta_k = \begin{cases}
                 \big(1-\frac{k}{\tau}\big)\eta_0 + \frac{k}{\tau}\eta_\tau,\quad & 0 \leq k \leq \tau \\
                 \eta_\tau, & k>\tau
             \end{cases}
         \end{equation}
-
         for an initial rate $\eta_0$ and lower limit $\eta_\tau \sim 0.01 \eta_0$.
 
-        
+        % A is step seize
         \fillertext
 
         What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. If we define $\mathcal{A}_k \equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k)$ to be the direction and magnitude of the steepest ascent in parameter space, eq. \eqref{eq:steepest_descent} reads 
-        
         \begin{equation}\label{eq:steepest_descent_cost_function}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\,;  \\
                 &\quad \vec{v}_k = -\eta_k\mathcal{A}_k,
             \end{split}
         \end{equation}
-
         for substitutions $\rho\to\mathcal{L}$ and $\svec{\xi}\to \svec{\theta}$. For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\theta}$. (However, since we may not know the nature of $\svec{\theta}$, there is a risk that this is just a local and not a global minimum. The steepest descent method in eq. \eqref{eq:steepest_descent_cost_function} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
 
     \subsubsection{Momentum}\label{sec:momentum}
         From \Eq{steepest_descent_cost_function} we have that the movement in parameter space is given by $\vec{v}_k$ (the negative of which), which describes the direction and magnitude of the steepest ascent in parameter space. Sometimes we might want to move larger distances in one step. This can be achieved by introduction momentum: We add an addition term to $\vec{v}_k$ which lets us rewrite eq. \eqref{eq:steepest_descent_cost_function} as
-
         \begin{equation}\label{eq:momentum_GD_algorithm}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\, ; \\
                 &\quad \vec{v}_k =\gamma\vec{v}_{k-1} - \eta_k\mathcal{A}_k,
             \end{split}
         \end{equation}
-
         where $\gamma$ is a momentum parameter and $\eta_k$ is the same learning parameter as before. The basic idea is that this with this method we "overshoot" the descending step length in the direction of the previous step, with a magnitude that is controlled by $\gamma$. By doing this, we may reach the desired minimum with fewer iterations. 
 
-        There are several modifications we can do to optimise this algorithm. \fillertext
+        There are several modifications we can do to optimise this algorithm. In the Nesterov momentum algorithm (NAG) one applies the following adjustment to the gradient in eq. \eqref{eq:momentum_GD_algorithm}:
+        \begin{equation}\label{eq:nag}
+            \begin{split}
+                \mathcal{A}_k &\to\nabla_{\!\tilde{\theta}}\mathcal{L}(\tilde{\svec{\theta}}_k) \, ;\\ 
+                & \quad \tilde{\svec{\theta}}_k = \svec{\theta}_k + \gamma\vec{v}_{k-1} \, ;
+            \end{split}
+        \end{equation}
 
-        \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.5em]
-            \item[]\textbf{NAG} Apply the following adjustment to the gradient in eq. \eqref{eq:momentum_GD_algorithm}:
-            \begin{equation}\label{eq:nag}
-                \mathcal{A}_k \to \mathcal{A}_k(\svec{\theta}_k + \gamma\vec{v}_{k-1}) \implies \mathcal{A}_k= \nabla_{\!\theta}\mathcal{L}(\svec{\theta}_k + \gamma\vec{v}_{k-1})
-            \end{equation}
-            \fillertext
-            \item[]\textbf{RMS prop} 
-            \item[]\textbf{ADAM} 
-        \end{enumerate}
+        This is analagous to the adjustment needed to go from forward Euler to Euler-Cromer as numerical intregration method.
+
+        \fillertext
+
         
-        \comment{ADD NAG}
         
 
 
@@ -88,31 +82,32 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\svec{\theta}$\comment{Do you mean $\mathcal{L}(\svec{\theta})$? -Nanna} have numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
 
         The main idea is that we have $n$ data points, that we divide into $m=n/M$\footnote{We of course need to make sure this is an integer. \comment{Explain?}} minibatches (subsets), meaning that we have $M$ data points in each minibatch, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\sum\nolimits_{j=1}^m \mathcal{B}_j = \mathcal{D}$. We also recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
-
         \begin{equation}
             \mathcal{L}(\svec{\theta}) =\sum_{(\vec{x}, y)\in \mathcal{D}} l\big(f(\vec{x};\,\svec{\theta}), y \big) = \sum_{i=1}^n l_i(\svec{\theta}),
         \end{equation}
-
         where $l_i = l\big(f(\vec{x}^{(i)};\svec{\theta}); \, y^{(i)}\big)$, and thus its gradient reads
-    
         \begin{equation}
             \mathcal{A} = \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) = \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}).
         \end{equation}
-        
         Now we may approximate the gradient of the cost function by only summing over the data points in a minibatch picked at random:
-        
         \begin{equation}\label{eq:sgd_gradient}
             \begin{split}
             \mathcal{A}_k &= \sum_{j=1}^{m}\mathcal{A}_k^j\, ; \\
             \mathcal{A}_k &\to \mathcal{A}^j_k = \sum_{i:\vec{x}^{(i)} \in\mathcal{B}_j }\nabla_{\!\theta} l_i(\svec{\theta}_k).
             \end{split}
         \end{equation}
-
         The estimate $\mathcal{A}_k^j \approx \mathcal{A}_k$ can be used in our algorithm to ensure stochasticity and relieve computational pressure.
     
-    \subsubsection{Tuning}\label{sec:tuning}
-        \comment{Something about hyper parameters $\lambda$ and $\eta$}
+    \subsubsection{Optimising the learning rate}\label{sec:tuning}
+    
+    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below.
 
+    \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
+        \item[]\textbf{AdaGrad} (Algorithm 8.4 in \citep{Goodfellow2016}) \comment{Works well with convex functions}
+        \item[]\textbf{RMSProp} (Algorithm 8.5 \& 8.6 in \citep{Goodfellow2016}) 
+        \item[]\textbf{Adam} (Algorithm 8.7 in \citep{Goodfellow2016})
+    \end{enumerate}
+    
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
     \subsubsection{Basics}\label{sec:basics}
