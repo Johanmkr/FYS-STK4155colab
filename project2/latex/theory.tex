@@ -111,24 +111,53 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \subsubsection{Activation functions}\label{sec:activation_function}
 
     
-    \begin{equation}\label{eq:sigmoid}
-        \sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi)
-    \end{equation}
+    % \begin{equation}\label{eq:sigmoid}
+    %     \sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi)
+    % \end{equation}
 
-    \begin{equation}\label{eq:tanh}
-        \tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1
-    \end{equation}
+    % \begin{equation}\label{eq:tanh}
+    %     \tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1
+    % \end{equation}
 
-    \begin{equation}\label{eq:relu}
-        \mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
-            \xi,\quad &\mathrm{if } \xi >0 \\
-            0,\quad &\mathrm{else}
-        \end{cases}
-    \end{equation}
+    % \begin{equation}\label{eq:relu}
+    %     \mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
+    %         \xi,\quad &\mathrm{if }\, \xi >0 \\
+    %         0,\quad &\mathrm{else}
+    %     \end{cases}
+    % \end{equation}
 
-    \begin{equation}\label{eq:softmax}
-        \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
-    \end{equation}
+    % \begin{equation}\label{eq:leaky_relu}
+    %     \mathrm{lReLU}(\xi)  = \begin{cases}
+    %         \xi,\quad &\mathrm{if }\, \xi >0 \\
+    %         0.01\xi,\quad &\mathrm{else}
+    %     \end{cases}
+    % \end{equation}
+
+    % \begin{equation}\label{eq:softmax}
+    %     \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
+    % \end{equation}
+    
+    The activation function $g$ is the affine transformation from one layer to another in an NN.   
+
+    \begin{subequations}\label{eq:activation_functions}
+        \begin{align}
+            &\sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi) \label{eq:sigmoid}\\
+            &\tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1\label{eq:tanh} \\
+            &\mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
+                \xi,\quad &\mathrm{if }\, \xi >0 \\
+                0,\quad &\mathrm{else}
+            \end{cases} \label{eq:relu}\\
+            &\mathrm{ReLU}^*(\xi)  = \begin{cases}
+                \xi,\quad &\mathrm{if }\, \xi >0 \\
+                0.01\xi,\quad &\mathrm{else}
+            \end{cases} \label{eq:leaky_relu} \\
+            &\zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]\label{eq:softmax}
+        \end{align}
+    \end{subequations}
+
+    The set of expressions \eqref{eq:activation_functions} show some well-known activation functions one might use in a layer of an NN \checkthis{(assuming some $\xi\in \RR$)}. The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction. The softmax $\zeta$ in eq. \eqref{eq:softmax} \fillertext
+
+    
 
 
 
@@ -150,9 +179,9 @@ The standard logistic function $p:\, \RR \to (0,1)$ may be written as
     p(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
 
-and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\xi \to \beta_0 + \beta_1 \xi$.
+and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\xi \to \beta_0 + \beta_1 \xi$. 
 % beta or theta?
-
+\fillertext
 
 \begin{equation}\label{eq:logistic_cost_function}
     \mathcal{L}(\svec{\beta}) = - \sum_{i=1}^n \Big[ y^{(i)} \big(\beta_0+ \beta_1 x^{(i)}\big) - \log{\Big(1+e^{\beta_0 + \beta_1 x^{(i)}}\Big)} \Big]
