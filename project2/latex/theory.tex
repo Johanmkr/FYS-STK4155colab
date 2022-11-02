@@ -62,14 +62,15 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         \end{equation}
 
         where $l_i = l(f(\vec{x}^{(i)};\svec{\theta}); y^{(i)})$, and thus approximate the gradient of the cost function by only summing over the data points in a minibatch picked at random:
+        
         \begin{equation}\label{eq:sgd_gradient}
             \begin{split}
-            \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) &= \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}) \to \sum_{j=1}^{m}\mathcal{A}_k^j, \quad \mathrm{where} \\
-            \mathcal{A}^j_k &= \sum_{i:\vec{x}^{(i)} \in\mathcal{B}_j }\nabla_{\!\theta} l_i(\svec{\theta}_k).
+            \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) = \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}) &\to \sum_{j=1}^{m}\mathcal{A}_k^j, \quad \mathrm{where} \\
+            &\mathcal{A}^j_k = \sum_{i:\vec{x}^{(i)} \in\mathcal{B}_j }\nabla_{\!\theta} l_i(\svec{\theta}_k).
             \end{split}
         \end{equation}
 
-        The estimate $\mathcal{A}_k^j \approx A_k$ can be used in our algorithm to ensure stochasticity and relieve computational pressure.
+        The estimate $\mathcal{A}_k^j \approx A_k$ can be used in our algorithm to ensure stochasticity and relieve \rephrase{release?} computational pressure.
     
     \subsubsection{Tuning}\label{sec:tuning}
         \comment{Something about hyper parameters $\lambda$ and $\eta$}
