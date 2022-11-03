@@ -1,10 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from Layer import Layer
 from LossFunctions import LossFunctions
 from WeightMatrix import WeightMatrix
 from ActivationFunction import ActivationFunction
 import GradientDescent as GD
 from IPython import embed
+
 
 
 class devNeuralNetwork:
@@ -41,12 +43,20 @@ class devNeuralNetwork:
 
     def __str__(self):
         stringToReturn = 'Feed Forward Neural Network\n'
+        stringToReturn += f"Number of layers: {self.nrOfLayers}\n"
         stringToReturn      += f'Input layer: {self.layers[0].neurons} neurons\n'
         for i in range(1, len(self.layers)-1):
             stringToReturn  += f'H-layer {i}: {self.layers[i].neurons} neurons\n'
         stringToReturn      += f'Output layer: {self.layers[-1].neurons} neurons\n'
         
         return stringToReturn
+
+    def __call__(self):
+        if self.outputFunction is not None:
+            pass
+        else:
+            self.feedForward()
+            return self.layers[-1].h
 
     
     def setInitialisedLayers(self):
@@ -85,28 +95,43 @@ class devNeuralNetwork:
             activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
+        self.layers[-1].h = (self.layers[-1].h - np.mean(self.layers[-1].h))/np.std(self.layers[-1].h)
         
     def backPropagation(self):
         eta = 0.01
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h, self.outputData)
 
-        for l in range(self.nrOfLayers, 1, -1):
-            self.layers[l].delta = self.layers[l+1].delta @ self.weights[l].w * self.activationFunction.derivative(self.layers[l].a)
-            self.weights[l] = self.weights[l] - eta * self.layers[l].delta @ self.layers[l-1].h
-            self.layers[l].bias = self.layers[l] -eta * self.layers[l].delta
+        # embed()
+        for l in range(self.nrOfLayers-2, 0, -1):
+            # embed()
+            self.layers[l].delta = self.weights[l].w @ self.layers[l+1].delta * self.activationFunction.derivative(self.layers[l].a)
+            self.weights[l].w = self.weights[l].w - eta * np.outer(self.layers[l].h, self.layers[l+1].delta)
+            self.layers[l].bias = self.layers[l].bias -eta * self.layers[l].delta
 
             #this must be tied together with the gradient descent code.
-    def train(self, N):
+    def train(self, N=1):
         for _ in range(N):
             self.feedForward()
             self.backPropagation()
 
 
 if __name__=="__main__":
-    x = np.linspace(-10,10, 5)
-    y = x**2
-    dummy = devNeuralNetwork(x, y, hiddenLayers=3, neuronsInEachLayer=4, activationFunction=ActivationFunction('sigmoid'))
-
-    dummy.train(1)
-    # embed()
+    x = np.linspace(-1,1, 100)
+    y = x**3
+    ynorm = (y-np.mean(y))/np.std(y)
+    plt.plot(x,ynorm, label="data")
+    # plt.show()
+    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=5, neuronsInEachLayer=10, activationFunction=ActivationFunction('sigmoid'))
+    print(dummy)
+    Niter = 10
+    LF = LossFunctions()
+    for i in range(Niter):
+        dummy.train(500)
+        pred = dummy()
+        loss = np.mean(LF(pred, y))
+        # embed()
+        print(f"Loss for N = {i+1}: {loss:.2f}")
+    plt.plot(x,pred, label=f"N={i+1}")
+    plt.legend()
+    plt.show()
     # print(dummy.weights[0].w.shape)
