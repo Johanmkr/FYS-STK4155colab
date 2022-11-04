@@ -15,18 +15,20 @@ class devNeuralNetwork:
                 outputData = None,
                 hiddenLayers = 0,
                 neuronsInEachLayer = 4,
-                activationFunction = None,
-                outputFunction = None,
+                activationFunction = 'sigmoid',
+                outputFunction = 'linear',
                 outputNeurons = None,
-                lossFunctionType = 'mse'):
+                lossFunction = 'mse',):
         self.inputData = inputData
         self.outputData = outputData
         self.hiddenLayers = hiddenLayers
         self.neuronsInEachLayer = neuronsInEachLayer
-        self.activationFunction = activationFunction
-        self.outputFunction = outputFunction
-        self.outputNeurons = outputNeurons or len(outputData)
-        self.lossFunction = LossFunctions(lossFunctionType)
+        self.activationFunction = ActivationFunction(activationFunction)
+        self.outputFunction = ActivationFunction(outputFunction)
+        self.lossFunction = LossFunctions(lossFunction)
+
+        self.setInputFeatures(self.inputData)
+        self.outputNeurons = outputNeurons or self.features
 
         #   Make list of layer objects
         self.layers = []
@@ -36,7 +38,24 @@ class devNeuralNetwork:
 
         #   Initialise the weights
         self.initialiseWeights()
-        embed()
+        # embed()
+
+
+    def UpdateInputLayer(self, data):
+        self.setInputFeatures(data)
+        self.layers[0].UpdateLayer(self.inputs, self.features)
+        if data.ndim == 1:
+            self.layers[0].h[:,0] = data
+        else:
+            self.layers[0].h = data
+        # print(self.layers[0].h[:,0])
+
+    def setInputFeatures(self, data):
+        if data.ndim == 1:
+            self.inputs = len(data)
+            self.features = 1 
+        else:
+            self.inputs, self.features = data
 
 
     def __str__(self):
@@ -49,17 +68,16 @@ class devNeuralNetwork:
         
         return stringToReturn
 
-    def __call__(self):
-        if self.outputFunction is not None:
-            pass
-        else:
-            self.feedForward()
-            return self.layers[-1].h
+    def __call__(self, X=None):
+        if X is not None:
+            self.UpdateInputLayer(X)
+        self.feedForward()
+        return self.layers[-1].h
 
     
     def setInitialisedLayers(self):
         #   Append input layer
-        self.layers.append(Layer(activationFunction=self.activationFunction, inputData=self.inputData))
+        self.layers.append(Layer(activationFunction=self.activationFunction, inputs=self.inputs, features=self.features))
         #   Append hidden layers
         for _ in range(self.hiddenLayers):
             self.layers.append(Layer(neurons=self.neuronsInEachLayer, activationFunction=self.activationFunction))
@@ -90,26 +108,34 @@ class devNeuralNetwork:
 
     def feedForward(self):
         for i in range(1, self.nrOfLayers):
-            activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
+            # embed()
+            w = self.weights[i-1].w 
+            h = self.layers[i-1].h
+            b = self.layers[i].bias
+            # activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
+            activator = h @ w.T + b
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
-        self.layers[-1].h = (self.layers[-1].h - np.mean(self.layers[-1].h))/np.std(self.layers[-1].h)
+        self.layers[-1].h = self.outputFunction(self.layers[-1].h)
+
         
     def backPropagation(self):
         eta = 0.1
-        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h, self.outputData)
+        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h, self.outputData[:,np.newaxis])
 
         # embed()
         for l in range(self.nrOfLayers-2, 0, -1):
             # embed()
-            self.layers[l].delta = self.weights[l].w @ self.layers[l+1].delta * self.activationFunction.derivative(self.layers[l].a)
+            self.layers[l].delta =  self.layers[l+1].delta @ self.weights[l].w * self.activationFunction.derivative(self.layers[l].a)
 
-            
-            self.weights[l].w = self.weights[l].w - eta * np.outer(self.layers[l].h, self.layers[l+1].delta)
+            self.weights[l].w = self.weights[l].w - eta * self.layers[l+1].delta.T @ self.layers[l].h
             self.layers[l].bias = self.layers[l].bias -eta * self.layers[l].delta
-
+        self.weights[0].w = self.weights[0].w - eta * self.layers[1].delta.T @ self.layers[0].h
+    
             #this must be tied together with the gradient descent code.
     def train(self, N=1):
+        trainingData = self.inputData
+        self.setInputLayerData(trainingData)
         for _ in range(N):
             self.feedForward()
             self.backPropagation()
@@ -121,18 +147,31 @@ if __name__=="__main__":
     ynorm = (y-np.mean(y))/np.std(y)
     plt.plot(x,ynorm, ".", label="data")
     # plt.show()
-    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=1, neuronsInEachLayer=10, activationFunction=ActivationFunction('sigmoid'))
+    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=1, neuronsInEachLayer=3)
     print(dummy)
+    # dummy.train()
+    # dummy()
     Niter = 10
     LF = LossFunctions()
     for i in range(Niter):
-        dummy.train(100)
+        dummy.train(1000)
         pred = dummy()
         #print(LF(pred, y))
         loss = np.mean(LF(pred, ynorm))
         # embed()
         print(f"Loss for N = {i+1}: {loss:.2f}")
     plt.plot(x,pred, label=f"N={i+1}")
+
+    xtest = 3.5
+    ypredtest = dummy(xtest)
+    # print(ypredtest)
+
+    plt.plot(xtest, ypredtest, ".", label="Test point")
+
+
     plt.legend()
     plt.show()
+
+
+
     # print(dummy.weights[0].w.shape)
