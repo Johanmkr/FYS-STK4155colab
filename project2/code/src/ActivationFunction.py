@@ -3,23 +3,31 @@ import numpy as np
 class ActivationFunction:
     def __init__(self,
                 activationFunction = "sigmoid"):
-        self.activationFunction = activationFunction
-        self.parseFunction(self.activationFunction)
+        self.parseFunction(activationFunction)
 
     def parseFunction(self, stringToParse):
         g = stringToParse.strip().lower() # case insensitive
-        if g == 'sigmoid':
+        if g in ['sigmoid', 'sigmiod']: # ...
             self.activationFunction = self.sigmoid
             self.derivativeFunction = self.sigmoidDerivative
-        elif q in ['relu', 'rectified linear unit']:
+        elif g in ['relu', 'rectified linear unit', 'rectifier']:
             self.activationFunction = self.ReLU
             self.derivativeFunction = self.ReLUDerivative
-        elif q in ['leaky relu', 'lrelu', 'relu*']: #idk
+        elif g in ['leaky relu', 'lrelu', 'relu*', 'leaky rectifier']:
             self.activationFunction = self.leakyReLU
             self.derivativeFunction = self.leakyReLUDerivative
         elif g in ['tanh', 'hyperbolic tangent']:
             self.activationFunction = self.hyperbolicTangent
             self.derivativeFunction = self.hyperbolicTangentDerivative
+        elif g in ['softmax']:
+            self.activationFunction = self.softmax
+            self.derivativeFunction = self.softmaxDerivative
+        elif g in ['linear', 'lin']:
+            self.activationFunction = self.linear
+            self.derivativeFunction = self.linearDerivative
+        else:
+            raise ValueError(f"The library does not have functionalities for {g} activation function.")
+
         
         # add other functions
 
@@ -56,7 +64,21 @@ class ActivationFunction:
     def hyperbolicTangentDerivative(self, a):
         return 1 - np.tanh(a)**2
 
-    def siftmac(self, a):
-        return np.exp(a)/np.sum(np.exp(a))
+    def softmax(self, a):
+        exps = np.exp(a)
+        return exps/np.sum(exps)
+
+    def softmaxDerivative(self, a):
+        sm = self.softmax(a)
+
+        # do not think this actually works...
+        # https://e2eml.school/softmax.html
+        return sm*np.identity(sm.size) - sm.transpose() @ sm
+
+    def linear(self, a):
+        return a
+
+    def linearDerivative(self, a):
+        return 1
 
     #add other functions
