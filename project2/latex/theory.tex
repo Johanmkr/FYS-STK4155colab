@@ -79,7 +79,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         
 
     \subsubsection{Stochasticity}\label{sec:stochasticity}
-        There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\svec{\theta}$\comment{Do you mean $\mathcal{L}(\svec{\theta})$? -Nanna} have numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
+        There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\mathcal{L}(\svec{\theta})$ has numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
 
         The main idea is that we have $n$ data points, that we divide into $m=n/M$\footnote{We of course need to make sure this is an integer. \comment{Explain?}} minibatches (subsets), meaning that we have $M$ data points in each minibatch, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\sum\nolimits_{j=1}^m \mathcal{B}_j = \mathcal{D}$. We also recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
         \begin{equation}
@@ -114,19 +114,25 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 
     A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of an FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
 
-    The structure of such a chain-based architecture is described by the $L-1$ hidden layers $\vec{h}^l,\,l=1,2, \dots, L-1$, given by
+    The structure of such a chain-based architecture is described by the $L-1$ hidden layers $\vec{h}^l \in \RR[N_l],\,l=1,2, \dots, L-1$, given by
 
-    \begin{subequations}
+    \begin{subequations}\label{eq:nn_layers}
         \begin{align} 
-            \vec{h}^0 &= \vec{x}\,; \\% dunno
-            \vec{h}^1 &= g_1 \big((W^1)\TT \vec{h}^0 + \vec{b}^1\big)\,; \\
-            \vec{h}^2 &= g_2 \big( (W^2)\TT \vec{h}^1 + \vec{b}^2\big)\,; \\
+            \vec{h}^0 &= \vec{x}^{(i)}\,; \\% dunno
+            \vec{h}^1 &= g_1 \big((W^{0\to 1})\TT \vec{h}^0 + \vec{b}^1\big)\,; \\
+            \vec{h}^2 &= g_2 \big( (W^{1\to 2})\TT \vec{h}^1 + \vec{b}^2\big)\,; \\
             &\vdots \nonumber \\
-            \vec{h}^{L} &= g_L \big((W^{L})\TT \vec{h}^{L-1} + \vec{b}^L\big)\,;             
+            \vec{h}^{L} &= g_L \big((W^{{L\!-\!1\to L}})\TT \vec{h}^{L\!-\! 1} + \vec{b}^L\big)\,;             
         \end{align}
     \end{subequations}
 
-    where we defined $\vec{h}^0$ and $\vec{h}^L$ to be the input and output layer, respectively. The activation function $g$ \fillertext
+    where we defined $\vec{h}^0$ and $\vec{h}^L$ to be the input and output layer, respectively. 
+
+    The matrix of weights $W^{l-\! 1\to 1} \in \RR[N_{l-\!1} \cross N_l]$ 
+    \fillertext
+    
+    The activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ 
+    \fillertext
 
     We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
 
@@ -169,26 +175,36 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     % \begin{equation}\label{eq:softmax}
     %     \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
     % \end{equation}
-    
-    The activation function $g$ is the affine transformation from one layer to another in an NN.   
+    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ containing the weights \comment{Is this general?} and biases linked with its neurons. The activation is passed as argument to the activation function $g_l$ whose job is to perform the the affine transformation from one layer to another in an NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l\!- 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression
+
+    \begin{equation}
+        \begin{split}
+            \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
+            &\quad \vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l \,;
+        \end{split}
+    \end{equation}
+
+    where \checkthis{$\hat{\vec{y}} = \vec{h}^L$} is the output.
+
 
     \begin{subequations}\label{eq:activation_functions}
         \begin{align}
-            &\sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi) \label{eq:sigmoid}\\
-            &\tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1\label{eq:tanh} \\
-            &\mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
-                \xi,\quad &\xi >0 \\
-                0,\quad &\xi \leq 0
+            &\sigma(\svec{\xi}) = \frac{1}{1+e^{-\svec{\xi}}} = 1- \sigma(-\svec{\xi})\label{eq:sigmoid}\\
+            &\tanh(\svec{\xi}) = \frac{e^{2\svec{\xi}}-1}{e^{2\svec{\xi}}+1} = 2\sigma(2\svec{\xi}) -1\label{eq:tanh} \\
+            &\mathrm{ReLU}(\svec{\xi}) = \max(0,\svec{\xi}) = \begin{cases}
+                \svec{\xi},\quad &\svec{\xi} >0 \\
+                0,\quad &\svec{\xi} \leq 0
             \end{cases} \label{eq:relu}\\
-            &\mathrm{ReLU}^*(\xi)  = \begin{cases}
-                \xi,\quad &\xi >0 \\
-                0.01\xi,\quad &\xi \leq 0
+            &\mathrm{ReLU}^*(\svec{\xi})  = \begin{cases}
+                \svec{\xi},\quad &\svec{\xi} >0 \\
+                0.01\svec{\xi},\quad &\svec{\xi} \leq 0
             \end{cases} \label{eq:leaky_relu} \\
-            &\zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]\label{eq:softmax}
+            &\zeta(\svec{\svec{\xi}}) = \frac{e^{\svec{\xi}}}{\sum\nolimits_{j=1}^{N}e^{\xi_j}} \label{eq:softmax}
         \end{align}
     \end{subequations}
 
-    The set of expressions \eqref{eq:activation_functions} show some well-known activation functions one might use in a layer of an NN \checkthis{(assuming some $\xi\in \RR$)}. The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction. The softmax $\zeta$ in eq. \eqref{eq:softmax} \fillertext
+    Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
+    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction. The softmax $\zeta$ in eq. \eqref{eq:softmax} \fillertext
 
     
 
