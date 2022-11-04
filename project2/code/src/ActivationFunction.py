@@ -77,6 +77,7 @@ class ActivationFunction:
 
     def linear(self, a):
         return a
+        # return a
 
     def linearDerivative(self, a):
         return 1
