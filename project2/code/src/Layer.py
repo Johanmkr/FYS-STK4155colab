@@ -4,26 +4,32 @@ class Layer:
     def __init__(self, 
                 neurons = None,
                 activationFunction = None,
-                inputData = None):
-        if inputData is not None:
+                inputs = None,
+                features = None):
+        # if inputData is not None:
 
-            self.h = np.asarray(inputData)  #check dimensionality perhaps
-            self.neurons = len(self.h)  #This require self.h to be one-dimensional
+        #     self.h = np.asarray(inputData)  #check dimensionality perhaps
+        #     self.neurons = len(self.h)  #This require self.h to be one-dimensional
+        # else:
+        #     self.neurons = neurons
+        #     self.h = np.zeros(self.neurons)
+        if inputs and features is not None:
+            self.neurons = features
+            self.h = np.zeros((inputs, self.neurons))
         else:
             self.neurons = neurons
-            self.h = np.zeros(self.neurons)
-        self.a = np.zeros(self.neurons)     #   activators W.T @ h + b
-        self.bias = np.zeros(self.neurons)   #how do we initialise this
-        self.delta = np.zeros(self.neurons)
-        self.g = activationFunction
+            self.h = None
+        # self.a = np.zeros((1,self.neurons))     #   activators W.T @ h + b
+        self.a = None
+        self.bias = np.zeros((1,self.neurons))   #how do we initialise this
+        # self.delta = np.zeros((1,self.neurons))
+        self.delta = None
+        self.g = activationFunction or self.g
 
-    def set_h(self, h):
-        self.h = h 
-    
-    def set_g(self, g):
-        self.g = g
+    def UpdateLayer(self,
+                    inputs = None,
+                    features = None):
+        self.__init__(inputs=inputs, features=features)
 
-    def set_bias(self, bias):
-        self.bias = bias
     
 
