@@ -125,6 +125,25 @@ Need following update rules and initialisations:
 * RMSProp
 """
 
+"""
+Will be used inside of class:
+
+Example: (idea)
+def __init__(self, optimiser:str):
+    self.perturbate = parseOptimiser(optimiser)
+
+def __call__(self):
+    for epoch in epochs:
+        ...
+        for batch in batches:
+            grad_k = ...
+            theta_k = self.perturbate(theta_k, grad_k, eta_k )
+            ...
+
+
+"""
+
+
 class noneAlgo:
     eps0 = 1e-7 # for numerical stability
     params0 = {'eta':0.0, 'gamma':0.0, 'epsilon':eps0, 'rho':0.0, 'rho1':0.0, 'rho2':0.0}
@@ -161,6 +180,15 @@ class MomentumPerturbation(noneAlgo):
 
 
 
+class AdaGrad(noneAlgo):
+    def __init__(self, theta0):
+        super().__init__(theta0)
+        self.r = np.zeros_like(theta0)
+    
+    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-6, rho=0.0, rho1=0.0, rho2=0.0):
+        self.r = self.r + grad**2
+        self.theta = theta - eta*(epsilon+np.sqrt(self.r))**(-1) * grad # check if this is element-wise
+
 class RMSProp(noneAlgo):
     def __init__(self, theta0):
         super().__init__(theta0)
@@ -168,13 +196,42 @@ class RMSProp(noneAlgo):
         self.epsilon = 1e-6
     
     def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-6, rho=0.0, rho1=0.0, rho2=0.0):
-        self.r = rho *self.r + (1-rho)*grad**2
-        self.theta = theta - eta / (np.sqrt(epsilon + self.r[:]))*grad
+        self.r = rho*self.r + (1-rho)*grad**2
+        self.theta = theta - eta / (np.sqrt(epsilon + self.r[:]))*grad # is this element-wise? should be...
+
+class Adam(noneAlgo):
+    def __init__(self, theta0):
+        super().__init__(theta0)
+        self.s = np.zeros_like(theta0)
+        self.r = np.zeros_like(theta0)
+        self.epsilon = 1e-8
+    
+    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-8, rho=0.0, rho1=0.9, rho2=0.999):
+        self.s = rho1*self.s + (1-rho1)*grad
+        self.r = rho2*self.r + (1-rho2)*grad**2
+        s_hat = self.s * (1-rho1**self.idx)**(-1)
+        r_hat = self.r * (1-rho2**self.idx)**(-1)
+        self.theta = theta - eta*s_hat * (np.sqrt(r_hat) + epsilon)**(-1) # is this element-wise? should be...
 
 
+
+def parseOptimiser(theta0, optimiser='none'):
+    opt = optimiser.strip().lower()
+
+    if opt in ['plain', 'none', 'manual']:
+        return PlainRule(theta0)
+    elif opt in ['mom', 'momentum']:
+        return MomentumPerturbation(theta0)
+    elif opt in ['ada', 'adagrad']:
+        return AdaGrad(theta0)
+    elif opt in ['rms', 'rmsprop']:
+        return RMSProp(theta0)
+    elif opt in ['adam']:
+        return Adam(theta0)
+    else: 
+        raise ValueError(f"The library does not have functionalities for {opt} optimiser.")
     
 
-    
 
 
 
