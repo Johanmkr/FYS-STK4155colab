@@ -21,7 +21,7 @@ class Layer:
             self.h = None
         # self.a = np.zeros((1,self.neurons))     #   activators W.T @ h + b
         self.a = None
-        self.bias = np.ones((1,self.neurons)) *0.1  #how do we initialise this
+        self.bias = np.ones((1,self.neurons))  #how do we initialise this
         # self.delta = np.zeros((1,self.neurons))
         self.delta = None
         self.g = activationFunction or self.g

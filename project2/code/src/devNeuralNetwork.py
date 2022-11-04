@@ -54,11 +54,13 @@ class devNeuralNetwork:
         # print(self.layers[0].h[:,0])
 
     def setInputFeatures(self, data):
-        if data.ndim == 1 or data.ndim == 0:
-            self.inputs = len(data)
-            self.features = 1 
-        else:
-            self.inputs, self.features = data.shape
+        self.inputs = len(data)
+        self.features = 1 
+        # if data.ndim == 1 or data.ndim == 0:
+        #     self.inputs = len(data)
+        #     self.features = 1 
+        # else:
+        #     self.inputs, self.features = data.shape
 
 
     def __str__(self):
@@ -73,7 +75,7 @@ class devNeuralNetwork:
 
     def __call__(self, X=None):
         if X is not None:
-            self.updateInputLayer(np.asarray([X]))
+            self.updateInputLayer(np.asarray(X))
         self.feedForward()
         return self.outputData
 
@@ -116,8 +118,6 @@ class devNeuralNetwork:
             h = self.layers[i-1].h
             b = self.layers[i].bias
             # activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
-            if train==False:
-                embed()
             activator = h @ w.T + b
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
@@ -140,6 +140,7 @@ class devNeuralNetwork:
 
             self.layers[l].delta =  self.layers[l+1].delta @ self.weights[l].w * self.activationFunction.derivative(self.layers[l].a)
         # embed()
+
         for l in range(self.nrOfLayers-2,-1,-1):
             self.weights[l].w = self.weights[l].w - eta * self.layers[l+1].delta.T @ self.layers[l].h
         for l in range(self.nrOfLayers-1, 0, -1):
@@ -161,26 +162,26 @@ if __name__=="__main__":
     ynorm = (y-np.mean(y))/np.std(y)
     plt.plot(x,ynorm, ".", label="data")
     # plt.show()
-    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=2, neuronsInEachLayer=3)
+    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=3, neuronsInEachLayer=5)
     print(dummy)
     # dummy.train()
     # dummy()
-    Niter = 5
+    Niter = 15
     LF = LossFunctions()
     for i in range(Niter):
-        dummy.train(100)
-        # pred = dummy()
+        dummy.train(1000)
+        pred = dummy()
         #print(LF(pred, y))
-        # loss = np.mean(LF(pred, ynorm))
+        loss = np.mean(LF(pred, ynorm))
         # embed()
-        # print(f"Loss for N = {i+1}: {loss:.2f}")
+        print(f"Loss for N = {i+1}: {loss:.2f}")
     
-    # plt.plot(x,pred, label=f"N={i+1}")
+    plt.plot(x,pred, label=f"N={i+1}")
 
-    xtest = np.linspace(-10,10,1000)
+    # xtest = np.linspace(-10,10,1000)
 
-    ypredtest = dummy(xtest)
-    plt.plot(xtest, ypredtest, label="Test point")
+    # ypredtest = dummy(xtest)
+    # plt.plot(xtest, ypredtest, label="Test point")
 
 
     plt.legend()
