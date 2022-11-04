@@ -115,7 +115,6 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of an FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
 
     The structure of such a chain-based architecture is described by the $L-1$ hidden layers $\vec{h}^l \in \RR[N_l],\,l=1,2, \dots, L-1$, given by
-
     \begin{subequations}\label{eq:nn_layers}
         \begin{align} 
             \vec{h}^0 &= \vec{x}^{(i)}\,; \\% dunno
@@ -125,25 +124,22 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
             \vec{h}^{L} &= g_L \big((W^{{L\!-\!1\to L}})\TT \vec{h}^{L\!-\! 1} + \vec{b}^L\big)\,;             
         \end{align}
     \end{subequations}
-
     where we defined $\vec{h}^0$ and $\vec{h}^L$ to be the input and output layer, respectively. 
 
-    The matrix of weights $W^{l-\! 1\to 1} \in \RR[N_{l-\!1} \cross N_l]$ 
-    \fillertext
-    
-    The activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ 
-    \fillertext
+    The matrix of weights $W^{l-\! 1\to 1} \in \RR[N_{l-\!1} \cross N_l]$ applies weights and dimension corrections to the previous layer $\vec{h}^{l-\! 1}\in \RR[N_{l-\! 1}]$ so that the activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ can accept the input. \rephrase{Rephrase?} The bias $\vec{b}^l \in \RR[N_l]$ \wtf
 
     We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
 
     \begin{enumerate}[label=(\roman*)]
-        \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. \comment{Do we scale???}
+        \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. The data is then scaled using Z-score \checkthis{CITE} normalisation with respect to the training data.
         \item\label{item:build2} Define the model and design its architecture. In practice, this means to decide on hyperparameters of the NN such as depth ($L$) and activation function(s) ($g$).
-        \item\label{item:build3} Choose loss function and optimiser \wtf[please send help]
+        \item\label{item:build3} Choose loss function and optimiser. For regression we will use the regular MSE score \checkthis{(ref!)} as the estimator of loss, whereas the classification problem estimates the loss according to the accuracy score \checkthis{(ref!)}. \wtf[please send help] The choice of optimiser is between GD and SGD, but includes decisions about the exact algorithm \rephrase{(how we optimise the learning rate)}.
         \item\label{item:solve1} Train the network to find the right weights and biases.
         \item\label{item:solve2} Validate model, i.e. assess model performance by applying it on the test data.
         \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture.
     \end{enumerate}
+
+    \rephrase{SHOULD THIS BE IN ANALYSIS??}
 
 
 
@@ -175,16 +171,17 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     % \begin{equation}\label{eq:softmax}
     %     \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
     % \end{equation}
-    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ containing the weights \comment{Is this general?} and biases linked with its neurons. The activation is passed as argument to the activation function $g_l$ whose job is to perform the the affine transformation from one layer to another in an NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l\!- 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression
-
+    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ containing the weights \comment{Is this general?} and biases linked with its neurons. The activation is passed as argument to the activation function $g_l$ whose job is to perform the the affine transformation from one layer to another in an NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression
+    \feltcute{
     \begin{equation}
         \begin{split}
             \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
-            &\quad \vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l \,;
+            &\quad \vec{a}^l = W^{l\leftarrow l-\!1}\vec{h}^{l -\!1} + \vec{b}^l \,;
         \end{split}
     \end{equation}
-
-    where \checkthis{$\hat{\vec{y}} = \vec{h}^L$} is the output.
+    where $W^{l\leftarrow l-\!1} \equiv (W^{l-\! 1\to l})\TT$.}
+    
+    The output is \checkthis{$\hat{\vec{y}}^{(i)} = \vec{h}^L \in \RR[N_L]$}.
 
 
     \begin{subequations}\label{eq:activation_functions}
