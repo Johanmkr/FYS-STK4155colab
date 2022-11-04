@@ -11,6 +11,10 @@ class GradientDescent:
         self.theta = theta
         self.nr_epochs = nr_epochs
 
+
+
+
+
 class GD(GradientDescent):
     def __init__(self, LF, eta, theta, nr_epochs):
         GradientDescent.__init__(self, LF=LF, eta=eta, theta=theta, nr_epochs=nr_epochs)
@@ -109,6 +113,68 @@ class plain_SGD(GradientDescent):
         return theta_out
 
 
+
+
+
+"""
+Need following update rules and initialisations:
+* plain
+* momentum
+* Adam
+* AdaGrad
+* RMSProp
+"""
+
+class noneAlgo:
+    eps0 = 1e-7 # for numerical stability
+    params0 = {'eta':0.0, 'gamma':0.0, 'epsilon':eps0, 'rho':0.0, 'rho1':0.0, 'rho2':0.0}
+    def __init__(self, theta0):
+        self.theta = theta0
+        self.idx = 0
+        self.epsilon = 1e-7
+    
+    def __call__(self, theta, grad, params=params0):
+        return self.update(theta, grad, **params)
+
+    def next(self, it=None):
+        self.idx = self.idx+1 or it
+
+    def learning_schedule(self):
+        pass
+
+
+class PlainRule(noneAlgo): # lack of better names... 
+    def __init__(self, theta0):
+        super().__init__(theta0)
+    
+    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-7, rho=0.0, rho1=0.0, rho2=0.0):
+        self.theta = theta - eta * grad
+
+class MomentumPerturbation(noneAlgo):
+    def __init__(self, theta0):
+        super().__init__(theta0)
+        self.v = np.zeros_like(theta0)
+
+    def update(self, theta, grad, eta, gamma, epsilon=1e-7, rho=0.0, rho1=0.0, rho2=0.0):
+        self.v = gamma*self.v + eta*grad
+        self.theta = theta - self.v
+
+
+
+class RMSProp(noneAlgo):
+    def __init__(self, theta0):
+        super().__init__(theta0)
+        self.r = np.zeros_like(theta0)
+        self.epsilon = 1e-6
+    
+    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-6, rho=0.0, rho1=0.0, rho2=0.0):
+        self.r = rho *self.r + (1-rho)*grad**2
+        self.theta = theta - eta / (np.sqrt(epsilon + self.r[:]))*grad
+
+
+    
+
+    
 
 
 
