@@ -7,9 +7,20 @@ class ActivationFunction:
         self.parseFunction(self.activationFunction)
 
     def parseFunction(self, stringToParse):
-        if stringToParse == 'sigmoid':
+        g = stringToParse.strip().lower() # case insensitive
+        if g == 'sigmoid':
             self.activationFunction = self.sigmoid
             self.derivativeFunction = self.sigmoidDerivative
+        elif q in ['relu', 'rectified linear unit']:
+            self.activationFunction = self.ReLU
+            self.derivativeFunction = self.ReLUDerivative
+        elif q in ['leaky relu', 'lrelu', 'relu*']: #idk
+            self.activationFunction = self.leakyReLU
+            self.derivativeFunction = self.leakyReLUDerivative
+        elif g in ['tanh', 'hyperbolic tangent']:
+            self.activationFunction = self.hyperbolicTangent
+            self.derivativeFunction = self.hyperbolicTangentDerivative
+        
         # add other functions
 
     def derivative(self, a):
@@ -23,5 +34,28 @@ class ActivationFunction:
 
     def sigmoidDerivative(self, a):
         return (self.sigmoid(a) * (1-self.sigmoid(a)))
+
+    def ReLU(self, a):
+        return np.max([0, a])
+
+    def ReLUDerivative(self, a):
+        # undefined in x=0, do we need to care about this?
+        #return self.ReLU(a)/a 
+        return np.where(a>0, 1, 0)
+    
+    def leakyReLU(self, a):
+        return self.leakyReLUDerivative(a)*a
+
+    def leakyReLUDerivative(self, a):
+        # undefined in x=0, do we need to care about this?
+        return np.where(a>0, 1, 0.1)
+
+    def hyperbolicTangent(self, a):
+        return np.tanh(a)
+    
+    def hyperbolicTangentDerivative(self, a):
+        return 1 - np.tanh(a)**2
+
+
 
     #add other functions
