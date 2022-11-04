@@ -56,6 +56,7 @@ class ActivationFunction:
     def hyperbolicTangentDerivative(self, a):
         return 1 - np.tanh(a)**2
 
-
+    def siftmac(self, a):
+        return np.exp(a)/np.sum(np.exp(a))
 
     #add other functions

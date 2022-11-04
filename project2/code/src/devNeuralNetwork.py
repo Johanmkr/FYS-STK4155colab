@@ -25,10 +25,7 @@ class devNeuralNetwork:
         self.neuronsInEachLayer = neuronsInEachLayer
         self.activationFunction = activationFunction
         self.outputFunction = outputFunction
-        if outputNeurons is not None:
-            self.outputNeurons = outputNeurons
-        else:
-            self.outputNeurons = len(outputData)
+        self.outputNeurons = outputNeurons or len(outputData)
         self.lossFunction = LossFunctions(lossFunctionType)
 
         #   Make list of layer objects
@@ -98,13 +95,15 @@ class devNeuralNetwork:
         self.layers[-1].h = (self.layers[-1].h - np.mean(self.layers[-1].h))/np.std(self.layers[-1].h)
         
     def backPropagation(self):
-        eta = 0.01
+        eta = 0.1
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.layers[-1].h, self.outputData)
 
         # embed()
         for l in range(self.nrOfLayers-2, 0, -1):
             # embed()
             self.layers[l].delta = self.weights[l].w @ self.layers[l+1].delta * self.activationFunction.derivative(self.layers[l].a)
+
+            
             self.weights[l].w = self.weights[l].w - eta * np.outer(self.layers[l].h, self.layers[l+1].delta)
             self.layers[l].bias = self.layers[l].bias -eta * self.layers[l].delta
 
@@ -116,19 +115,20 @@ class devNeuralNetwork:
 
 
 if __name__=="__main__":
-    x = np.linspace(-1,1, 100)
-    y = x**3
+    x = np.linspace(-5,5, 100)
+    y = x*np.cos(x) + 0.5*np.random.randn(len(x))
     ynorm = (y-np.mean(y))/np.std(y)
-    plt.plot(x,ynorm, label="data")
+    plt.plot(x,ynorm, ".", label="data")
     # plt.show()
-    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=5, neuronsInEachLayer=10, activationFunction=ActivationFunction('sigmoid'))
+    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=1, neuronsInEachLayer=10, activationFunction=ActivationFunction('sigmoid'))
     print(dummy)
     Niter = 10
     LF = LossFunctions()
     for i in range(Niter):
-        dummy.train(500)
+        dummy.train(100)
         pred = dummy()
-        loss = np.mean(LF(pred, y))
+        #print(LF(pred, y))
+        loss = np.mean(LF(pred, ynorm))
         # embed()
         print(f"Loss for N = {i+1}: {loss:.2f}")
     plt.plot(x,pred, label=f"N={i+1}")
