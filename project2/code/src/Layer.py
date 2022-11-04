@@ -6,6 +6,7 @@ class Layer:
                 activationFunction = None,
                 inputData = None):
         if inputData is not None:
+
             self.h = np.asarray(inputData)  #check dimensionality perhaps
             self.neurons = len(self.h)  #This require self.h to be one-dimensional
         else:

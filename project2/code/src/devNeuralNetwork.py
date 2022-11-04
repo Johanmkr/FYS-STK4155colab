@@ -36,6 +36,7 @@ class devNeuralNetwork:
 
         #   Initialise the weights
         self.initialiseWeights()
+        embed()
 
 
     def __str__(self):
