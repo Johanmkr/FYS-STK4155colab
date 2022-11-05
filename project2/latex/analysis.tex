@@ -6,12 +6,46 @@ $\datasetA = \big\{ (\vec{x}^{(1)}, y^{(1)}), \,  (\vec{x}^{(2)}, y^{(2)}), \,\d
 
 \comment{Maybe write something about the codes?}
 
-\subsection{Regression problem}\label{sec:analysis_regression}
 
-    \subsubsection{Pre-NN}\label{sec:analysis_regressoin_preNN}
-    \comment{Fix title}
+OUTLINE:
+\begin{enumerate}
+    \item Gradient descent \begin{enumerate}
+        \item[-] OLS and Ridge on regression problem
+    \end{enumerate}
+    \item Building our FFNN
+    \item Regression problem \begin{enumerate}
+        \item[-] try different activation functions
+    \end{enumerate}
+    \item Classification problem \begin{enumerate}
+        \item[-] compare with logistic regression 
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Gradient descent}
+
+    We write a code that  \fillertext
+
 
     Using the \checkthis{GD/SGD} method, we perform an OLS regression on the dataset $\datasetA$ by using the cost function in eq. \eqref{eq:ols_cost_function}. We perform the same analysis using the Ridge cost function in eq. \eqref{eq:ridge_cost_function}, but here we need to tune the penalty parameter $\lambda$ as well as the learning rate $\eta$.
+
+
+
+
+    
+\subsection{Neural network}
+    We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
+
+    \begin{enumerate}[label=(\roman*)]
+        \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. The data is then scaled using Z-score \checkthis{CITE} normalisation with respect to the training data.
+        \item\label{item:build2} Define the model and design its architecture. In practice, this means to decide on hyperparameters of the NN such as depth ($L$) and activation function(s) ($g$).
+        \item\label{item:build3} Choose loss function and optimiser. For regression we will use the regular MSE score \checkthis{(ref!)} as the estimator of loss, whereas the classification problem estimates the loss according to the accuracy score \checkthis{(ref!)}. \wtf[please send help] The choice of optimiser is between GD and SGD, but includes decisions about the exact algorithm \rephrase{(how we optimise the learning rate)}.
+        \item\label{item:solve1} Train the network to find the right weights and biases.
+        \item\label{item:solve2} Validate model, i.e. assess model performance by applying it on the test data.
+        \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture.
+    \end{enumerate}
+
+\subsection{Regression problem}\label{sec:analysis_regression}
+
 
 
 

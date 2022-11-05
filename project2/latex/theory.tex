@@ -128,18 +128,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 
     The matrix of weights $W^{l-\! 1\to 1} \in \RR[N_{l-\!1} \cross N_l]$ applies weights and dimension corrections to the previous layer $\vec{h}^{l-\! 1}\in \RR[N_{l-\! 1}]$ so that the activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ can accept the input. \rephrase{Rephrase?} The bias $\vec{b}^l \in \RR[N_l]$ \wtf
 
-    We will build our FFNN (\ref{item:build1}-\ref{item:build3}) and solve a supervised learning problem (\ref{item:solve1}-\ref{item:solve3}) using the steps listed below \citep{mhjensen}.
-
-    \begin{enumerate}[label=(\roman*)]
-        \item\label{item:build1} Collect and prepocess data, that is we extract 80\% of the dataset and reserve the rest for validation. The data is then scaled using Z-score \checkthis{CITE} normalisation with respect to the training data.
-        \item\label{item:build2} Define the model and design its architecture. In practice, this means to decide on hyperparameters of the NN such as depth ($L$) and activation function(s) ($g$).
-        \item\label{item:build3} Choose loss function and optimiser. For regression we will use the regular MSE score \checkthis{(ref!)} as the estimator of loss, whereas the classification problem estimates the loss according to the accuracy score \checkthis{(ref!)}. \wtf[please send help] The choice of optimiser is between GD and SGD, but includes decisions about the exact algorithm \rephrase{(how we optimise the learning rate)}.
-        \item\label{item:solve1} Train the network to find the right weights and biases.
-        \item\label{item:solve2} Validate model, i.e. assess model performance by applying it on the test data.
-        \item\label{item:solve3} Adjust hyperparameters, and if necessary review the network architecture.
-    \end{enumerate}
-
-    \rephrase{SHOULD THIS BE IN ANALYSIS??}
+   
 
 
 
