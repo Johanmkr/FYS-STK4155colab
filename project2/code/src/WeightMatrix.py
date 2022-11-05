@@ -6,8 +6,8 @@ class WeightMatrix:
                 neuronsOut = None):
         self.neuronsIn = neuronsIn 
         self.neuronsOut = neuronsOut
-        self.size = (neuronsIn, neuronsOut)
-        self.w = np.random.normal(size=self.size).T #Transpose since numpy treats matrices wierdly
+        self.wsize = (neuronsIn, neuronsOut)
+        self.w = np.random.normal(size=self.wsize).T #Transpose since numpy treats matrices wierdly
 
     # def setRandom(self):
     #     self.w = np.random.normal(size=self.size)

@@ -19,12 +19,18 @@ class Layer:
         else:
             self.neurons = neurons
             self.h = None
+            #   Only hidden layers and output layers need weights and biases
+            self.bias = np.ones((1,self.neurons)) * 0.01 #how do we initialise this
+            self.w = None
         # self.a = np.zeros((1,self.neurons))     #   activators W.T @ h + b
         self.a = None
-        self.bias = np.ones((1,self.neurons))  #how do we initialise this
         # self.delta = np.zeros((1,self.neurons))
         self.delta = None
         self.g = activationFunction or self.g
+
+    def setWmatrix(self, neuronsIn, neuronsOut):
+        self.wsize = (neuronsIn, neuronsOut)
+        self.w = np.random.normal(size=self.wsize).T #Transpose since numpy treats matrices wierdly
 
     def UpdateLayer(self,
                     inputs = None,
