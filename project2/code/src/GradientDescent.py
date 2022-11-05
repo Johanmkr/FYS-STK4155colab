@@ -144,92 +144,109 @@ def __call__(self):
 """
 
 
-class noneAlgo:
-    eps0 = 1e-7 # for numerical stability
-    params0 = {'eta':0.0, 'gamma':0.0, 'epsilon':eps0, 'rho':0.0, 'rho1':0.0, 'rho2':0.0}
-    def __init__(self, theta0):
+
+
+class noneSGD:
+    def __init__(self, theta0, eta:float=0.0, gamma:float=0.0, rho1:float=0.0, rho2:float=0.0, epsilon:float=0.0):
         self.theta = theta0
+        self.eta = eta
         self.idx = 0
-        self.epsilon = 1e-7
+        self.v = np.zeros_like(self.theta)
+        self.schedule = lambda k: self.eta
     
-    def __call__(self, theta, grad, params=params0):
-        return self.update(theta, grad, **params)
+    def __call__(self, grad, theta=None):
+        theta = theta or self.theta
+        return self.update(theta, grad)
 
-    def next(self, it=None):
+    def next(self, it:int=None):
         self.idx = self.idx+1 or it
+        self.schedule(self.idx) # not sure this is necessary
 
-    def learning_schedule(self):
-        pass
-
-
-class PlainRule(noneAlgo): # lack of better names... 
-    def __init__(self, theta0):
-        super().__init__(theta0)
+    def set_learning_schedule(self, tau:int, eta_0:float=None, eta_tau:float=None):
+        eta0 = eta_0 or self.eta
+        etatau = eta_tau or 0.01*eta0
+        self.schedule = lambda k: self.standard_learning_schedule(k, eta0, etatau, tau)
+        
+    def standard_learning_schedule(self, k, eta_0, eta_tau, tau):
+        kt = k/tau
+        if kt <= 1:
+            eta = (1-kt) * eta_0 + kt*eta_tau
+        else:
+            eta = eta_tau
+        self.set_learning_rate(eta)
     
-    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-7, rho=0.0, rho1=0.0, rho2=0.0):
-        self.theta = theta - eta * grad
+    def set_learning_rate(self, eta:float):
+        self.eta = eta
 
-class MomentumPerturbation(noneAlgo):
-    def __init__(self, theta0):
-        super().__init__(theta0)
-        self.v = np.zeros_like(theta0)
-
-    def update(self, theta, grad, eta, gamma, epsilon=1e-7, rho=0.0, rho1=0.0, rho2=0.0):
-        self.v = gamma*self.v + eta*grad
-        self.theta = theta - self.v
+    def update(self, theta, grad):
+        # standard:
+        self.v = self.gamma*self.v - self.eta*grad
+        self.theta = theta + self.v
 
 
+class noneSGDadaptive(noneSGD):
+    def __init__(self, theta0, eta:float=0, gamma:float=0, rho1:float=0, rho2:float=0, epsilon:float=1e-7):
+        super().__init__(theta0, eta, gamma, epsilon, rho1, rho2)
+        self.r = np.zeros_like(self.theta)
+        self.epsilon = epsilon # numerical stability
 
-class AdaGrad(noneAlgo):
-    def __init__(self, theta0):
-        super().__init__(theta0)
-        self.r = np.zeros_like(theta0)
+class rule_ClassicalSGD(noneSGD):
+    def __init__(self, theta0, eta0:float):
+        super().__init__(theta0, eta0, gamma=0)
+
+class rule_MomentumSGD(noneSGD):
+    def __init__(self, theta0, eta0:float, gamma:float=0.9):
+        super().__init__(theta0, eta0, gamma=gamma)
+
+
+class rule_AdaGrad(noneSGDadaptive):
+    def __init__(self, theta0, eta:float, epsilon:float=1e-7):
+        super().__init__(theta0, eta, epsilon=epsilon)
     
-    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-6, rho=0.0, rho1=0.0, rho2=0.0):
+    def update(self, theta, grad):
         self.r = self.r + grad**2
-        self.theta = theta - eta*(epsilon+np.sqrt(self.r))**(-1) * grad # check if this is element-wise
+        self.theta = theta - self.eta*(self.epsilon+np.sqrt(self.r))**(-1) * grad # check if this is element-wise
 
-class RMSProp(noneAlgo):
-    def __init__(self, theta0):
-        super().__init__(theta0)
-        self.r = np.zeros_like(theta0)
-        self.epsilon = 1e-6
+class rule_RMSProp(noneSGDadaptive):
+    def __init__(self, theta0, eta:float, rho:float, epsilon:float=1e-7):
+        super().__init__(theta0, eta, rho2=rho, epsilon=epsilon)
     
-    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-6, rho=0.0, rho1=0.0, rho2=0.0):
-        self.r = rho*self.r + (1-rho)*grad**2
-        self.theta = theta - eta / (np.sqrt(epsilon + self.r[:]))*grad # is this element-wise? should be...
+    def update(self, theta, grad):
+        self.r = self.rho2*self.r + (1-self.rho2)*grad**2
+        self.theta = theta - self.eta / (np.sqrt(self.epsilon + self.r[:]))*grad # is this element-wise? should be...
 
-class Adam(noneAlgo):
-    def __init__(self, theta0):
-        super().__init__(theta0)
-        self.s = np.zeros_like(theta0)
-        self.r = np.zeros_like(theta0)
-        self.epsilon = 1e-8
+class rule_Adam(noneSGDadaptive):
+    def __init__(self, theta0, eta:float=0.001, rho1:float=0.9, rho2:float=0.999, epsilon:float=1e-8):
+        super().__init__(theta0, eta, rho1=rho1, rho2=rho2, epsilon=epsilon)
+        self.s = np.zeros_like(self.theta)
     
-    def update(self, theta, grad, eta, gamma=0.0, epsilon=1e-8, rho=0.0, rho1=0.9, rho2=0.999):
-        self.s = rho1*self.s + (1-rho1)*grad
-        self.r = rho2*self.r + (1-rho2)*grad**2
-        s_hat = self.s * (1-rho1**self.idx)**(-1)
-        r_hat = self.r * (1-rho2**self.idx)**(-1)
-        self.theta = theta - eta*s_hat * (np.sqrt(r_hat) + epsilon)**(-1) # is this element-wise? should be...
+    def update(self, theta, grad):
+        self.s = self.rho1*self.s + (1-self.rho1)*grad
+        self.r = self.rho2*self.r + (1-self.rho2)*grad**2
+        s_hat = self.s * (1-self.rho1**self.idx)**(-1)
+        r_hat = self.r * (1-self.rho2**self.idx)**(-1)
+        self.theta = theta - self.eta*s_hat * (np.sqrt(r_hat) + self.epsilon)**(-1) # is this element-wise? should be...
+
+
 
 
 
 def parseOptimiser(theta0, optimiser='none'):
-    opt = optimiser.strip().lower()
+    rule = optimiser.strip().lower()
+    # does not work, need to include parameters
 
-    if opt in ['plain', 'none', 'manual']:
-        return PlainRule(theta0)
-    elif opt in ['mom', 'momentum']:
-        return MomentumPerturbation(theta0)
-    elif opt in ['ada', 'adagrad']:
-        return AdaGrad(theta0)
-    elif opt in ['rms', 'rmsprop']:
-        return RMSProp(theta0)
-    elif opt in ['adam']:
-        return Adam(theta0)
+    if rule in ['plain', 'none', 'manual']:
+        return rule_ClassicalSGD(theta0)
+    elif rule in ['mom', 'momentum']:
+        return rule_MomentumSGD(theta0)
+    elif rule in ['ada', 'adagrad']:
+        return rule_AdaGrad(theta0)
+    elif rule in ['rms', 'rmsprop']:
+        return rule_RMSProp(theta0)
+    elif rule in ['adam']:
+        return rule_Adam(theta0)
     else: 
-        raise ValueError(f"The library does not have functionalities for {opt} optimiser.")
+        raise ValueError(f"The library does not have functionalities for {rule} optimiser.")
     
 
 
