@@ -26,6 +26,7 @@ class devNeuralNetwork:
                 lossFunction = 'mse',):
         self.inputData = inputData
         self.targetData = targetData
+        self.comparisonData = self.targetData
         self.hiddenLayers = hiddenLayers
         self.neuronsInEachLayer = neuronsInEachLayer
         self.activationFunction = ActivationFunction(activationFunction)
@@ -49,11 +50,15 @@ class devNeuralNetwork:
     def updateInputLayer(self, data):
         self.setInputFeatures(data)
         self.layers[0].UpdateLayer(self.inputs, self.features)
-        if data.ndim == 1 or data.ndim:
-            self.layers[0].h = data
-        else:
-            self.layers[0].h = data
-        # print(self.layers[0].h[:,0])
+        # if data.ndim == 1 or data.ndim:
+        #     self.layers[0].h = data
+        # else:
+        #     self.layers[0].h = data
+        self.layers[0].h = data
+
+    def sliceInputAndTarget(self, idx):
+        self.layers[0].h = self.inputData[idx]
+        self.comparisonData = self.targetData[idx]
 
     def setInputFeatures(self, data):
         # self.inputs = len(data)
@@ -114,23 +119,19 @@ class devNeuralNetwork:
             # self.weights.append(WeightMatrix(nIn, nOut))
             self.layers[i].setWmatrix(nIn,nOut)
 
-    def feedForward(self, train=False, input_vals):
-        idx = idx or slice(0,len(self.layers[0].h))
-
+    def feedForward(self, train=False):
         for i in range(1, self.nrOfLayers):
-            # embed()
-
-            # w = self.weights[i-1].w 
             w = self.layers[i].w
             h = self.layers[i-1].h
             b = self.layers[i].bias
-            # activator = self.weights[i-1].w.T @ self.layers[i-1].h + self.layers[i].bias
+
             activator = h @ w.T + b
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
-        # self.outputData = DataHandler(self.layers[-1].h)
+        #   Override last output
         self.layers[-1].h = self.outputFunction(self.layers[-1].a)
-        self.outputData = self.layers[-1].h 
+        self.outputData = self.layers[-1].h
+
         # if train:
         #     self.mu = np.mean(self.outputData)
         #     self.sigma = np.std(self.outputData)
@@ -141,7 +142,7 @@ class devNeuralNetwork:
         
     def backPropagation(self):
         eta = 0.001
-        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.targetData)
+        self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.comparisonData)
         #   Find and set deltas
         for l in range(self.nrOfLayers-2, 0, -1):
             delta = self.layers[l+1].delta
