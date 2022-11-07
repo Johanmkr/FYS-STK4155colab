@@ -148,11 +148,12 @@ class rule_Adam(noneRULEadaptive):
         self.params = {key:self.params[key] for key in ['eta', 'rho1', 'rho2', 'epsilon']}
         self.s = np.zeros_like(self.theta)
             
-    def update(self, theta, grad):
+    def update(self, theta, grad, k=None):
+        k = k or self.idx
         self.s = self.rho1*self.s + (1-self.rho1)*grad
         self.r = self.rho2*self.r + (1-self.rho2)*grad**2
-        s_hat = self.s * (1-self.rho1**self.idx)**(-1)
-        r_hat = self.r * (1-self.rho2**self.idx)**(-1)
+        s_hat = self.s * (1-self.rho1**k)**(-1)
+        r_hat = self.r * (1-self.rho2**k)**(-1)
         self.v = - self.eta*s_hat * (np.sqrt(r_hat) + self.epsilon)**(-1) # is this element-wise? should be...
         self.theta = theta + self.v
 
@@ -172,7 +173,7 @@ class rule_Adam(noneRULEadaptive):
 
 
 class noneGradientDescent:
-    def __init__(self, X, y, eta:float, theta, no_epochs:int, tolerance, loss_function=None):
+    def __init__(self, X, y, eta:float, theta, no_epochs:int, tolerance:float):
         self.X = X
         self.y = y
         self.eta = eta  #Learning rate
@@ -186,11 +187,13 @@ class noneGradientDescent:
 
         self.indices = np.arange(len(y))
 
+    @classmethod
+    def simple_initialise(cls, eta:float, tolerance:float=1e-7):
+        return cls(np.zeros((10,1)), np.zeros(10), eta, 100, tolerance)
 
-        if loss_function == "mse":
-            b = 0
-            #self.lf = lambda 
-            #self.grad = lambda k=0: self.compute_gradient(self.theta) # check if this works properly
+    def simple_update(self, gradient, theta):
+        theta_new = self.update_rule(gradient, theta)
+        return theta_new
 
     def epoch_calculation(self, grad):
         self.per_epoch(grad)
@@ -283,164 +286,13 @@ class SGD(noneGradientDescent):
 
 
 
-    
-
-
-
-# class GradientDescent:
-#     def __init__(self, loss_function, eta:float, theta, no_epochs:int):
-#         self.LF = loss_function  #Loss function as function of theta
-#         self.eta = eta  #Learning rate
-#         self.theta = theta
-#         self.no_epochs = no_epochs
-
-#         self.grad = lambda k=0: self.compute_gradient(self.theta) # check if this works properly
-        
-
-
-# class GD2(GradientDescent):
-#     def __init__(self, LF, eta, theta, nr_epochs):
-#         GradientDescent.__init__(self, LF=LF, eta=eta, theta=theta, nr_epochs=nr_epochs)
-
-
-#     def find_A(self, LFargument):
-#         # grd = grad(self.LF)
-#         # self.A = grd(LFargument)
-#         self.A = grad(self.LF)(LFargument)
-
-#     def find_eta(self):
-#         self.eta = self.eta
-
-#     def find_v(self):
-#         self.v = -self.eta * self.A
-
-#     #does not update eta yet
-#     def __call__(self, theta):
-#         self.find_A(theta)
-#         # self.find_eta() # If tunable learning rate
-#         self.find_v()
-#         theta = theta + self.v
-#         return theta #could consider making theta a class variabel
-
-# class MGD(GD):
-#     def __init__(self, LF, eta=0.01, gamma=0.1, NAG=False):
-#         GD.__init__(self, LF=LF, eta=eta)
-#         self.gamma = gamma
-#         self.v_prev = 0
-#         self.NAG = NAG
-
-#     def find_v(self):
-#         self.v = self.gamma*self.v_prev - self.eta*self.A 
-
-#     def __call__(self, theta):
-#         if self.NAG:
-#             self.find_A(theta+self.gamma*self.v_prev)
-#         else:
-#             self.find_A(theta)
-#         self.find_v()
-#         theta = theta + self.v
-#         self.v_prev = self.v
-#         return theta
-
-    
-# class plain_SGD(GradientDescent):
-#     def __init__(self, X, LF, eta=0.01, gamma=0.9, nr_epochs=1000, nr_minibatches=10):
-#         GradientDescent.__init__(self, LF=LF, eta=eta)
-#         self.gamma = gamma
-#         self.nr_epochs = nr_epochs
-#         self.m = nr_minibatches
-#         self.X = X
-#         self.M = int(len(X)/self.m)
-#         self.tau = 200* len(self.X)
-#         self.eta0 = eta
-#         self.eta_tau = 0.01 * self.eta0
-#         # self.v_prev = 0
-
-#     def learning_schedule(self, k):
-#         if k>self.tau:
-#             self.eta = self.eta_tau
-#         else:
-#             self.eta = (1-k/self.tau)*self.eta0 + k/self.tau*self.eta_tau
-    
-#     def find_A(self, LFargument):
-#         self.A = egrad(self.LF)(LFargument)
-
-#     def find_v(self):
-#         self.v = - self.eta*self.A
-
-#     def __call__(self, theta):
-#         #   This is a wack way of doing this, needs improvement soon
-#         k = 1
-#         # embed()
-#         for epoch in range(self.nr_epochs):
-#             indecies = np.arange(self.M*self.m)
-#             np.random.shuffle(indecies)
-#             batches = np.array_split(indecies, self.m)
-#             # for i in range(self.m):
-#             for batch in batches:
-#                 xi = self.X[batch]
-#                 # random_indecies = np.random.randint(0, high=self.M*self.m, size=self.M)
-#                 # random_indecies = np.random.choice(self.M*self.m, size=self.M, replace=False)
-#                 # xi = self.X[random_indecies]
-#                 self.find_A(xi)
-#                 self.learning_schedule(k)
-#                 self.find_v()
-#                 # embed()
-#                 theta = theta + self.v
-#                 # self.v_prev = self.v
-#                 k += 1
-#                 # print(self.v)
-#             # plt.scatter(theta, f(theta), marker="1")
-#         # embed()
-        
-#         theta_out = theta[np.argmin(self.LF(theta))]
-#         return theta_out
-
-
-
-
-
-
 
 if __name__=="__main__":
     x = np.linspace(-10,10, 1000)
-    # def f(x):
-    #     return 0.1 * x * np.cos(x)
-    f = lambda x, theta: theta[0] *x * np.cos(theta[1]*x)
-    # f = lambda x: x**2
-    y = f(x, (0.1, 0.9))
-    # fx = 0.1*x*np.cos(x)
-    # Lf = lambda y, fx: (y-fx)**2
-    # plt.plot(x,f(x))
-
-    # gd = MGD(f, eta=0.01, gamma=0.9, NAG=True)
-    # gd = GD(f, eta=0.01)
-    # gd = plain_SGD(X=x, LF=f)
-
-    # x0 = 0
-    # plt.scatter(x0, f(x0), marker="x")
-    # MAXiter = 20
-    # Niter = 0
-    # for _ in range(MAXiter):
-    #     xnew = gd(x0)
-    #     if abs(xnew-np.min(f(x))) < 1e-1:
-    #         break
-    #     else:
-    #       x0 = xnew
-    #       plt.scatter(x0,  f(x0), marker="1")
-    #     # x0 = xnew
-    #     Niter += 1
-    # print(Niter)
-    # x0 = gd(x0)
-    # plt.scatter(x0, f(x0), marker="o")
-    # plt.show()
-    # print(x0)
     f = lambda x, theta: theta[0]*x + theta[1]*x**2
-    y = f(x, (0.1, 0.9))
-    #LF = lambda theta: np.sum((f(x, theta)- y)**2) *1/len(x)
-    #print(LF((0.12, 0.8)))
+    y = f(x, (0.1, 0.9)) 
+
     def LF(idx):
-        #print(np.sum((f(x[idx], (0.1, 0.8))- y[idx])**2)  /len(idx))
         return lambda theta: np.sum((f(x[idx], theta)- y[idx])**2)  /len(idx)
 
 
@@ -450,23 +302,17 @@ if __name__=="__main__":
     X[:,0] = x
     X[:,1] = x**2
     sgd = SGD(X, y, 0.05, np.array([0.16, 0.8]), 500)
+    sgd2 = SGD.simple_initialise(0.05)
+    sgd2.set_update_rule('momentum')
+    sgd2.set_params(gamma=0.1)
+
     sgd.set_update_rule('plain')
-    sgd.apply_learning_schedule(tau=len(x))
-    #sgd.set_params(eta=0.05)
+    sgd.apply_learning_schedule(tau=len(x)*100)
+    
     def grad(theta_k):
         return lambda idx: egrad(LF(idx))(theta_k)
 
 
-    for _ in range(100):
-        theta = sgd.theta
-        sgd.epoch_calculation(grad(theta))
-
-
-
-    # def f(x):
-    #     return np.sin(x)
-    # fder = egrad(f)
-    # plt.plot(x,f(x), label="f")
-    # plt.plot(x, fder(x), label="fder")
-    # plt.plot(x, np.cos(x), ls="--")
-    # plt.show()
+    # for _ in range(100):
+        # theta = sgd.theta
+        # sgd.epoch_calculation(grad(theta))
