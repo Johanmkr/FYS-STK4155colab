@@ -305,8 +305,7 @@ if __name__=="__main__":
     sgd2 = SGD.simple_initialise(0.05)
     sgd2.set_update_rule('momentum')
     sgd2.set_params(gamma=0.1)
-
-    sgd.set_update_rule('plain')
+    sgd2.simple_update()
     sgd.apply_learning_schedule(tau=len(x)*100)
     
     def grad(theta_k):

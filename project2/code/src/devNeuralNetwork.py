@@ -9,6 +9,7 @@ from DataHandler import DataHandler
 from ExtendAndCollapse import ExtendAndCollapse as EAC
 from IPython import embed
 from time import time
+from tqdm import trange
 
 np.random.seed(1)
 
@@ -23,7 +24,12 @@ class devNeuralNetwork:
                 activationFunction = 'sigmoid',
                 outputFunction = 'linear',
                 outputNeurons = None,
-                lossFunction = 'mse',):
+                lossFunction = 'mse',
+                epochs = None,
+                batchSize = None,
+                eta = 0.01,
+                lmbda = 0.0,
+                testSize = 0.2):
         self.inputData = inputData
         self.targetData = targetData
         self.comparisonData = self.targetData
@@ -33,8 +39,15 @@ class devNeuralNetwork:
         self.outputFunction = ActivationFunction(outputFunction)
         self.lossFunction = LossFunctions(lossFunction)
 
-        self.setInputFeatures(self.inputData)
+        self.ttSplit(testSize)
+        self.setInputFeatures(self.trainData)
         self.outputNeurons = outputNeurons or self.features
+        self.epochs = epochs
+        self.batchSize = batchSize or self.inputs
+        self.iterations = self.inputs//self.batchSize
+        self.eta = eta
+        self.lmbda = lmbda
+        self.Niter = 0  # Keep track of training iterations
 
         #   Make list of layer objects
         self.layers = []
@@ -44,8 +57,15 @@ class devNeuralNetwork:
 
         #   Initialise the weights
         self.initialiseWeights()
+        #   Split into training and test data
         # embed()
 
+    def ttSplit(self, testSize):
+        testIdx = np.random.choice(np.arange(len(self.inputData)), int(len(self.inputData) * testSize), replace=False)
+        self.testData = self.inputData[testIdx]
+        self.testOut = self.targetData[testIdx]
+        self.trainData = np.delete(self.inputData, testIdx, axis=0)
+        self.trainOut = np.delete(self.targetData, testIdx, axis=0)
 
     def updateInputLayer(self, data):
         self.setInputFeatures(data)
@@ -56,7 +76,7 @@ class devNeuralNetwork:
         #     self.layers[0].h = data
         self.layers[0].h = data
 
-    def sliceInputAndTarget(self, idx):
+    def sliceInputAndComparison(self, idx):
         self.layers[0].h = self.inputData[idx]
         self.comparisonData = self.targetData[idx]
 
@@ -119,7 +139,7 @@ class devNeuralNetwork:
             # self.weights.append(WeightMatrix(nIn, nOut))
             self.layers[i].setWmatrix(nIn,nOut)
 
-    def feedForward(self, train=False):
+    def feedForward(self):
         for i in range(1, self.nrOfLayers):
             w = self.layers[i].w
             h = self.layers[i-1].h
@@ -141,7 +161,6 @@ class devNeuralNetwork:
 
         
     def backPropagation(self):
-        eta = 0.001
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.comparisonData)
         #   Find and set deltas
         for l in range(self.nrOfLayers-2, 0, -1):
@@ -152,8 +171,8 @@ class devNeuralNetwork:
 
         F = EAC(self.layers) # Generating full matrices W, B, D, H
 
-        F.W = F.W - eta * F.regGradW()
-        F.B = F.B - eta * F.regGradB()
+        F.W = F.W - self.eta * F.regGradW()
+        F.B = F.B - self.eta * F.regGradB()
         
         # embed()
         newWeights = F.collapseWeights()
@@ -177,12 +196,26 @@ class devNeuralNetwork:
         # self.weights[0].w = self.weights[0].w - eta * self.layers[1].delta.T @ self.layers[0].h
     
             #this must be tied together with the gradient descent code.
-    def train(self, N=1):
-        trainingData = self.inputData
-        self.updateInputLayer(trainingData)
-        for _ in range(N):
-            self.feedForward(train=True)
-            self.backPropagation()
+    def setRandomIndecies(self):
+        return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
+
+    def printTrainingInfo(self, epoch):
+        trainLoss = np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
+        testLoss = np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
+        stringToPrint = f"Training loss after {epoch} epochs: {trainLoss:.2f}\n"
+        stringToPrint += f"Test loss after {epoch} epochs: {testLoss:.2f}\n"
+        print(stringToPrint)
+
+    def train(self):
+        self.updateInputLayer(self.trainData)
+        for epoch in trange(self.epochs):
+            for i in range(self.iterations):
+                self.sliceInputAndComparison(self.setRandomIndecies())
+                self.feedForward()
+                self.backPropagation()
+                self.Niter += 1
+            # if epoch // 50 == 0:
+            #     self.printTrainingInfo(epoch)
 
 
 if __name__=="__main__":
@@ -245,26 +278,28 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=9, outputNeurons=1)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=9, outputNeurons=1, epochs=1000, batchSize=10)
     # FNet.train(10000)
     # FrankePred = FNet()
-    
-    Niter = 10
-    LF = LossFunctions()
-    print(FNet)
     t0 = time()
-    for i in range(1, Niter+1):
-        N =  (250*i)
-        FNet.train(N)
-        FrankePred = FNet()
-        # embed()
-        loss = np.mean(LF(FrankePred, FrankeY))
-        # embed()
-        print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
-        # if i % 4 == 0:
-            # plt.plot(x,pred, label=f"N={i}")
+    FNet.train()
     t1 = time()
-    print(f"Duration: {t1-t0:.2f} s")
+    print(f"Training time: {t1-t0:.2f} s")
+ 
+    # LF = LossFunctions()
+    # print(FNet)
+    # for i in range(1, Niter+1):
+    #     N =  (250*i)
+    #     FNet.train(N)
+    #     FrankePred = FNet(FrankeX)
+    #     # embed()
+    #     loss = np.mean(LF(FrankePred, FNet.targetData))
+    #     # embed()
+    #     print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
+    #     # if i % 4 == 0:
+    #         # plt.plot(x,pred, label=f"N={i}")
+    FrankePred = FNet(FrankeX)
+    print(f"Total iterations: {FNet.Niter}")
 
     fig = plt.figure(figsize=(15,15))
     ax = fig.gca(projection='3d')
