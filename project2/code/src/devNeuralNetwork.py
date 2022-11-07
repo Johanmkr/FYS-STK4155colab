@@ -114,12 +114,13 @@ class devNeuralNetwork:
             # self.weights.append(WeightMatrix(nIn, nOut))
             self.layers[i].setWmatrix(nIn,nOut)
 
-    def feedForward(self, train=False):
+    def feedForward(self, train=False, input_vals):
+        idx = idx or slice(0,len(self.layers[0].h))
+
         for i in range(1, self.nrOfLayers):
             # embed()
 
             # w = self.weights[i-1].w 
-
             w = self.layers[i].w
             h = self.layers[i-1].h
             b = self.layers[i].bias
@@ -243,11 +244,11 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=25, outputNeurons=1)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=9, outputNeurons=1)
     # FNet.train(10000)
     # FrankePred = FNet()
     
-    Niter = 20
+    Niter = 10
     LF = LossFunctions()
     print(FNet)
     t0 = time()
