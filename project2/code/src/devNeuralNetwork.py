@@ -1,12 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Layer import Layer
-from LossFunctions import LossFunctions
-# from WeightMatrix import WeightMatrix
-from ActivationFunction import ActivationFunction
-import GradientDescent as GD
-from DataHandler import DataHandler
-from ExtendAndCollapse import ExtendAndCollapse as EAC
+from src.Layer import Layer
+from src.LossFunctions import LossFunctions
+from src.ActivationFunction import ActivationFunction
+import src.GradientDescent as GradientDescent
+from src.DataHandler import DataHandler
+from src.ExtendAndCollapse import ExtendAndCollapse as EAC
 from IPython import embed
 from time import time
 from tqdm import trange
@@ -60,6 +59,23 @@ class devNeuralNetwork:
         #   Split into training and test data
         # embed()
 
+    def __str__(self):
+        stringToReturn = 'Feed Forward Neural Network\n'
+        stringToReturn += f"Number of layers: {self.nrOfLayers}\n"
+        stringToReturn      += f'Input layer: {self.layers[0].neurons} neurons\n'
+        for i in range(1, len(self.layers)-1):
+            stringToReturn  += f'H-layer {i}: {self.layers[i].neurons} neurons\n'
+        stringToReturn      += f'Output layer: {self.layers[-1].neurons} neurons\n'
+        
+        return stringToReturn
+
+    def __call__(self, X=None, Y=None):
+
+        if X is not None:
+            self.layers[0].h = X
+        self.feedForward()
+        return self.outputData
+
     def ttSplit(self, testSize):
         testIdx = np.random.choice(np.arange(len(self.inputData)), int(len(self.inputData) * testSize), replace=False)
         self.testData = self.inputData[testIdx]
@@ -90,22 +106,6 @@ class devNeuralNetwork:
             self.inputs, self.features = data.shape
 
 
-    def __str__(self):
-        stringToReturn = 'Feed Forward Neural Network\n'
-        stringToReturn += f"Number of layers: {self.nrOfLayers}\n"
-        stringToReturn      += f'Input layer: {self.layers[0].neurons} neurons\n'
-        for i in range(1, len(self.layers)-1):
-            stringToReturn  += f'H-layer {i}: {self.layers[i].neurons} neurons\n'
-        stringToReturn      += f'Output layer: {self.layers[-1].neurons} neurons\n'
-        
-        return stringToReturn
-
-    def __call__(self, X=None):
-        if X is not None:
-            self.updateInputLayer(np.asarray(X))
-        self.feedForward()
-        return self.outputData
-
     
     def setInitialisedLayers(self):
         #   Append input layer
@@ -132,11 +132,10 @@ class devNeuralNetwork:
 
 
     def initialiseWeights(self):
-        # self.weights = []
+
         for i in range(1, self.nrOfLayers): #looping over hidden layers + output layer
             nIn = self.layers[i-1].neurons
             nOut = self.layers[i].neurons
-            # self.weights.append(WeightMatrix(nIn, nOut))
             self.layers[i].setWmatrix(nIn,nOut)
 
     def feedForward(self):
@@ -152,14 +151,6 @@ class devNeuralNetwork:
         self.layers[-1].h = self.outputFunction(self.layers[-1].a)
         self.outputData = self.layers[-1].h
 
-        # if train:
-        #     self.mu = np.mean(self.outputData)
-        #     self.sigma = np.std(self.outputData)
-        # self.outputData = (self.outputData - self.mu)/self.sigma
-        # self.layers[-1].h = self.outputData
-            # self.layers[-1].h = self.outputFunction(self.outputData.dataScaled)
-
-        
     def backPropagation(self):
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.comparisonData)
         #   Find and set deltas
@@ -171,10 +162,23 @@ class devNeuralNetwork:
 
         F = EAC(self.layers) # Generating full matrices W, B, D, H
 
-        F.W = F.W - self.eta * F.regGradW()
-        F.B = F.B - self.eta * F.regGradB()
-        
-        # embed()
+        sgdW = GradientDescent.SGD.simple_initialise(eta=0.01)
+        sgdB = GradientDescent.SGD.simple_initialise(eta=0.01)
+        sgdW.set_update_rule("RMSProp")
+        sgdB.set_update_rule("RMSProp")
+
+        regularisation = 0
+        if self.lmbda > 0.0:
+            regularisation = self.lmbda * F.W
+
+        # sgd.simple_initialise()
+        F.W = sgdW.simple_update(F.regGradW()+regularisation, F.W)
+        F.B = sgdB.simple_update(F.regGradB(), F.B)
+
+
+        # F.W = F.W - self.eta * F.regGradW()
+        # F.B = F.B - self.eta * F.regGradB()
+
         newWeights = F.collapseWeights()
         newBiases = F.collapseBiases()
 
@@ -182,28 +186,15 @@ class devNeuralNetwork:
             self.layers[i].w = newWeights[i-1]
             self.layers[i].bias = newBiases[i-1]
 
-
-        # # Testing new approach
-        # for l in range(self.nrOfLayers-1, 0, -1):
-        #     w = self.layers[l].w
-        #     delta = self.layers[l].delta 
-        #     h = self.layers[l-1].h
-        #     bias = self.layers[l].bias 
-
-        #     self.layers[l].w = w - eta * delta.T @ h 
-        #     self.layers[l].bias = bias - eta * np.sum(delta, axis=0)
-
-        # self.weights[0].w = self.weights[0].w - eta * self.layers[1].delta.T @ self.layers[0].h
-    
-            #this must be tied together with the gradient descent code.
     def setRandomIndecies(self):
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
     def printTrainingInfo(self, epoch):
         trainLoss = np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
         testLoss = np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
-        stringToPrint = f"Training loss after {epoch} epochs: {trainLoss:.2f}\n"
-        stringToPrint += f"Test loss after {epoch} epochs: {testLoss:.2f}\n"
+        stringToPrint = f"Epochs: {epoch}\n"
+        stringToPrint += f"Train loss:   {trainLoss:.2f}\n"
+        stringToPrint += f"Test loss:    {testLoss:.2f}\n"
         print(stringToPrint)
 
     def train(self):
@@ -214,8 +205,8 @@ class devNeuralNetwork:
                 self.feedForward()
                 self.backPropagation()
                 self.Niter += 1
-            # if epoch // 50 == 0:
-            #     self.printTrainingInfo(epoch)
+            if epoch % 100 == 0:
+                self.printTrainingInfo(epoch)
 
 
 if __name__=="__main__":
@@ -278,7 +269,8 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=9, outputNeurons=1, epochs=1000, batchSize=10)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, neuronsInEachLayer=40, outputNeurons=1, epochs=500, batchSize=10, testSize=0.2, lmbda=0, eta=0.1)
+    print(FNet)
     # FNet.train(10000)
     # FrankePred = FNet()
     t0 = time()

@@ -156,7 +156,7 @@ class noneGradientDescent:
 
     @classmethod
     def simple_initialise(cls, eta:float, tolerance:float=1e-7):
-        return cls(np.zeros((10,1)), np.zeros(10), eta, 100, tolerance)
+        return cls(np.zeros((10,1)), np.zeros(10), eta, 0, 100, tolerance)
 
     def simple_update(self, gradient, theta):
         theta_new = self.update_rule(gradient, theta)
@@ -290,6 +290,8 @@ if __name__=="__main__":
     eta0 = 0.2
     lmbda = 0.1
     LF_R = lambda x, y, theta: (np.sum((f(x, theta) - y)**2)+ lmbda * np.sum(theta**2) )/ (2*len(y))
+    
+    sgd1 = SGD.simple_initialise(0.1)
     
 
     sgd = SGD(x, y, eta0, theta0, NN)

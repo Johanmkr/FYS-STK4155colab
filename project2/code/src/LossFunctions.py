@@ -23,3 +23,6 @@ class LossFunctions:
     def mseDerivative(self, prediction, target):
         return (prediction-target)
 
+    def crossentropy(self, prediction, target):
+        pass
+
