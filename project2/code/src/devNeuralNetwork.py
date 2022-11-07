@@ -6,7 +6,9 @@ from LossFunctions import LossFunctions
 from ActivationFunction import ActivationFunction
 import GradientDescent as GD
 from DataHandler import DataHandler
+from ExtendAndCollapse import ExtendAndCollapse as EAC
 from IPython import embed
+from time import time
 
 np.random.seed(1)
 
@@ -54,13 +56,13 @@ class devNeuralNetwork:
         # print(self.layers[0].h[:,0])
 
     def setInputFeatures(self, data):
-        self.inputs = len(data)
-        self.features = 1 
-        # if data.ndim == 1 or data.ndim == 0:
-        #     self.inputs = len(data)
-        #     self.features = 1 
-        # else:
-        #     self.inputs, self.features = data.shape
+        # self.inputs = len(data)
+        # self.features = 1 
+        if data.ndim == 1 or data.ndim == 0:
+            self.inputs = len(data)
+            self.features = 1 
+        else:
+            self.inputs, self.features = data.shape
 
 
     def __str__(self):
@@ -157,17 +159,33 @@ class devNeuralNetwork:
         #     self.weights[l].w = self.weights[l].w - eta * self.layers[l+1].delta.T @ self.layers[l].h
         # for l in range(self.nrOfLayers-1, 0, -1):
         #     self.layers[l].bias = self.layers[l].bias -eta * np.sum(self.layers[l].delta, axis=0)
+        
 
 
-        # Testing new approach
-        for l in range(self.nrOfLayers-1, 0, -1):
-            w = self.layers[l].w
-            delta = self.layers[l].delta 
-            h = self.layers[l-1].h
-            bias = self.layers[l].bias 
+        #   Testing vectorised approach
+        full = EAC(self.layers)
 
-            self.layers[l].w = w - eta * delta.T @ h 
-            self.layers[l].bias = bias - eta * np.sum(delta, axis=0)
+        full.W = full.W - eta * full.regGradW()
+        full.B = full.B - eta * full.regGradB()
+        
+        # embed()
+        newWeights = full.collapseWeights()
+        newBiases = full.collapseBiases()
+
+        for i in range(1, self.nrOfLayers):
+            self.layers[i].w = newWeights[i-1]
+            self.layers[i].bias = newBiases[i-1]
+
+
+        # # Testing new approach
+        # for l in range(self.nrOfLayers-1, 0, -1):
+        #     w = self.layers[l].w
+        #     delta = self.layers[l].delta 
+        #     h = self.layers[l-1].h
+        #     bias = self.layers[l].bias 
+
+        #     self.layers[l].w = w - eta * delta.T @ h 
+        #     self.layers[l].bias = bias - eta * np.sum(delta, axis=0)
 
         # self.weights[0].w = self.weights[0].w - eta * self.layers[1].delta.T @ self.layers[0].h
     
@@ -181,43 +199,90 @@ class devNeuralNetwork:
 
 
 if __name__=="__main__":
-    x = np.linspace(-5,5, 100)
-    y = x*np.cos(x) + 0.5*np.random.randn(len(x))
-    ynorm = (y-np.mean(y))/np.std(y)
-    x = x[:,np.newaxis]
-    ynorm = ynorm[:,np.newaxis]
-    plt.plot(x,ynorm, ".", label="data")
-    # plt.show()
-    dummy = devNeuralNetwork(x, ynorm, hiddenLayers=3, neuronsInEachLayer=4)
-    print(dummy)
+    # x = np.linspace(-5,5, 100)
+    # y = x*np.cos(x) + 0.5*np.random.randn(len(x))
+    # ynorm = (y-np.mean(y))/np.std(y)
+    # x = x[:,np.newaxis]
+    # ynorm = ynorm[:,np.newaxis]
+    # plt.plot(x,ynorm, ".", label="data")
+    # # plt.show()
+    # dummy = devNeuralNetwork(x, ynorm, hiddenLayers=3, neuronsInEachLayer=4)
+    # print(dummy)
+    # # dummy.train()
+    # # dummy()
+    # Niter = 16
     # dummy.train()
-    # dummy()
+    # pred = dummy()
+    # plt.plot(x, pred, label="Untrained")
+    # LF = LossFunctions()
+    # t0 = time()
+    # for i in range(1, Niter+1):
+    #     N =  (250*i)
+    #     dummy.train(N)
+    #     pred = dummy()
+    #     # embed()
+    #     loss = np.mean(LF(pred, ynorm))
+    #     # embed()
+    #     print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
+    #     if i % 4 == 0:
+    #         plt.plot(x,pred, label=f"N={i}")
+    # t1 = time()
+
+    # # xtest = np.linspace(-10,10,1000)
+
+    # # ypredtest = dummy(xtest)
+    # # plt.plot(xtest, ypredtest, label="Test point")
+
+
+    # plt.legend()
+    # print(f"Duration: {t1-t0:.2f} s")
+    # plt.show()
+
+
+    # TEST FRANKE
+    # Make data.
+    space = np.linspace(0,1,20)
+    xx, yy = np.meshgrid(space,space)
+
+    def FrankeFunction(x,y):
+        term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
+        term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
+        term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
+        term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
+        return term1 + term2 + term3 + term4
+
+    zz = FrankeFunction(xx, yy)
+    zzr = zz.ravel()
+    zzr = (zzr-np.mean(zzr))/np.std(zzr)
+    FrankeX = np.zeros((len(zzr),2))
+    FrankeX[:,0] = xx.ravel()
+    FrankeX[:,1] = yy.ravel()
+    FrankeY = zzr[:,np.newaxis]
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=4, neuronsInEachLayer=6, outputNeurons=1)
+    # FNet.train(10000)
+    # FrankePred = FNet()
+    
     Niter = 16
-    dummy.train()
-    pred = dummy()
-    plt.plot(x, pred, label="Untrained")
     LF = LossFunctions()
+    print(FNet)
+    t0 = time()
     for i in range(1, Niter+1):
         N =  (250*i)
-        dummy.train(N)
-        pred = dummy()
+        FNet.train(N)
+        FrankePred = FNet()
         # embed()
-        loss = np.mean(LF(pred, ynorm))
+        loss = np.mean(LF(FrankePred, FrankeY))
         # embed()
         print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
-        if i % 4 == 0:
-            plt.plot(x,pred, label=f"N={i}")
-    
+        # if i % 4 == 0:
+            # plt.plot(x,pred, label=f"N={i}")
+    t1 = time()
+    print(f"Duration: {t1-t0:.2f} s")
 
-    # xtest = np.linspace(-10,10,1000)
-
-    # ypredtest = dummy(xtest)
-    # plt.plot(xtest, ypredtest, label="Test point")
-
-
-    plt.legend()
+    fig = plt.figure(figsize=(15,15))
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_surface(xx, yy, np.reshape(FrankePred, (20,20)), cmap="coolwarm", alpha=0.7)
+    scatter = ax.scatter(xx,yy,zzr, color="green")
     plt.show()
-
-
 
     # print(dummy.weights[0].w.shape)
