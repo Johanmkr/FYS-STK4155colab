@@ -8,38 +8,6 @@ import sys
 
 
 
-
-
-"""
-Need following update rules and initialisations:
-* plain
-* momentum
-* Adam
-* AdaGrad
-* RMSProp
-"""
-
-"""
-Will be used inside of class:
-
-Example: (idea)
-def __init__(self, optimiser:str):
-    self.perturbate = parseOptimiser(optimiser)
-
-def __call__(self):
-    for epoch in epochs:
-        ...
-        for batch in batches:
-            grad_k = ...
-            theta_k = self.perturbate(theta_k, grad_k, eta_k )
-            ...
-
-
-"""
-
-
-
-
 class noneRULE:
     def __init__(self, theta0, eta:float=0.0, gamma:float=0.0, rho1:float=0.0, rho2:float=0.0, epsilon:float=0.0):
         self.theta = theta0
@@ -48,10 +16,6 @@ class noneRULE:
         self.idx = 0
         self.v = np.zeros_like(self.theta)
         self.schedule = lambda k: self.eta
-
-    '''@classmethod
-    def init(cls):
-        return cls(0, )'''
 
     def set_params(self, eta:float=None, gamma:float=None, rho1:float=None, rho2:float=None, epsilon:float=None):
         for param in self.params:
@@ -131,7 +95,7 @@ class rule_AdaGrad(noneRULEadaptive):
         super().set_params(eta, None, None, epsilon)
 
 class rule_RMSProp(noneRULEadaptive):
-    def __init__(self, theta0, eta:float=0.01, rho:float=0.1, epsilon:float=1e-7):
+    def __init__(self, theta0, eta:float=0.01, rho:float=0.9, epsilon:float=1e-7):
         super().__init__(theta0, eta, rho2=rho, epsilon=epsilon)
         self.params = {key:self.params[key] for key in ['eta', 'rho2', 'epsilon']}
 
@@ -198,10 +162,6 @@ class noneGradientDescent:
         theta_new = self.update_rule(gradient, theta)
         return theta_new
 
-    def epoch_calculation(self, grad):
-        self.per_epoch(grad)
-        self.update_rule.next()
-
     
     def per_batch(self, grad):
         self.theta = self.update(grad)
@@ -257,19 +217,28 @@ class noneGradientDescent:
         # Use MSE loss func
 
         def gradient(x, y, theta):
-            lf = lambda theta: np.sum((f(x, theta) - y)**2)/len(x)
+            lf = lambda theta: np.sum((f(x, theta) - y)**2)/len(x)/2
             return egrad(lf)(theta)
 
         self.grad = gradient
 
     def classification_setting(self, f):
-        pass
+        def gradient(x, y, theta):
+            # FIXME
+            tol = 1e-12
+            I = lambda theta: np.mean(np.where(np.abs(f(x,theta)-y)<tol, 1, 0), axis=0 )
+            lf = lambda theta: 1 - I(theta)
+            return egrad(lf)(theta)
+        self.grad = gradient
+        
     
     def __call__(self):
         for _ in range(self.no_epochs):
             self.per_epoch(self.grad)
         return self.theta
-        
+
+    def set_loss_function(self, loss_function):
+        self.grad = lambda x, y, theta: egrad(lambda theta: loss_function(x, y, theta))(theta)
 
 
 
@@ -290,7 +259,7 @@ class SGD(noneGradientDescent):
     def __init__(self, X, y, eta:float, theta0, no_epochs:int=500, no_minibatches:int=5, tolerance=1e-6):
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
         self.m = int(no_minibatches)
-        assert self.m < self.n_obs
+        assert self.m <= self.n_obs
 
 
         
@@ -310,14 +279,18 @@ class SGD(noneGradientDescent):
 if __name__=="__main__":
     x = np.linspace(-1,1, 1000)
     f = lambda x, theta: theta[0]*x + theta[1]*x**2 + theta[2]*x**3
-    y = f(x, (0.5, 0.9, -0.7)) + np.random.randn(len(x))*0.05
+    f = lambda x, theta: theta[0]*x *np.cos(theta[1]*x) + theta[2]*x**2
+    y = f(x, (2, 1.7, -0.4)) + np.random.randn(len(x))*0.05
 
     X = np.zeros((len(x),1))
     X[:,0] = x
 
-    NN = 200
+    NN = 100
     theta0 = [0.23, 0.31, 1]
-    eta0 = 0.01
+    eta0 = 0.2
+    lmbda = 0.1
+    LF_R = lambda x, y, theta: (np.sum((f(x, theta) - y)**2)+ lmbda * np.sum(theta**2) )/ (2*len(y))
+    
 
     sgd = SGD(x, y, eta0, theta0, NN)
     sgd2 = SGD(x, y, eta0, theta0, NN)
@@ -326,8 +299,8 @@ if __name__=="__main__":
     sgd2.set_update_rule('momentum')
     sgd2.set_params(gamma=0.5)
     #sgd.apply_learning_schedule(tau=len(x)*100)
-    sgd.regression_setting(f)
-    sgd2.regression_setting(f)
+    sgd.set_loss_function(LF_R)
+    sgd2.set_loss_function(LF_R)
 
     theta = sgd()
     yhat = f(x, theta)
@@ -337,25 +310,25 @@ if __name__=="__main__":
 
     gd = GD(x, y, eta0, theta0, NN)
     gd.set_update_rule('plain')
-    gd.regression_setting(f)
+    gd.set_loss_function(LF_R)
 
     sgd3 = SGD(x, y, eta0, theta0, NN)
     sgd3.set_update_rule('AdaGrad')
-    sgd3.regression_setting(f)
+    sgd3.set_loss_function(LF_R)
 
     theta3 = sgd3()
     yhat3 = f(x, theta3)
 
     sgd4 = SGD(x, y, eta0, theta0, NN)
     sgd4.set_update_rule('RMSProp')
-    sgd4.regression_setting(f)
+    sgd4.set_loss_function(LF_R)
 
     theta4 = sgd4()
     yhat4 = f(x, theta4)
 
     sgd5 = SGD(x, y, eta0, theta0, NN)
     sgd5.set_update_rule('Adam')
-    sgd5.regression_setting(f)
+    sgd5.set_loss_function(LF_R)
 
     theta5 = sgd5()
     yhat5 = f(x, theta5)
