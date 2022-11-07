@@ -1,6 +1,6 @@
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad 
-from autograd import grad 
+from autograd import grad as agrad
 import matplotlib.pyplot as plt
 from IPython import embed
 
@@ -84,7 +84,6 @@ class noneRULE:
 
     def update(self, theta, grad):
         # standard:
-        print(self.idx, self.eta)
         self.v = self.gamma*self.v - self.eta*grad
         self.theta = theta + self.v
 
@@ -108,7 +107,6 @@ class rule_ClassicalSGD(noneRULE):
     def set_params(self, eta:float=None):
         super().set_params(eta, 0)
         self.gamma = 0
-        print(self.gamma)
 
 class rule_MomentumSGD(noneRULE):
     def __init__(self, theta0, eta0:float=0.01, gamma:float=0.9):
@@ -165,9 +163,18 @@ class rule_Adam(noneRULEadaptive):
 
 
 
+
+
+
+
+
+
+
+
 class noneGradientDescent:
-    def __init__(self, loss_function, eta:float, theta, no_epochs:int, tolerance):
-        self.LF = loss_function  #Loss function as function of theta
+    def __init__(self, X, y, eta:float, theta, no_epochs:int, tolerance, loss_function=None):
+        self.X = X
+        self.y = y
         self.eta = eta  #Learning rate
         if isinstance(theta, (float, int)):
             self.theta = np.ones(1)*theta
@@ -177,15 +184,31 @@ class noneGradientDescent:
         self.tol = tolerance
         self.v = np.zeros_like(theta)
 
-        self.grad = lambda k=0: self.compute_gradient(self.theta) # check if this works properly
-        
+        self.indices = np.arange(len(y))
+
+
+        if loss_function == "mse":
+            b = 0
+            #self.lf = lambda 
+            #self.grad = lambda k=0: self.compute_gradient(self.theta) # check if this works properly
+
+    def epoch_calculation(self, grad):
+        self.per_epoch(grad)
+        self.update_rule.next()
+
+    
+    def per_batch(self, grad):
+        self.theta = self.update(grad)
+        # if test that breaks loop if self.v is less than self.tol
+
 
     def set_params(self, **params):
         # set params in update rule
         self.update_rule.set_params(**params)
 
     def add_nag(self):
-        self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.params['gamma']+self.v)
+        self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.gamma+self.v)
+        # try-except?
 
     def set_update_rule(self, scheme:str, params:dict={}, NAG=False):
         rule = scheme.strip().lower()
@@ -226,43 +249,39 @@ class noneGradientDescent:
 
 
 class GD(noneGradientDescent):
-    def __init__(self, loss_function, eta:float, theta, no_epochs:int, tolerance=1e-6):
-        super().__init__(loss_function, eta, theta, no_epochs, tolerance)
+    def __init__(self, X, y, eta:float, theta, no_epochs:int, tolerance=1e-6):
+        super().__init__(X, y, eta, theta, no_epochs, tolerance)
     
-    def compute_gradient(self, theta_k):
-        self.A = grad(self.LF)(theta_k)
+    # def compute_gradient(self, theta_k):
+    #     self.A = agrad(self.LF)(theta_k)
 
-    def __call__(self):
-        for k in range(self.no_epochs):
-            #self.update_rule.next()
-            self.A = self.compute_gradient(self.theta)
-            self.theta = self.update(A)
-            # if test that breaks loop if self.v is less than self.tol
-            print(k, self.theta)
-        return self.theta
+    def per_epoch(self, grad):
+        self.per_batch(grad(slice(0,len(self.X))))
 
 
 
 
 class SGD(noneGradientDescent):
-    def __init__(self, loss_function, eta:float, theta, no_epochs:int, tolerance=1e-6):
-        super().__init__(loss_function, eta, theta, no_epochs, tolerance)
+    def __init__(self, X, y, eta:float, theta, no_epochs:int, tolerance=1e-6):
+        super().__init__(X, y, eta, theta, no_epochs, tolerance)
 
-    def compute_gradient(self, theta_k):
-        self.A = egrad(self.LF)(theta_k)
-        return self.A
+    # def compute_gradient(self, theta_k):
+    #     self.A = egrad(self.LF)(theta_k)
+    #     return self.A
 
-    def __call__(self):
         
-        for k in range(self.no_epochs):
-            
-            A = self.compute_gradient(self.theta)
-            self.theta = self.update(A)
-            # if test that breaks loop if self.v is less than self.tol
-            self.update_rule.next()
-            print(self.LF(self.theta))
-        print(self.theta)
-        return self.theta
+    def per_epoch(self, grad):
+        m = 5
+        M = len(self.X)/m
+        indices = np.arange(len(self.X))
+        np.random.shuffle(indices)
+        batches = np.array_split(indices, m)
+
+        for batch in batches:
+            #print(batch, grad(batch))
+            self.per_batch(grad(batch))
+
+
 
     
 
@@ -416,15 +435,31 @@ if __name__=="__main__":
     # plt.scatter(x0, f(x0), marker="o")
     # plt.show()
     # print(x0)
+    f = lambda x, theta: theta[0]*x + theta[1]*x**2
+    y = f(x, (0.1, 0.9))
+    #LF = lambda theta: np.sum((f(x, theta)- y)**2) *1/len(x)
+    #print(LF((0.12, 0.8)))
+    def LF(idx):
+        #print(np.sum((f(x[idx], (0.1, 0.8))- y[idx])**2)  /len(idx))
+        return lambda theta: np.sum((f(x[idx], theta)- y[idx])**2)  /len(idx)
 
-    LF = lambda theta: np.sum((f(x, theta)- y)**2) *1/len(x)
-    print(LF((0.12, 0.8)))
 
-    sgd = SGD(LF, 0.05, np.array([0.16, 0.8]), 500)
+    lf = LF([9, 10, 100])
+    print(lf((0.1, 0.9)))
+    X = np.zeros((len(x), 2))
+    X[:,0] = x
+    X[:,1] = x**2
+    sgd = SGD(X, y, 0.05, np.array([0.16, 0.8]), 500)
     sgd.set_update_rule('plain')
     sgd.apply_learning_schedule(tau=len(x))
     #sgd.set_params(eta=0.05)
-    sgd()
+    def grad(theta_k):
+        return lambda idx: egrad(LF(idx))(theta_k)
+
+
+    for _ in range(100):
+        theta = sgd.theta
+        sgd.epoch_calculation(grad(theta))
 
 
 
