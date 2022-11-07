@@ -128,49 +128,34 @@ class devNeuralNetwork:
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
         # self.outputData = DataHandler(self.layers[-1].h)
+        self.layers[-1].h = self.outputFunction(self.layers[-1].a)
         self.outputData = self.layers[-1].h 
-        if train:
-            self.mu = np.mean(self.outputData)
-            self.sigma = np.std(self.outputData)
-        self.outputData = (self.outputData - self.mu)/self.sigma
-        self.layers[-1].h = self.outputData
+        # if train:
+        #     self.mu = np.mean(self.outputData)
+        #     self.sigma = np.std(self.outputData)
+        # self.outputData = (self.outputData - self.mu)/self.sigma
+        # self.layers[-1].h = self.outputData
             # self.layers[-1].h = self.outputFunction(self.outputData.dataScaled)
 
         
     def backPropagation(self):
         eta = 0.001
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.targetData)
-        #   Find deltas
+        #   Find and set deltas
         for l in range(self.nrOfLayers-2, 0, -1):
             delta = self.layers[l+1].delta
-
-            # w = self.weights[l].w
-            
             w = self.layers[l+1].w
             a = self.layers[l].a
-
             self.layers[l].delta = delta @ w * self.activationFunction.derivative(a)
 
-            # self.layers[l].delta =  self.layers[l+1].delta @ self.weights[l].w * self.activationFunction.derivative(self.layers[l].a)
+        F = EAC(self.layers) # Generating full matrices W, B, D, H
 
-
-
-        # for l in range(self.nrOfLayers-2,-1,-1):
-        #     self.weights[l].w = self.weights[l].w - eta * self.layers[l+1].delta.T @ self.layers[l].h
-        # for l in range(self.nrOfLayers-1, 0, -1):
-        #     self.layers[l].bias = self.layers[l].bias -eta * np.sum(self.layers[l].delta, axis=0)
-        
-
-
-        #   Testing vectorised approach
-        full = EAC(self.layers)
-
-        full.W = full.W - eta * full.regGradW()
-        full.B = full.B - eta * full.regGradB()
+        F.W = F.W - eta * F.regGradW()
+        F.B = F.B - eta * F.regGradB()
         
         # embed()
-        newWeights = full.collapseWeights()
-        newBiases = full.collapseBiases()
+        newWeights = F.collapseWeights()
+        newBiases = F.collapseBiases()
 
         for i in range(1, self.nrOfLayers):
             self.layers[i].w = newWeights[i-1]
@@ -258,11 +243,11 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=4, neuronsInEachLayer=6, outputNeurons=1)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=5, neuronsInEachLayer=25, outputNeurons=1)
     # FNet.train(10000)
     # FrankePred = FNet()
     
-    Niter = 16
+    Niter = 20
     LF = LossFunctions()
     print(FNet)
     t0 = time()
