@@ -22,8 +22,6 @@ except NameError:
     init()
     PATH = HERE + PATH_str
 
-
-
 deleteme = []
 addme = []
 
@@ -38,17 +36,44 @@ def sayhello():
         dummypd.to_pickle(PATH + PKL_FILE)
         infopd = pd.read_pickle(PATH + PKL_FILE)
 
-    global INFO
+    global INFO, CATEGORIES
     INFO = infopd.transpose().to_dict()
 
+    CATEGORIES = {}
+    for fig in INFO.keys():
+        for category in INFO[fig].keys():
+            # FIXME
+            CATEGORIES[category] = category
+        break
 
-def set_file_info(filename, note=None):
-    INFO[filename] = {'note':note}
+
+def define_categories(categories:dict, include_note:bool=True):
+    # Need to be called everytime, fix this?
+    global CATEGORIES
+    CATEGORIES = categories
+    if not 'note' in CATEGORIES and include_note:
+        CATEGORIES['note'] = 'note' #comment?
 
 
-def omit_category():
+
+
+
+def set_file_info(filename, **params):
+    INFO[filename] = {}
+    for category in CATEGORIES.keys():
+        try:
+            s = str(params[category])
+        except KeyError:
+            s = None
+        INFO[filename][CATEGORIES[category]] = s
+
+
+
+
+def omit_category(category):
+    # depricated (is this a word)
     infopd = pd.DataFrame.from_dict(INFO, orient='index')   
-
+    infopd.pop(category)
 
 
 def omit_file(filename):
