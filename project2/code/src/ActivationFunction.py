@@ -44,19 +44,21 @@ class ActivationFunction:
         return (self.sigmoid(a) * (1-self.sigmoid(a)))
 
     def ReLU(self, a):
-        return np.max([0, a])
+        # return np.max([0, a])
+        return np.where(a > 0, a, 0)
 
     def ReLUDerivative(self, a):
         # undefined in x=0, do we need to care about this?
         #return self.ReLU(a)/a 
-        return np.where(a>0, 1, 0)
+        return np.where(a > 0, 1, 0)
     
     def leakyReLU(self, a):
-        return self.leakyReLUDerivative(a)*a
+        # return self.leakyReLUDerivative(a)*a
+        return np.where(a>0, a, 0.1*a)
 
     def leakyReLUDerivative(self, a):
         # undefined in x=0, do we need to care about this?
-        return np.where(a>0, 1, 0.1)
+        return np.where(a>0, 1, 0.01)
 
     def hyperbolicTangent(self, a):
         return np.tanh(a)
