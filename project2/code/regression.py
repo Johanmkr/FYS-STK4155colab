@@ -4,6 +4,9 @@ from src.devNeuralNetwork import devNeuralNetwork as NeuralNet
 from time import time
 
 
+outfilePath = "output/"
+
+
 class FrankeRegression:
     def __init__(self,
                 gridSize=20,
@@ -49,7 +52,6 @@ class FrankeRegression:
         stringToReturn += f"Lambda: {self.Net.lmbda}\n"
         stringToReturn += f"Eta: {self.Net.eta}\n\n"
 
-
         stringToReturn += f"Activation function: {self.activationFunction}\n"
         stringToReturn += f"Output function: {self.outputFunction}\n"
         stringToReturn += f"Loss function: {self.lossFunction}\n\n"
@@ -91,7 +93,7 @@ class FrankeRegression:
 
 
 if __name__=="__main__":
-    Freg = FrankeRegression(hiddenLayers=3, activationFunction="tanh", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.1, eta=0.01)
+    Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.0001, eta=0.01)
     Freg.train()
     Freg.predict()
     print(Freg)
