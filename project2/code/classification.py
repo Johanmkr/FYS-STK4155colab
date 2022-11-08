@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from src.devNeuralNetwork import devNeuralNetwork as NN
+from src.devNeuralNetwork import devNeuralNetwork as NeuralNet
 
 from sklearn.model_selection import train_test_split as splitter
 from sklearn.datasets import load_breast_cancer

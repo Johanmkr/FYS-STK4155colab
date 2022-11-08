@@ -1,16 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from src.Layer import Layer
-from src.LossFunctions import LossFunctions
-from src.ActivationFunction import ActivationFunction
-import src.GradientDescent as GradientDescent
-from src.DataHandler import DataHandler
-from src.ExtendAndCollapse import ExtendAndCollapse as EAC
+try:
+    from src.Layer import Layer
+    from src.LossFunctions import LossFunctions
+    from src.ActivationFunction import ActivationFunction
+    import src.GradientDescent as GradientDescent
+    from src.DataHandler import DataHandler
+    from src.ExtendAndCollapse import ExtendAndCollapse as EAC
+except ModuleNotFoundError:
+    from Layer import Layer
+    from LossFunctions import LossFunctions
+    from ActivationFunction import ActivationFunction
+    import GradientDescent as GradientDescent
+    from DataHandler import DataHandler
+    from ExtendAndCollapse import ExtendAndCollapse as EAC
 from IPython import embed
 from time import time
 from tqdm import trange
 
-np.random.seed(1)
+np.random.seed(69)
 
 
 
@@ -38,7 +46,8 @@ class devNeuralNetwork:
         self.outputFunction = ActivationFunction(outputFunction)
         self.lossFunction = LossFunctions(lossFunction)
 
-        self.ttSplit(testSize)
+        self.testSize = testSize
+        self.ttSplit(self.testSize)
         self.setInputFeatures(self.trainData)
         self.outputNeurons = outputNeurons or self.features
         self.epochs = epochs
@@ -158,22 +167,18 @@ class devNeuralNetwork:
             delta = self.layers[l+1].delta
             w = self.layers[l+1].w
             a = self.layers[l].a
-            self.layers[l].delta = delta @ w * self.activationFunction.derivative(a)
+            self.layers[l].delta = (delta @ w) * self.activationFunction.derivative(a)
 
         F = EAC(self.layers) # Generating full matrices W, B, D, H
 
-        sgdW = GradientDescent.SGD.simple_initialise(eta=0.01)
-        sgdB = GradientDescent.SGD.simple_initialise(eta=0.01)
-        sgdW.set_update_rule("RMSProp")
-        sgdB.set_update_rule("RMSProp")
-
+        
         regularisation = 0
         if self.lmbda > 0.0:
             regularisation = self.lmbda * F.W
 
         # sgd.simple_initialise()
-        F.W = sgdW.simple_update(F.regGradW()+regularisation, F.W)
-        F.B = sgdB.simple_update(F.regGradB(), F.B)
+        F.W = self.sgdW.simple_update(F.regGradW()+regularisation, F.W)
+        F.B = self.sgdB.simple_update(F.regGradB(), F.B)
 
 
         # F.W = F.W - self.eta * F.regGradW()
@@ -198,6 +203,11 @@ class devNeuralNetwork:
         print(stringToPrint)
 
     def train(self):
+        self.sgdW = GradientDescent.SGD.simple_initialise(eta=self.eta)
+        self.sgdB = GradientDescent.SGD.simple_initialise(eta=self.eta)
+        self.sgdW.set_update_rule("plain")
+        self.sgdB.set_update_rule("plain")
+
         self.updateInputLayer(self.trainData)
         for epoch in trange(self.epochs):
             for i in range(self.iterations):
@@ -269,7 +279,7 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, neuronsInEachLayer=40, outputNeurons=1, epochs=500, batchSize=10, testSize=0.2, lmbda=0, eta=0.1)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, activationFunction='relu*', neuronsInEachLayer=40, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.1, eta=0.01)
     print(FNet)
     # FNet.train(10000)
     # FrankePred = FNet()
