@@ -1,4 +1,4 @@
-import infoFile_ala_Nanna as Nanna
+import src.infoFile_ala_Nanna as Nanna
 
 Nanna.sayhello()
 Nanna.define_categories({'method':'method', 'opt':'optimiser', 'n_obs':r'$n_\mathrm{obs}$', 'no_epochs':'#epochs', 'eta':r'$\eta$', 'gamma':r'$\gamma$', 'rho':r'$\varrho_1$, $\varrho_2$'})
