@@ -87,11 +87,6 @@ class ExtendAndCollapse:
         """
         returnWeights = []
         for i in range(self.layersToUse):
-            # embed()
-            # try:
-            #     returnWeights.append(self.W[i][np.isfinite(self.W[i])].reshape(self.weights[i].shape))
-            # except ValueError:
-            #     embed()
             returnWeights.append(self.W[i][np.isfinite(self.W[i])].reshape(self.weights[i].shape))
         return returnWeights
 

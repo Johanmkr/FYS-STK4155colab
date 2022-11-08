@@ -38,6 +38,23 @@ class devNeuralNetwork:
                 eta = 0.01,
                 lmbda = 0.0,
                 testSize = 0.2):
+        """Initialises Feed Forward Neural network with the following parameters:
+
+        Args:
+            inputData (ndarray, optional): Must be multidimensional: dims [n,k] with n data points and k>0. Defaults to None.
+            targetData (ndarray, optional): Will be used to determine error of network output. Defaults to None.
+            hiddenLayers (int, optional): Number of hidden layers in network. Defaults to 0.
+            neuronsInEachLayer (int, optional): Number of neurons per hidden layer. Defaults to 4.
+            activationFunction (str, optional): Activation function (used in hidden layers) as string. Will be parsed from activationFunction.py. Defaults to 'sigmoid'.
+            outputFunction (str, optional): Output function  (used in output layer only) as string. Will be parsed from activationFunction.py. Defaults to 'linear'.
+            outputNeurons (int, optional): Number of output neurons. If not set, output neurons will be features of target data. Defaults to None.
+            lossFunction (str, optional): Loss function as string. Will be parsed from lossFunction.py. Defaults to 'mse'.
+            epochs (int, optional): Number of epochs over which we train the network. Defaults to None.
+            batchSize (int, optional): Number of data points per batch used is stochastic gradient descent. Defaults to None.
+            eta (float, optional): Learning rate. Defaults to 0.01.
+            lmbda (float, optional): Regularisation parameter. Defaults to 0.0.
+            testSize (float, optional): Fraction of input data used for testing. Defaults to 0.2.
+        """
         self.inputData = inputData
         self.targetData = targetData
         self.comparisonData = self.targetData
@@ -70,6 +87,11 @@ class devNeuralNetwork:
         # embed()
 
     def __str__(self):
+        """Generates print of the network structure.
+
+        Returns:
+            str: Network structure.
+        """
         stringToReturn = 'Feed Forward Neural Network\n'
         stringToReturn += f"Number of layers: {self.nrOfLayers}\n"
         stringToReturn      += f'Input layer: {self.layers[0].neurons} neurons\n'
@@ -79,7 +101,7 @@ class devNeuralNetwork:
         
         return stringToReturn
 
-    def __call__(self, X=None, Y=None):
+    def __call__(self, X=None):
 
         if X is not None:
             self.layers[0].h = X
