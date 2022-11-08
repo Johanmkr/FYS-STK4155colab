@@ -1,10 +1,15 @@
+try:
+    from utils import *
+except ModuleNotFoundError:
+    from src.utils import *
+
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad 
 from autograd import grad as agrad
 import matplotlib.pyplot as plt
-from IPython import embed
-import sys
-from tqdm import trange
+
+
+
 
 
 
@@ -153,6 +158,7 @@ class noneGradientDescent:
         self.v = np.zeros_like(self.theta)
 
         self.indices = np.arange(len(y))
+        self.current_epoch = 0
 
     @classmethod
     def simple_initialise(cls, eta:float, tolerance:float=1e-7):
@@ -232,20 +238,39 @@ class noneGradientDescent:
         self.grad = gradient
         
     
-    def __call__(self, deregestration_every=None):
+    def __call__(self, no_epochs=None, deregestration_every=None):
+        n_iter = no_epochs or self.no_epochs
         say = deregestration_every or self.no_epochs//4
         say = int(say)
-        for k in trange(self.no_epochs):
+        start = self.current_epoch
+        for k in trange(start, start+n_iter):
+            self.current_epoch += 1
             self.per_epoch(self.grad)
             if (k-1) % say == 0 and k > say-1:
-                print(f'MSE = {self.mean_sqared_error():.4f}')
+                print(f'MSE = {self.mean_squared_error():.4f}')
+
+        self.no_epochs = self.current_epoch
         return self.theta
 
     def set_loss_function(self, loss_function):
         self.grad = lambda x, y, theta: egrad(lambda theta: loss_function(x, y, theta))(theta)
 
-    def mean_sqared_error(self):
-        return np.mean((self.X@self.theta - self.y)**2)
+    def mean_squared_error(self, X:ndarray=None, y:ndarray=None, theta:ndarray=None):
+        # wack solution 
+        try:
+            X = X or self.X
+            y = y or self.y
+        except ValueError:
+            X = X; y = y
+        try:
+            theta = theta or self.theta
+        except ValueError:
+            theta = theta 
+        return np.mean((X@theta - y)**2)
+
+
+def get_params(self):
+    pass
         
 
 
@@ -253,7 +278,7 @@ class noneGradientDescent:
 
 
 class GD(noneGradientDescent):
-    def __init__(self, X, y, eta:float, theta0, no_epochs:int=500, tolerance=1e-6):
+    def __init__(self, X:ndarray, y:ndarray, eta:float, theta0:ndarray, no_epochs:int=500, tolerance=1e-6):
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
     
 

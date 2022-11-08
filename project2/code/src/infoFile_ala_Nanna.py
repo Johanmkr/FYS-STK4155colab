@@ -8,18 +8,21 @@ Create an -md.file with a table decribing e.g. .pdf-files in a figure folder.
 '''
 
 
+default_path = "/../output/figures/"
+default_pkl_filename = "info"
+default_md_filename = "README"
+HERE = os.path.abspath(".")
+
+MD_FILE = default_md_filename.replace(".md", "") + ".md"
+PKL_FILE = default_pkl_filename.replace(".pkl", "") + ".pkl"
+PATH_str = default_path
+PATH = HERE + PATH_str
+
 def init(md_filename:str="README", pkl_filename:str="info", path:str="/../output/figures/"):
-    global MD_FILE, PKL_FILE, PATH_str
+    global MD_FILE, PKL_FILE, PATH_str, PATH
     MD_FILE = md_filename.replace(".md", "") + ".md"
     PKL_FILE = pkl_filename.replace(".pkl", "") + ".pkl"
-    PATH_str = path
-
-
-HERE = os.path.abspath(".")
-try: 
-    PATH = HERE + PATH_str
-except NameError:
-    init()
+    PATH_str = "/" + path.strip("/") + "/"
     PATH = HERE + PATH_str
 
 deleteme = []
