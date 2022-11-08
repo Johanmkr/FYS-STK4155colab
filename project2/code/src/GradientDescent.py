@@ -4,7 +4,7 @@ from autograd import grad as agrad
 import matplotlib.pyplot as plt
 from IPython import embed
 import sys
-
+from tqdm import trange
 
 
 
@@ -213,11 +213,11 @@ class noneGradientDescent:
     def apply_learning_schedule(self, eta_0:float=None, eta_tau:float=None, tau:int=None):
         self.update_rule.set_learning_schedule(tau or self.n_obs*200, eta_0 or self.eta, eta_tau)
 
-    def regression_setting(self, f):
+    def regression_setting(self):
         # Use MSE loss func
 
         def gradient(x, y, theta):
-            lf = lambda theta: np.sum((f(x, theta) - y)**2)/len(x)/2
+            lf = lambda theta: np.mean((x@theta - y)**2)/2
             return egrad(lf)(theta)
 
         self.grad = gradient
@@ -232,13 +232,21 @@ class noneGradientDescent:
         self.grad = gradient
         
     
-    def __call__(self):
-        for _ in range(self.no_epochs):
+    def __call__(self, deregestration_every=None):
+        say = deregestration_every or self.no_epochs//4
+        say = int(say)
+        for k in trange(self.no_epochs):
             self.per_epoch(self.grad)
+            if (k-1) % say == 0 and k > say-1:
+                print(f'MSE = {self.mean_sqared_error():.4f}')
         return self.theta
 
     def set_loss_function(self, loss_function):
         self.grad = lambda x, y, theta: egrad(lambda theta: loss_function(x, y, theta))(theta)
+
+    def mean_sqared_error(self):
+        return np.mean((self.X@self.theta - self.y)**2)
+        
 
 
 
@@ -279,75 +287,138 @@ class SGD(noneGradientDescent):
 if __name__=="__main__":
     x = np.linspace(-1,1, 1000)
     f = lambda x, theta: theta[0]*x + theta[1]*x**2 + theta[2]*x**3
-    f = lambda x, theta: theta[0]*x *np.cos(theta[1]*x) + theta[2]*x**2
+    #f = lambda x, theta: theta[0]*x *np.cos(theta[1]*x) + theta[2]*x**2
     y = f(x, (2, 1.7, -0.4)) + np.random.randn(len(x))*0.05
 
-    X = np.zeros((len(x),1))
+    X = np.zeros((len(x),3))
     X[:,0] = x
+    X[:,1] = x**2
+    X[:,2] = x**3
+
+    y = X@np.array([2,1.7,-0.4]) + np.random.randn(len(x))*0.05
+
 
     NN = 100
     theta0 = [0.23, 0.31, 1]
+
+
+    #print(X@theta0)
     eta0 = 0.2
     lmbda = 0.1
     LF_R = lambda x, y, theta: (np.sum((f(x, theta) - y)**2)+ lmbda * np.sum(theta**2) )/ (2*len(y))
-    
-    sgd1 = SGD.simple_initialise(0.1)
-    
+ 
 
-    sgd = SGD(x, y, eta0, theta0, NN)
-    sgd2 = SGD(x, y, eta0, theta0, NN)
+    sgd = SGD(X, y, eta0, theta0, NN)
+    # #sgd2 = SGD(x, y, eta0, theta0, NN)
     sgd.set_update_rule('plain')
 
-    sgd2.set_update_rule('momentum')
-    sgd2.set_params(gamma=0.5)
-    #sgd.apply_learning_schedule(tau=len(x)*100)
-    sgd.set_loss_function(LF_R)
-    sgd2.set_loss_function(LF_R)
+    # # sgd2.set_update_rule('momentum')
+    # # sgd2.set_params(gamma=0.5)
+    # #sgd.apply_learning_schedule(tau=len(x)*100)
+    sgd.regression_setting()
+    # # sgd2.set_loss_function(LF_R)
 
     theta = sgd()
-    yhat = f(x, theta)
+    yhat = X@theta
 
-    theta2 = sgd2()
-    yhat2 = f(x, theta2)
+    # theta2 = sgd2()
+    # yhat2 = f(x, theta2)
 
-    gd = GD(x, y, eta0, theta0, NN)
-    gd.set_update_rule('plain')
-    gd.set_loss_function(LF_R)
+    # gd = GD(x, y, eta0, theta0, NN)
+    # gd.set_update_rule('plain')
+    # gd.set_loss_function(LF_R)
 
-    sgd3 = SGD(x, y, eta0, theta0, NN)
-    sgd3.set_update_rule('AdaGrad')
-    sgd3.set_loss_function(LF_R)
+    # sgd3 = SGD(x, y, eta0, theta0, NN)
+    # sgd3.set_update_rule('AdaGrad')
+    # sgd3.set_loss_function(LF_R)
 
-    theta3 = sgd3()
-    yhat3 = f(x, theta3)
+    # theta3 = sgd3()
+    # yhat3 = f(x, theta3)
 
-    sgd4 = SGD(x, y, eta0, theta0, NN)
-    sgd4.set_update_rule('RMSProp')
-    sgd4.set_loss_function(LF_R)
+    # sgd4 = SGD(x, y, eta0, theta0, NN)
+    # sgd4.set_update_rule('RMSProp')
+    # sgd4.set_loss_function(LF_R)
 
-    theta4 = sgd4()
-    yhat4 = f(x, theta4)
+    # theta4 = sgd4()
+    # yhat4 = f(x, theta4)
 
-    sgd5 = SGD(x, y, eta0, theta0, NN)
-    sgd5.set_update_rule('Adam')
-    sgd5.set_loss_function(LF_R)
+    # sgd5 = SGD(x, y, eta0, theta0, NN)
+    # sgd5.set_update_rule('Adam')
+    # sgd5.set_loss_function(LF_R)
 
-    theta5 = sgd5()
-    yhat5 = f(x, theta5)
+    # theta5 = sgd5()
+    # yhat5 = f(x, theta5)
 
 
 
-    fig, ax = plt.subplots()
-    ax.plot(x, y, 'o', c='k', alpha=0.5)
-    ax.plot(x, yhat, '-', label='plain SGD')
-    ax.plot(x, yhat2, '--', label='momentum SGD')
-    ax.plot(x, yhat3, ':', label='AdaGrad')
-    ax.plot(x, yhat4, '-', label='RMSProp')
-    ax.plot(x, yhat5, '--', label='Adam')
-    ax.legend()
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(x, y, 'o', c='k', alpha=0.5)
+    # ax.plot(x, yhat, '-', label='plain SGD')
+    # # # ax.plot(x, yhat2, '--', label='momentum SGD')
+    # # # ax.plot(x, yhat3, ':', label='AdaGrad')
+    # # # ax.plot(x, yhat4, '-', label='RMSProp')
+    # # # ax.plot(x, yhat5, '--', label='Adam')
+    # ax.legend()
+    # plt.show()
     
 
-    # for _ in range(100):
-        # theta = sgd.theta
-        # sgd.epoch_calculation(grad(theta))
+    space = np.linspace(-1,1,20)
+    xx, yy = np.meshgrid(space,space)
+
+    def FrankeFunction(x,y):
+        term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
+        term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
+        term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
+        term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
+        return term1 + term2 + term3 + term4
+
+    zz = FrankeFunction(xx, yy)
+    zzr = zz.ravel()
+    zzr = (zzr-np.mean(zzr))/np.std(zzr)
+
+    dd = 20
+    FrankeX = np.zeros((len(zzr),dd))
+    FrankeX[:,0] = xx.ravel()
+    FrankeX[:,1] = yy.ravel()
+    FrankeY = zzr#[:,np.newaxis]
+
+    FrankeX[:,2] = xx.ravel()**2
+    FrankeX[:,3] = xx.ravel()*yy.ravel()
+    FrankeX[:,4] = yy.ravel()**2
+
+    FrankeX[:,5] = xx.ravel()**3
+    FrankeX[:,6] = xx.ravel()**2*yy.ravel()
+    FrankeX[:,7] = xx.ravel()*yy.ravel()**2
+    FrankeX[:,8] = yy.ravel()**3
+
+    FrankeX[:,9] = xx.ravel()**4
+    FrankeX[:,10] = xx.ravel()**3*yy.ravel()
+    FrankeX[:,11] = xx.ravel()**2*yy.ravel()**2
+    FrankeX[:,12] = xx.ravel()*yy.ravel()**3
+    FrankeX[:,13] = yy.ravel()**4
+
+    FrankeX[:,14] = xx.ravel()**5
+    FrankeX[:,15] = xx.ravel()**4*yy.ravel()
+    FrankeX[:,16] = xx.ravel()**3*yy.ravel()**2
+    FrankeX[:,17] = xx.ravel()**2*yy.ravel()**3
+    FrankeX[:,18] = xx.ravel()*yy.ravel()**4
+    FrankeX[:,19] = yy.ravel()**5
+
+    for i in range(dd):
+        FrankeX[:,i] = (FrankeX[:,i]-np.mean(FrankeX[:,i]))/np.std(FrankeX[:,i])
+
+
+    Sgd_F = SGD(FrankeX, FrankeY, 0.08, np.random.randn(dd), no_epochs=2000, no_minibatches=30)
+    Sgd_F.set_update_rule("rms")
+    #Sgd_F.set_params(gamma=0.4)
+    Sgd_F.regression_setting()
+    beta = Sgd_F()
+    print(Sgd_F.mean_sqared_error())
+
+    FrankeY_hat = FrankeX@beta
+    fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
+    ax.plot_trisurf(FrankeX[:,0], FrankeX[:,1], FrankeY_hat, cmap='coolwarm')
+    ax.scatter(FrankeX[:,0], FrankeX[:,1], FrankeY, color='k')
+
+    plt.show()
+
