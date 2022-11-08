@@ -17,10 +17,11 @@ except ModuleNotFoundError:
 from IPython import embed
 from time import time
 from tqdm import trange
+from sys import float_info
 
 np.random.seed(69)
 
-
+maxVal = 1/float_info.epsilon
 
 class devNeuralNetwork:
     def __init__(self,
@@ -177,9 +178,14 @@ class devNeuralNetwork:
             regularisation = self.lmbda * F.W
 
         # sgd.simple_initialise()
-        F.W = self.sgdW.simple_update(F.regGradW()+regularisation, F.W)
-        F.B = self.sgdB.simple_update(F.regGradB(), F.B)
-
+        gradW = F.regGradW() + regularisation
+        gradB = F.regGradB()
+        # maxVal = 1e6
+        if np.any(gradW > maxVal) or np.any(gradB > maxVal):
+            pass
+        else:
+            F.W = self.sgdW.simple_update(gradW, F.W)
+            F.B = self.sgdB.simple_update(gradB, F.B)
 
         # F.W = F.W - self.eta * F.regGradW()
         # F.B = F.B - self.eta * F.regGradB()
@@ -205,8 +211,8 @@ class devNeuralNetwork:
     def train(self):
         self.sgdW = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdB = GradientDescent.SGD.simple_initialise(eta=self.eta)
-        self.sgdW.set_update_rule("plain")
-        self.sgdB.set_update_rule("plain")
+        self.sgdW.set_update_rule("RMSProp")
+        self.sgdB.set_update_rule("RMSProp")
 
         self.updateInputLayer(self.trainData)
         for epoch in trange(self.epochs):
@@ -279,7 +285,7 @@ if __name__=="__main__":
     FrankeX[:,0] = xx.ravel()
     FrankeX[:,1] = yy.ravel()
     FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, activationFunction='relu*', neuronsInEachLayer=40, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.1, eta=0.01)
+    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, activationFunction='tanh', neuronsInEachLayer=40, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.001, eta=0.01)
     print(FNet)
     # FNet.train(10000)
     # FrankePred = FNet()
