@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from src.devNeuralNetwork import devNeuralNetwork as NeuralNet
 from time import time
 from IPython import embed
+import pandas as pd
 
 output_path = "../output/data/network_regression/"
 
@@ -101,23 +102,30 @@ class FrankeRegression:
         plt.show()
 
 
-def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=1000,  batchSize=20, testSize=0.2, optimizer='plain'):
-    etas = np.logspace(-9,0,10)
-    lmbdas = np.logspace(-9,0,10)
-    mse = np.zeros((len(etas)+1, len(lmbdas)+1))
-    mse[1:, 0] = etas
-    mse[0, 1:] = lmbdas
-    # embed()
-    for i, eta in enumerate(etas):
-        for j, lmbda in enumerate(lmbdas):
+def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500,  batchSize=20, testSize=0.2, optimizer='RMSProp'):
+    etas = np.logspace(-9,-1,9)
+    lmbdas = np.logspace(-9,-1,9)
+    mse = np.zeros((len(lmbdas), len(etas)))
+    for i, lmbda in enumerate(lmbdas):
+        for j, eta in enumerate(etas):
             print(f"Lmbda: {lmbda}\nEta: {eta}")
             Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
             Freg.train()
             print(Freg)
             print("\n\n\n\n")
-            mse[i+1,j+1] = Freg.finalTestLoss()
-    np.savetxt(output_path+filename, mse, delimiter=',', header=Freg.__str__())
-    # embed()
+            mse[i,j] = Freg.finalTestLoss()
+    dF = pd.DataFrame(mse, index=lmbdas, columns=etas)
+    dF.to_pickle(output_path+filename+".pkl")
+
+def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500, batchSize=20, eta=0, lmbda=0, testSize=0.2, optimizer="RMSProp"):
+    activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
+    for function in activationFunctions:
+        Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+        Freg.Net.train(extractInfoPerXEpoch=50)
+        loss = np.asarray(Freg.Net.testLossPerEpoch)
+        epochs = np.asarray(Freg.Net.lossEpochs)
+        
+
 
 if __name__=="__main__":
     # Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.0001, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
@@ -125,4 +133,4 @@ if __name__=="__main__":
     # Freg.predict()
     # print(Freg)
     # Freg.plot()
-    EtaLambdaAnalysis("EtaLmbdaMSE.txt")
+    EtaLambdaAnalysis("EtaLmbdaMSE")

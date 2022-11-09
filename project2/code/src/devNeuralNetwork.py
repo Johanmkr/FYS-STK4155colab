@@ -110,7 +110,6 @@ class devNeuralNetwork:
         return stringToReturn
 
     def __call__(self, X=None):
-
         if X is not None:
             self.layers[0].h = X
         self.feedForward()
@@ -230,15 +229,21 @@ class devNeuralNetwork:
     def setRandomIndecies(self):
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
+    def get_testLoss(self):
+        return np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
+    
+    def get_trainLoss(self):
+        return np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
+
     def printTrainingInfo(self, epoch):
-        trainLoss = np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
-        testLoss = np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
+        trainLoss = self.get_trainLoss()
+        testLoss = self.get_testLoss()
         stringToPrint = f"Epochs: {epoch}\n"
         stringToPrint += f"Train loss:   {trainLoss:.2f}\n"
         stringToPrint += f"Test loss:    {testLoss:.2f}\n"
         print(stringToPrint)
 
-    def train(self):
+    def train(self, extractInfoPerXEpoch = None):
         self.sgdW = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdB = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdW.set_update_rule(self.optimizer)
@@ -254,6 +259,18 @@ class devNeuralNetwork:
                     self.Niter += 1
                 if epoch % 100 == 0:
                     self.printTrainingInfo(epoch)
+        elif extractInfoPerXEpoch is not None:
+            self.testLossPerEpoch = [self.get_testLoss()]
+            self.lossEpochs = [0]
+            for epoch in trange(self.epochs):
+                for i in range(self.iterations):
+                    self.sliceInputAndComparison(self.setRandomIndecies())
+                    self.feedForward()
+                    self.backPropagation()
+                    self.Niter += 1
+                if epoch % extractInfoPerXEpoch == 0:
+                    self.testLossPerEpoch.append(self.get_testLoss())
+                    self.lossEpochs.append(epoch)
         else:
             for epoch in range(self.epochs):
                 for i in range(self.iterations):

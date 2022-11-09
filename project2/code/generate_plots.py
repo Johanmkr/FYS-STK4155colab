@@ -47,3 +47,5 @@ PLOT.simple_regression_errors(files, labels, savepush=False, show=True)
 # PLOT.heatmap_plot("EtaLmbdaMSE.txt", savepush=False)
 
 PLOT.update()
+
+PLOT.heatmap_plot("EtaLmbdaMSE.pkl")

@@ -143,18 +143,15 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
 
 def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True):
     fig, ax = plt.subplots(layout='constrained')
-    fullScore = np.loadtxt(data_path+"network_regression/"+filename, delimiter=',')
-    y = fullScore[1:,0]
-    x = fullScore[0,1:]
-    score = pd.DataFrame(fullScore[1:, 1:], index=x, columns=y)
+    score = pd.read_pickle(data_path+"network_regression/"+filename)
     sns.heatmap(score, annot=True, ax=ax, cmap='viridis', vmax=1)
     # ax.set_xticklabels([f"{x:.2e}" for x in x])
     # set_axes_2d(ax=ax, xlabel="eta", ylabel="eta")
     # ax.set_yticklabels([f"{y:.2e}" for y in y])
     ax.invert_yaxis()
     ax.set_title("Test score")
-    ax.set_xlabel("lambda")
-    ax.set_ylabel("eta")
+    ax.set_xlabel(r"$\eta$")
+    ax.set_ylabel(r"$\lambda$")
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
