@@ -4,8 +4,7 @@ except ModuleNotFoundError:
     from src.utils import *
 
 import autograd.numpy as np
-from autograd import elementwise_grad as egrad 
-from autograd import grad as agrad
+from autograd import elementwise_grad as egrad
 import matplotlib.pyplot as plt
 
 
@@ -57,6 +56,8 @@ class noneRULE:
         self.v = self.gamma*self.v - self.eta*grad
         self.theta = theta + self.v
 
+    def get_diff(self):
+        return self.v
 
 class noneRULEadaptive(noneRULE):
     def __init__(self, theta0, eta:float=0, rho1:float=0, rho2:float=0, epsilon:float=1e-7):
@@ -68,6 +69,8 @@ class noneRULEadaptive(noneRULE):
     def set_params(self, eta: float = None, rho1: float = None, rho2: float = None, epsilon: float = None):
         super().set_params(eta, 0, rho1, rho2, epsilon)
         self.epsilon = self.params['epsilon']
+
+
 
 class rule_ClassicalSGD(noneRULE):
     def __init__(self, theta0, eta0:float=0.01):
@@ -86,6 +89,7 @@ class rule_MomentumSGD(noneRULE):
     def set_params(self, eta0:float=None, gamma:float=None):
         super().set_params(eta0, gamma)
         self.gamma = self.params['gamma']
+
 class rule_AdaGrad(noneRULEadaptive):
     def __init__(self, theta0, eta:float=0.01, epsilon:float=1e-7):
         super().__init__(theta0, eta, epsilon=epsilon)
@@ -140,9 +144,6 @@ class rule_Adam(noneRULEadaptive):
 
 
 
-
-
-
 class noneGradientDescent:
     def __init__(self, X, y, eta:float, theta0, no_epochs:int, tolerance:float):
         self.X = X
@@ -168,20 +169,18 @@ class noneGradientDescent:
         theta_new = self.update_rule(gradient, theta)
         return theta_new
 
-    
     def per_batch(self, grad):
+        # if test that breaks loop if self.v is less than self.tol
         self.theta = self.update(grad)
         self.update_rule.next()
-        # if test that breaks loop if self.v is less than self.tol
-
-
+       
     def set_params(self, **params):
         # set params in update rule
         self.update_rule.set_params(**params)
 
     def add_nag(self):
-        self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.gamma+self.v)
         # try-except?
+        self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.gamma+self.v)
 
     def set_update_rule(self, scheme:str, params:dict={}, NAG=False):
         rule = scheme.strip().lower()
@@ -190,22 +189,27 @@ class noneGradientDescent:
         if rule in ['plain', 'none', 'manual']:
             # params : eta0
             update_rule = rule_ClassicalSGD(self.theta, **params)
+            self.optimiser = 'plain'
         elif rule in ['mom', 'momentum']:
             # params: eta0, gamma
             update_rule = rule_MomentumSGD(self.theta, **params)
             momentum = True
+            self.optimiser = 'momentum'
         elif rule in ['ada', 'adagrad']:
             # params: eta, epsilon
             update_rule = rule_AdaGrad(self.theta, **params)
             self.adaptive = True
+            self.optimiser = 'AdaGrad'
         elif rule in ['rms', 'rmsprop']:
             # params: eta, rho, epsilon
             update_rule = rule_RMSProp(self.theta, **params)
             self.adaptive = True
+            self.optimiser = 'RMSProp'
         elif rule in ['adam']:
             # params: eta, rho1, rho2, epsilon
             update_rule = rule_Adam(self.theta, **params)
             self.adaptive = True
+            self.optimiser = 'Adam'
         else: 
             raise ValueError(f"The library does not have functionalities for {rule} optimiser.")
         
@@ -219,36 +223,39 @@ class noneGradientDescent:
     def apply_learning_schedule(self, eta_0:float=None, eta_tau:float=None, tau:int=None):
         self.update_rule.set_learning_schedule(tau or self.n_obs*200, eta_0 or self.eta, eta_tau)
 
-    def regression_setting(self):
-        # Use MSE loss func
+    def regression_setting(self, regularisation:float=0):
+        self.lmbda = regularisation
 
         def gradient(x, y, theta):
-            lf = lambda theta: np.mean((x@theta - y)**2)/2
+            lf = lambda theta: np.mean((x@theta - y)**2)/2 + self.lmbda*np.mean(theta**2)
             return egrad(lf)(theta)
 
         self.grad = gradient
 
-    def classification_setting(self, f):
+    def classification_setting(self, regularisation:float=0):
         def gradient(x, y, theta):
             # FIXME
-            tol = 1e-12
-            I = lambda theta: np.mean(np.where(np.abs(f(x,theta)-y)<tol, 1, 0), axis=0 )
-            lf = lambda theta: 1 - I(theta)
+            def lf(theta):
+                xt = x@theta # is this ok? What about intercept??
+                return - np.mean( y*(xt )  - np.log10(1 +np.exp(xt) )) # cross entropy
             return egrad(lf)(theta)
         self.grad = gradient
         
-    
     def __call__(self, no_epochs=None, deregestration_every=None):
         n_iter = no_epochs or self.no_epochs
         say = deregestration_every or self.no_epochs//4
         say = int(say)
         start = self.current_epoch
         for k in trange(start, start+n_iter):
-            self.current_epoch += 1
+            self.current_epoch = k
             self.per_epoch(self.grad)
+            diff = np.abs(self.update_rule.get_diff())
+            if np.all(diff) < self.tol:
+                print(f"Stopped after {k} epochs as |v| < {self.tol:.0e}.")
+                break
             if (k-1) % say == 0 and k > say-1:
                 print(f'MSE = {self.mean_squared_error():.4f}')
-
+        self.current_epoch = k
         self.no_epochs = self.current_epoch
         return self.theta
 
@@ -268,12 +275,25 @@ class noneGradientDescent:
             theta = theta 
         return np.mean((X@theta - y)**2)
 
+    def accuracy_score(self):
+        # FIXME
+        X = self.X
+        y = self.y
+        theta = self.theta
+        tol = 1e-12
+        xt = x@theta
+        I = np.where(np.abs(xt-y)<tol, 1, 0)
+        return np.mean(I)
 
-def get_params(self):
-    pass
+    def get_params(self, terminal_print=True):
+        if terminal_print:
+            for param in self.update_rule.params:
+                val = self.update_rule.params[param]
+                print(f'{param:10s} = {val:10.2e}')
+
+        return self.update_rule.params
+
         
-
-
 
 
 
@@ -281,11 +301,11 @@ class GD(noneGradientDescent):
     def __init__(self, X:ndarray, y:ndarray, eta:float, theta0:ndarray, no_epochs:int=500, tolerance=1e-6):
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
     
+    def __str__(self):
+        return self.optimiser + " GD"
 
     def per_epoch(self, grad):
         self.per_batch(grad(self.X, self.y, self.theta))
-
-
 
 
 class SGD(noneGradientDescent):
@@ -293,6 +313,12 @@ class SGD(noneGradientDescent):
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
         self.m = int(no_minibatches)
         assert self.m <= self.n_obs
+
+    def __str__(self):
+        if self.adaptive:
+            return self.optimiser
+        else:
+            return self.optimiser + " SGD"
 
 
         
@@ -305,6 +331,17 @@ class SGD(noneGradientDescent):
             x_batch = self.X[batches[k]]
             y_batch = self.y[batches[k]]
             self.per_batch(grad(x_batch, y_batch, self.theta))
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -38,9 +38,11 @@ labels =  ["momentum SGD", "plain SGD", "AdaGrad", "RMSProp", "Adam"]
 # PLOT.simple_regression_polynomial(X, y, files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=True)
 # PLOT.set_pdf_info("polynomial_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
 
+# PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=True)
+# 
 
 
-# PLOT.update()
+PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
 
 
 # PLOT.heatmap_plot("EtaLmbdaMSE.pkl")

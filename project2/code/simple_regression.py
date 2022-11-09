@@ -13,6 +13,7 @@ info.define_categories({
     "no_epochs":"#epochs", 
     "no_minibatches":r"$m$",
     "eta":r"$\eta$", 
+    "lmbda":r"$\lambda$",
     "gamma":r"$\gamma$", 
     "rho":r"$\varrho_1$, $\varrho_2$",
     "theta0":r"$\theta_0$",
@@ -45,27 +46,31 @@ theta0 = np.array([1,0.5,4])
 
 
 
-def simple_analysis(optimiser, filename, params={}, params_info=None):
+def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
     test_MSE1 = np.zeros_like(learningRates); test_MSE2 = np.zeros_like(learningRates)
     theta2 = []
     t0 = time()
+    last = []
     for k, eta in enumerate(learningRates):
         print('\n' + '_'*50)
         print(f'    eta = {eta:.2e}   ({k+1}/{n_etas})\n')
         sgd = SGD(X_train, y_train, eta, theta0, noEpochs1, noMinibatches)
         sgd.set_update_rule(optimiser, params)
-        sgd.regression_setting()
+        sgd.regression_setting(lmbda)
         sgd(noEpochs1, 6000) 
         test_MSE1[k] = sgd.mean_squared_error(X_test, y_test)
-        sgd(noEpochs2-noEpochs1, 6000) 
+        if sgd.current_epoch == noEpochs1-1:
+            sgd(noEpochs2-noEpochs1, 6000) 
         test_MSE2[k] = sgd.mean_squared_error(X_test, y_test)
+        last.append(sgd.current_epoch)
         theta2.append(sgd.theta)
     t1 = time()
     theta2 = theta2[np.argmin(test_MSE2)] # best estimate of theta
     
-    np.savetxt(output_path+filename, (learningRates, test_MSE1, test_MSE2), delimiter=", ", header=f"optimal theta = {theta2}", footer=f"run time: {t1-t0:.0f} s")
+    np.savetxt(output_path+filename, (learningRates, test_MSE1, test_MSE2), delimiter=", ", header=f"optimal theta = {theta2}", footer=f"\nrun time: {t1-t0:.0f} s")
     
     Params = params_info or params
+    Params['lmbda'] = lmbda
     info.set_file_info(filename, method="SGD", opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=noMinibatches, n_obs=n_obs, theta0=theta0, timer=f"{t1-t0:.0f}")
 
 
@@ -75,6 +80,15 @@ def simple_analysis(optimiser, filename, params={}, params_info=None):
 # simple_analysis("adagrad", "adagrad_SGD.txt")
 # simple_analysis("RMSprop", "rmsprop_SGD.txt", {"rho":0.9})
 # simple_analysis("Adam", "adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)})
+
+
+
+lmbda0 = 0.1
+# simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
+# simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
+# simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
+# simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
+# simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
 
 
 

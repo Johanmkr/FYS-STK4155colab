@@ -114,7 +114,9 @@ def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer
             print(Freg)
             print("\n\n\n\n")
             mse[i,j] = Freg.finalTestLoss()
-    dF = pd.DataFrame(mse, index=lmbdas, columns=etas)
+    idx = [r"$10^{%.0f}$"%k for k in np.log10(lmbdas)]
+    cols = [r"$10^{%.0f}$"%k for k in np.log10(etas)]
+    dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
 def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=1000, batchSize=1, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
