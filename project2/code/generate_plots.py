@@ -43,4 +43,4 @@ labels =  ["momentum SGD", "plain SGD", "AdaGrad", "RMSProp", "Adam"]
 # PLOT.update()
 
 
-PLOT.heatmap_plot("EtaLmbdaMSE.txt")
+PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
