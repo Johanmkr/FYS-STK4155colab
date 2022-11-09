@@ -14,14 +14,14 @@ from collections.abc import Callable
 import numpy.typing as npt
 from tqdm import trange
 
-from sklearn.utils import check_random_state
+# from sklearn.utils import check_random_state
 
 
 
 # Deterministic randomised data
 ourSeed = 1697
 np.random.seed(ourSeed)
-randomState = check_random_state(ourSeed)
+# randomState = check_random_state(ourSeed)
 
 ndarray = npt.NDArray[np.float64]
 

@@ -251,7 +251,7 @@ class devNeuralNetwork:
 
         self.updateInputLayer(self.trainData)
         if self.terminalUpdate:
-            for epoch in trange(self.epochs):
+            for epoch in trange(1, self.epochs+1):
                 for i in range(self.iterations):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()
@@ -262,7 +262,7 @@ class devNeuralNetwork:
         elif extractInfoPerXEpoch is not None:
             self.testLossPerEpoch = [self.get_testLoss()]
             self.lossEpochs = [0]
-            for epoch in trange(self.epochs):
+            for epoch in range(1, self.epochs+1):
                 for i in range(self.iterations):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()
@@ -272,7 +272,7 @@ class devNeuralNetwork:
                     self.testLossPerEpoch.append(self.get_testLoss())
                     self.lossEpochs.append(epoch)
         else:
-            for epoch in range(self.epochs):
+            for epoch in range(1, self.epochs + 1):
                 for i in range(self.iterations):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()

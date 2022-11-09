@@ -43,4 +43,6 @@ labels =  ["momentum SGD", "plain SGD", "AdaGrad", "RMSProp", "Adam"]
 # PLOT.update()
 
 
-PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
+# PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
+
+PLOT.epoch_plot("actFuncPerEpoch.pkl")

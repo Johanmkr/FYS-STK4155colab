@@ -117,13 +117,20 @@ def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer
     dF = pd.DataFrame(mse, index=lmbdas, columns=etas)
     dF.to_pickle(output_path+filename+".pkl")
 
-def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500, batchSize=20, eta=0, lmbda=0, testSize=0.2, optimizer="RMSProp"):
+def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=1000, batchSize=1, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
+    dF = pd.DataFrame()
     for function in activationFunctions:
         Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
-        Freg.Net.train(extractInfoPerXEpoch=50)
+        print(Freg)
+        Freg.Net.train(extractInfoPerXEpoch=1)
         loss = np.asarray(Freg.Net.testLossPerEpoch)
-        epochs = np.asarray(Freg.Net.lossEpochs)
+        epochslist = np.asarray(Freg.Net.lossEpochs)
+        dF[function] = loss
+    dF["epochs"] = epochslist
+    dF.to_pickle(output_path+filename+".pkl")
+
+
         
 
 
@@ -133,4 +140,5 @@ if __name__=="__main__":
     # Freg.predict()
     # print(Freg)
     # Freg.plot()
-    EtaLambdaAnalysis("EtaLmbdaMSE")
+    # EtaLambdaAnalysis("EtaLmbdaMSE")
+    activationFunctionPerEpochAnalysis("actFuncPerEpoch")

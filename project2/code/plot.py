@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.ticker as ticker
 import pandas as pd
+from IPython import embed
 
 # The style we want
 plt.style.use('seaborn')
@@ -155,6 +156,24 @@ def heatmap_plot(filename, pdfname='untitled', save_push=False, show=True):
     if not save_push:
         plt.show()
 
+def epoch_plot(filename, pdfname="untitled", save_push=False):
+    fig, ax = plt.subplots(layout="constrained")
+    score = pd.read_pickle(data_path+"network_regression/"+filename)
+    for func in score.columns:
+        if func == "epochs":
+            pass
+        else:
+            x = np.asarray(score["epochs"])
+            y = np.asarray(score[func])
+            ax.plot(x,y, label=func)
+    # ax.set_xlabel("Epoch")
+    # ax.set_ylabel("MSE")
+    set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
+
+    if save_push:
+        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+    if not save_push:
+        plt.show()
 
 
 def update():
