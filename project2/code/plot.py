@@ -115,15 +115,15 @@ def simple_regression_polynomial(X:ndarray, y:ndarray, filenames:list[str], labe
         ax.plot(X[:,0], X@theta_opt, lw=1.2, alpha=.8, label=labels[k] + r" ($\eta = %.2f \cdot 10^{-3}$)" %(eta_opt*1e3))
 
     set_axes_2d(ax, xlabel=r"$x$", ylabel=r"$y$")
-    if save_push:
+    if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=show)
-    if not save_push:
+    else:
         plt.show()
 
 
     
 
-def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", save_push=True, show=True):
+def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
     fig, ax = plt.subplots(layout="constrained")
     for k, file in enumerate(filenames):
         eta, MSE1, MSE2 = np.loadtxt(data_path + "simple_regression/" + file.replace("simple_regression/", ""), delimiter=",")
@@ -135,10 +135,13 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
 
     set_axes_2d(ax, xlabel="eta", ylabel="MSE", ylim=(0,1.0))
 
-    save_push(fig, pdf_name=pdfname, tight=False, show=show)
+    if savepush:
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
+    else:
+        plt.show()
     
 
-def heatmap_plot(filename, pdfname='untitled', save_push=False, show=True):
+def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True):
     fig, ax = plt.subplots(layout='constrained')
     fullScore = np.loadtxt(data_path+"network_regression/"+filename, delimiter=',')
     y = fullScore[1:,0]
@@ -153,9 +156,9 @@ def heatmap_plot(filename, pdfname='untitled', save_push=False, show=True):
     ax.set_xlabel("lambda")
     ax.set_ylabel("eta")
 
-    if save_push:
+    if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
-    if not save_push:
+    else:
         plt.show()
 
 
