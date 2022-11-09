@@ -235,11 +235,9 @@ class noneGradientDescent:
     def classification_setting(self, regularisation:float=0):
         def gradient(x, y, theta):
             # FIXME
-            # I = lambda theta: np.mean(np.where(np.abs(f(x,theta)-y)<tol, 1, 0), axis=0 )
-            # lf = lambda theta: 1 - I(theta)
             def lf(theta):
                 xt = x@theta # is this ok? What about intercept??
-                return- np.mean( y*(xt )  - np.log10(1 +np.exp(xt) )) # cross entropy
+                return - np.mean( y*(xt )  - np.log10(1 +np.exp(xt) )) # cross entropy
             return egrad(lf)(theta)
         self.grad = gradient
         
@@ -276,6 +274,16 @@ class noneGradientDescent:
         except ValueError:
             theta = theta 
         return np.mean((X@theta - y)**2)
+
+    def accuracy_score(self):
+        # FIXME
+        X = self.X
+        y = self.y
+        theta = self.theta
+        tol = 1e-12
+        xt = x@theta
+        I = np.where(np.abs(xt-y)<tol, 1, 0)
+        return np.mean(I)
 
     def get_params(self, terminal_print=True):
         if terminal_print:

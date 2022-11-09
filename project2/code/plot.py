@@ -32,7 +32,13 @@ plot_path = here + "/../output/figures/"
 latex_path = here + "/../latex/"
 
 
-def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
+CMAP_ACCURACY = "gnuplot2" # "spring"
+CMAP_MSE = CMAP_ACCURACY + "_r"
+
+
+
+
+def save_push(fig, pdf_name, save=True, push=True, show=False, tight=False):
     if tight:
         fig.tight_layout()
     file = plot_path + pdf_name.replace('.pdf', '').strip() + ".pdf"
@@ -49,31 +55,6 @@ def save_push(fig, pdf_name, save=True, push=True, show=False, tight=True):
         plt.clf()
 
     plt.close()
-
-
-def set_axes_2d(ax, xlabel='none', ylabel='none', title='none', legend=True, xlim='none', ylim='none'):
-    if xlim != 'none':
-        ax.set_xlim(xlim)
-    if ylim != 'none':
-        ax.set_ylim(ylim)
-
-    if xlabel != 'none':
-        if xlabel == 'eta':
-            ax.set_xlabel(r'learning rate $\eta$')
-            ax.set_xscale('log')
-        else:
-            ax.set_xlabel(xlabel)
-    if ylabel != 'none':
-        if ylabel == 'eta':
-            ax.set_ylabel(r'learning rate $\eta$')
-            ax.set_yscale('log')
-        else:
-            ax.set_ylabel(ylabel)
-
-    if title != 'none':
-        ax.set_title(title)
-    if legend:
-        ax.legend()
 
 def get_last_colour():
     return plt.gca().lines[-1].get_color()
@@ -114,13 +95,15 @@ def simple_regression_polynomial(X:ndarray, y:ndarray, filenames:list[str], labe
         #ax.plot(X[:,0], X@theta_opt, 'o', lw=1.5, ms=4, label=labels[k] + r" ($\eta = %.2f \cdot 10^{-3}$)" %(eta_opt*1e3))
         ax.plot(X[:,0], X@theta_opt, lw=1.2, alpha=.8, label=labels[k] + r" ($\eta = %.2f \cdot 10^{-3}$)" %(eta_opt*1e3))
 
-    set_axes_2d(ax, xlabel=r"$x$", ylabel=r"$y$")
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
+    ax.legend()
+
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=show)
     else:
-        plt.show()
-
-
+        if show:
+            plt.show()
     
 
 def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
@@ -133,30 +116,33 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
     ax.plot(eta[0], -10, 'o--', lw=2, ms=8, color='grey', label=f"after {epochs[0]} epochs", alpha=0.7)
     ax.plot(eta[0], -10, 'o-',  lw=2, ms=8, color='grey', label=f"after {epochs[1]} epochs", alpha=0.7)
 
-    set_axes_2d(ax, xlabel="eta", ylabel="MSE", ylim=(0,1.0))
+    ax.set_xlabel(r"$\eta$")
+    ax.set_ylabel("MSE")
+    ax.set_ylim(0,1.0)
+    ax.set_xscale("log")
+    ax.legend()
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=show)
     else:
-        plt.show()
+        if show:
+            plt.show()
     
 
-def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True):
+def heatmap_plot(filename, pdfname='untitled', savepush=True, show=True):
     fig, ax = plt.subplots(layout='constrained')
     score = pd.read_pickle(data_path+"network_regression/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap='viridis', vmax=1)
-    # ax.set_xticklabels([f"{x:.2e}" for x in x])
-    # set_axes_2d(ax=ax, xlabel="eta", ylabel="eta")
-    # ax.set_yticklabels([f"{y:.2e}" for y in y])
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1)
     ax.invert_yaxis()
-    ax.set_title("Test score")
+    ax.set_title("MSE")
     ax.set_xlabel(r"$\eta$")
     ax.set_ylabel(r"$\lambda$")
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
     else:
-        plt.show()
+        if show:
+            plt.show()
 
 
 
