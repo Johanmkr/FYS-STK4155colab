@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.devNeuralNetwork import devNeuralNetwork as NeuralNet
 from time import time
+from IPython import embed
 
-
-outfilePath = "output/"
+output_path = "../output/data/network_regression/"
 
 
 class FrankeRegression:
@@ -16,16 +16,19 @@ class FrankeRegression:
                 outputFunction = 'linear',
                 outputNeurons = None,
                 lossFunction = 'mse',
+                optimizer = 'plain',
                 epochs = None,
                 batchSize = None,
                 eta = 0.01,
                 lmbda = 0.0,
-                testSize = 0.2):
+                testSize = 0.2,
+                terminalUpdate = False):
 
         self.activationFunction = activationFunction
         self.outputFunction = outputFunction
         self.lossFunction = lossFunction
         self.gridSize = gridSize
+        self.optimizer = optimizer
         space = np.linspace(0,1,gridSize)
         self.xx, self.yy = np.meshgrid(space,space)
         # self.xx = (self.xx-np.mean(self.xx))/np.std(self.xx)
@@ -38,7 +41,9 @@ class FrankeRegression:
         self.FrankeX[:,0] = self.xx.ravel()
         self.FrankeX[:,1] = self.yy.ravel()
         self.FrankeY = self.zzr[:, np.newaxis]
-        self.Net = NeuralNet(self.FrankeX, self.FrankeY, hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputFunction=outputFunction, outputNeurons=outputNeurons, lossFunction=lossFunction, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize)
+        self.Net = NeuralNet(self.FrankeX, self.FrankeY, hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputFunction=outputFunction, outputNeurons=outputNeurons, lossFunction=lossFunction,
+        optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize,
+        terminalUpdate = terminalUpdate)
 
     def __str__(self):
         self.finalTestLoss()
@@ -54,14 +59,15 @@ class FrankeRegression:
 
         stringToReturn += f"Activation function: {self.activationFunction}\n"
         stringToReturn += f"Output function: {self.outputFunction}\n"
-        stringToReturn += f"Loss function: {self.lossFunction}\n\n"
+        stringToReturn += f"Loss function: {self.lossFunction}\n"
+        stringToReturn += f"Optimizer: {self.optimizer}\n\n"
 
         stringToReturn += f"Train loss:  {self.trainLoss:.2f}\n"
         stringToReturn += f"Test loss:  {self.testLoss:.2f}\n"
         return stringToReturn
 
     def train(self):
-        print(self.Net)
+        # print(self.Net)
         t0 = time()
         self.Net.train()
         t1 = time()
@@ -69,13 +75,16 @@ class FrankeRegression:
 
     def finalTestLoss(self):
         self.testLoss = np.mean(self.Net.lossFunction(self.Net(self.Net.testData), self.Net.testOut))
+        return self.testLoss
 
     def finalTrainLoss(self):
         self.trainLoss = np.mean(self.Net.lossFunction(self.Net(self.Net.trainData), self.Net.trainOut))
+        return self.trainLoss
 
     def predict(self, X=None):
         data = X or self.FrankeX
         self.prediction = self.Net(data)
+        return self.prediction
 
     def FrankeFunction(self, x,y):
         term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
@@ -92,9 +101,28 @@ class FrankeRegression:
         plt.show()
 
 
+def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=1000,  batchSize=20, testSize=0.2, optimizer='plain'):
+    etas = np.logspace(-9,0,10)
+    lmbdas = np.logspace(-9,0,10)
+    mse = np.zeros((len(etas)+1, len(lmbdas)+1))
+    mse[1:, 0] = etas
+    mse[0, 1:] = lmbdas
+    # embed()
+    for i, eta in enumerate(etas):
+        for j, lmbda in enumerate(lmbdas):
+            print(f"Lmbda: {lmbda}\nEta: {eta}")
+            Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            Freg.train()
+            print(Freg)
+            print("\n\n\n\n")
+            mse[i+1,j+1] = Freg.finalTestLoss()
+    np.savetxt(output_path+filename, mse, delimiter=',', header=Freg.__str__())
+    # embed()
+
 if __name__=="__main__":
-    Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.0001, eta=0.01)
-    Freg.train()
-    Freg.predict()
-    print(Freg)
-    Freg.plot()
+    # Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.0001, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
+    # Freg.train()
+    # Freg.predict()
+    # print(Freg)
+    # Freg.plot()
+    EtaLambdaAnalysis("EtaLmbdaMSE.txt")

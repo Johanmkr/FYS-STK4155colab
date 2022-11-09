@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.ticker as ticker
+import pandas as pd
 
 # The style we want
 plt.style.use('seaborn')
@@ -122,7 +123,7 @@ def simple_regression_polynomial(X:ndarray, y:ndarray, filenames:list[str], labe
 
     
 
-def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
+def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", save_push=True, show=True):
     fig, ax = plt.subplots(layout="constrained")
     for k, file in enumerate(filenames):
         eta, MSE1, MSE2 = np.loadtxt(data_path + "simple_regression/" + file.replace("simple_regression/", ""), delimiter=",")
@@ -137,7 +138,25 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
     save_push(fig, pdf_name=pdfname, tight=False, show=show)
     
 
+def heatmap_plot(filename, pdfname='untitled', save_push=False, show=True):
+    fig, ax = plt.subplots(layout='constrained')
+    fullScore = np.loadtxt(data_path+"network_regression/"+filename, delimiter=',')
+    y = fullScore[1:,0]
+    x = fullScore[0,1:]
+    score = pd.DataFrame(fullScore[1:, 1:], index=x, columns=y)
+    sns.heatmap(score, annot=True, ax=ax, cmap='viridis', vmax=1)
+    # ax.set_xticklabels([f"{x:.2e}" for x in x])
+    # set_axes_2d(ax=ax, xlabel="eta", ylabel="eta")
+    # ax.set_yticklabels([f"{y:.2e}" for y in y])
+    ax.invert_yaxis()
+    ax.set_title("Test score")
+    ax.set_xlabel("lambda")
+    ax.set_ylabel("eta")
 
+    if save_push:
+        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+    if not save_push:
+        plt.show()
 
 
 

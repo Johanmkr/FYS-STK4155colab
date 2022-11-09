@@ -7,6 +7,7 @@ try:
     import src.GradientDescent as GradientDescent
     from src.DataHandler import DataHandler
     from src.ExtendAndCollapse import ExtendAndCollapse as EAC
+    from src.utils import *
 except ModuleNotFoundError:
     from Layer import Layer
     from LossFunctions import LossFunctions
@@ -14,6 +15,7 @@ except ModuleNotFoundError:
     import GradientDescent as GradientDescent
     from DataHandler import DataHandler
     from ExtendAndCollapse import ExtendAndCollapse as EAC
+    from utils import *
 from IPython import embed
 from time import time
 from tqdm import trange
@@ -33,11 +35,13 @@ class devNeuralNetwork:
                 outputFunction = 'linear',
                 outputNeurons = None,
                 lossFunction = 'mse',
+                optimizer = 'plain',
                 epochs = None,
                 batchSize = None,
                 eta = 0.01,
                 lmbda = 0.0,
-                testSize = 0.2):
+                testSize = 0.2,
+                terminalUpdate = False):
         """Initialises Feed Forward Neural network with the following parameters:
 
         Args:
@@ -49,11 +53,13 @@ class devNeuralNetwork:
             outputFunction (str, optional): Output function  (used in output layer only) as string. Will be parsed from activationFunction.py. Defaults to 'linear'.
             outputNeurons (int, optional): Number of output neurons. If not set, output neurons will be features of target data. Defaults to None.
             lossFunction (str, optional): Loss function as string. Will be parsed from lossFunction.py. Defaults to 'mse'.
+            optimizer (str, optional): Optimizer to use when performing gradient descent. Defaults to 'plain'.
             epochs (int, optional): Number of epochs over which we train the network. Defaults to None.
             batchSize (int, optional): Number of data points per batch used is stochastic gradient descent. Defaults to None.
             eta (float, optional): Learning rate. Defaults to 0.01.
             lmbda (float, optional): Regularisation parameter. Defaults to 0.0.
             testSize (float, optional): Fraction of input data used for testing. Defaults to 0.2.
+            terminalUpdate (bool, optional): If true, progress is written  to the terminal during training. Defaults to False.
         """
         self.inputData = inputData
         self.targetData = targetData
@@ -63,6 +69,8 @@ class devNeuralNetwork:
         self.activationFunction = ActivationFunction(activationFunction)
         self.outputFunction = ActivationFunction(outputFunction)
         self.lossFunction = LossFunctions(lossFunction)
+        self.optimizer = optimizer
+        self.terminalUpdate = terminalUpdate
 
         self.testSize = testSize
         self.ttSplit(self.testSize)
@@ -233,18 +241,26 @@ class devNeuralNetwork:
     def train(self):
         self.sgdW = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdB = GradientDescent.SGD.simple_initialise(eta=self.eta)
-        self.sgdW.set_update_rule("RMSProp")
-        self.sgdB.set_update_rule("RMSProp")
+        self.sgdW.set_update_rule(self.optimizer)
+        self.sgdB.set_update_rule(self.optimizer)
 
         self.updateInputLayer(self.trainData)
-        for epoch in trange(self.epochs):
-            for i in range(self.iterations):
-                self.sliceInputAndComparison(self.setRandomIndecies())
-                self.feedForward()
-                self.backPropagation()
-                self.Niter += 1
-            if epoch % 100 == 0:
-                self.printTrainingInfo(epoch)
+        if self.terminalUpdate:
+            for epoch in trange(self.epochs):
+                for i in range(self.iterations):
+                    self.sliceInputAndComparison(self.setRandomIndecies())
+                    self.feedForward()
+                    self.backPropagation()
+                    self.Niter += 1
+                if epoch % 100 == 0:
+                    self.printTrainingInfo(epoch)
+        else:
+            for epoch in range(self.epochs):
+                for i in range(self.iterations):
+                    self.sliceInputAndComparison(self.setRandomIndecies())
+                    self.feedForward()
+                    self.backPropagation()
+                    self.Niter += 1
 
 
 if __name__=="__main__":

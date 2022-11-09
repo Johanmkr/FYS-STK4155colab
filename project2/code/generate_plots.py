@@ -32,16 +32,15 @@ theta0 = np.array([1,0.5,4])
 files = ["momentum_SGD.txt", "plain_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
 labels =  ["momentum SGD", "plain SGD", "AdaGrad", "RMSProp", "Adam"]
 
-PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=True)
-PLOT.set_pdf_info("errors_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
+# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=True)
+# PLOT.set_pdf_info("errors_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
 
-PLOT.simple_regression_polynomial(X, y, files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=True)
-PLOT.set_pdf_info("polynomial_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
-
-
+# PLOT.simple_regression_polynomial(X, y, files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=True)
+# PLOT.set_pdf_info("polynomial_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
 
 
 
+# PLOT.update()
 
 
-PLOT.update()
+PLOT.heatmap_plot("EtaLmbdaMSE.txt")
