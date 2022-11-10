@@ -49,16 +49,16 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         \fillertext
 
         What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. If we define $\mathcal{A}_k \equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k)$ to be the direction and magnitude of the steepest ascent in parameter space, eq. \eqref{eq:steepest_descent} reads 
-        \begin{equation}\label{eq:steepest_descent_cost_function}
+        \begin{equation}\label{eq:update_rule_general}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\,;  \\
                 &\quad \vec{v}_k = -\eta_k\mathcal{A}_k,
             \end{split}
         \end{equation}
-        for substitutions $\rho\to\mathcal{L}$ and $\svec{\xi}\to \svec{\theta}$. For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\theta}$. (However, since we may not know the nature of $\svec{\theta}$, there is a risk that this is just a local and not a global minimum. The steepest descent method in eq. \eqref{eq:steepest_descent_cost_function} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
+        for substitutions $\rho\to\mathcal{L}$ and $\svec{\xi}\to \svec{\theta}$. For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\theta}$. (However, since we may not know the nature of $\svec{\theta}$, there is a risk that this is just a local and not a global minimum. The steepest descent method in eq. \eqref{eq:update_rule_general} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
 
     \subsubsection{Momentum}\label{sec:momentum}
-        From \Eq{steepest_descent_cost_function} we have that the movement in parameter space is given by $\vec{v}_k$ (the negative of which), which describes the direction and magnitude of the steepest ascent in parameter space. Sometimes we might want to move larger distances in one step. This can be achieved by introduction momentum: We add an addition term to $\vec{v}_k$ which lets us rewrite eq. \eqref{eq:steepest_descent_cost_function} as
+        From eq. \eqref{eq:update_rule_general} we have that the movement in parameter space is given by $\vec{v}_k$ (the negative of which), which describes the direction and magnitude of the steepest ascent in parameter space. Sometimes we might want to move larger distances in one step. This can be achieved by introduction momentum: We add an addition term to $\vec{v}_k$ which lets us rewrite eq. \eqref{eq:update_rule_general} as
         \begin{equation}\label{eq:momentum_GD_algorithm}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\, ; \\
@@ -107,13 +107,15 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     
     \subsubsection{Optimising the learning rate}\label{sec:tuning}
     
-    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below.
+    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below, that is different ways of calculating $\vec{v}$ in eq. \eqref{eq:update_rule_general}.
 
     \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
-        \item[]\textbf{AdaGrad} (Algorithm 8.4 in \citep{Goodfellow2016}) \comment{Works well with convex functions}
-        \item[]\textbf{RMSProp} (Algorithm 8.5 \& 8.6 in \citep{Goodfellow2016}) 
-        \item[]\textbf{Adam} (Algorithm 8.7 in \citep{Goodfellow2016})
+        \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting.
+        \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$
+        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_1$ for this optimisation scheme.
     \end{enumerate}
+
+    All three require an original learning rate $\eta$ and a small number $\epsilon$ for numerical stability. 
     
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
