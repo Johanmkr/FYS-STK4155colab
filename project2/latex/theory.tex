@@ -15,9 +15,16 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
 
     The result is a flexible way to locate the minima of \checkthis{any} cost function $\mathcal{L}(\svec{\theta})$. The ordinary least squares and Ridge schemes of linear regression that we discussed in \href{https://github.com/Johanmkr/FYS-STK4155colab/tree/main/project1}{project 1}, are then implemented by using the cost functions $\mathcal{L}^\mathrm{OLS}(\svec{\theta})$ and $\mathcal{L}^\mathrm{Ridge}(\svec{\theta})$ respectively, given by the following expressions:
 
+    % \begin{subequations}\label{eq:linear_regression_cost_functions}
+    %     \begin{align}
+    %         \mathcal{L}^\mathrm{OLS}(\svec{\theta}) &= \norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2 \label{eq:ols_cost_function}\\
+    %         \mathcal{L}^\mathrm{Ridge}(\svec{\theta})&=\norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2  -  \lambda\norm{\svec{\theta}}_2^2 \label{eq:ridge_cost_function}
+    %     \end{align}
+    % \end{subequations}
+
     \begin{subequations}\label{eq:linear_regression_cost_functions}
         \begin{align}
-            \mathcal{L}^\mathrm{OLS}(\svec{\theta}) &= \norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2 \label{eq:ols_cost_function}\\
+            \mathcal{L}^\mathrm{OLS}(\svec{\theta}) &=  \norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2 \label{eq:ols_cost_function}\\
             \mathcal{L}^\mathrm{Ridge}(\svec{\theta})&=\norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2  -  \lambda\norm{\svec{\theta}}_2^2 \label{eq:ridge_cost_function}
         \end{align}
     \end{subequations}
