@@ -41,7 +41,8 @@ class devNeuralNetwork:
                 eta = 0.01,
                 lmbda = 0.0,
                 testSize = 0.2,
-                terminalUpdate = False):
+                terminalUpdate = False,
+                classification = False):
         """Initialises Feed Forward Neural network with the following parameters:
 
         Args:
@@ -60,6 +61,7 @@ class devNeuralNetwork:
             lmbda (float, optional): Regularisation parameter. Defaults to 0.0.
             testSize (float, optional): Fraction of input data used for testing. Defaults to 0.2.
             terminalUpdate (bool, optional): If true, progress is written  to the terminal during training. Defaults to False.
+            classification (bool, optional): If true, the networks deals with a classification problem. Defaults to False.
         """
         self.inputData = inputData
         self.targetData = targetData
@@ -74,7 +76,8 @@ class devNeuralNetwork:
 
         self.testSize = testSize
         # self.ttSplit(self.testSize)
-        if outputFunction == "softmax":
+        self.classification = classification
+        if self.classification:
             self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = feature_scale_split(self.inputData, self.targetData, train_size=1-self.testSize)
         else:
             self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = Z_score_normalise_split(self.inputData, self.targetData, train_size=1-self.testSize)
@@ -191,7 +194,7 @@ class devNeuralNetwork:
             a = self.layers[l].a
             # embed()
             self.layers[l].delta = (delta @ w) * self.activationFunction.derivative(a)
-
+        # embed()
         F = EAC(self.layers) # Generating full matrices W, B, D, H
 
         
@@ -205,7 +208,9 @@ class devNeuralNetwork:
         # maxVal = 1e6
         if np.any(gradW > maxVal) or np.any(gradB > maxVal):
             pass
+            # print("passed")
         else:
+            # print(F.W)
             F.W = self.sgdW.simple_update(gradW, F.W)
             F.B = self.sgdB.simple_update(gradB, F.B)
 
@@ -222,18 +227,37 @@ class devNeuralNetwork:
     def setRandomIndecies(self):
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
+    def accuracy(self, prediction, target, tol=1e-3):
+        samples = len(target)
+        accuracy = 0
+        for i in range(samples):
+            if abs(prediction[i]-target[i]) < tol:
+                accuracy += 1
+        accuracy /= samples
+        return accuracy
+
     def get_testLoss(self):
-        return np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
+        if self.classification:
+            return self.accuracy(self.__call__(self.testData), self.testOut)
+        else:
+            return np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
     
     def get_trainLoss(self):
-        return np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
+        if self.classification:
+            return self.accuracy(self.__call__(self.trainData), self.trainOut)
+        else:
+            return np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
 
     def printTrainingInfo(self, epoch):
         trainLoss = self.get_trainLoss()
         testLoss = self.get_testLoss()
         stringToPrint = f"Epochs: {epoch}\n"
-        stringToPrint += f"Train loss:   {trainLoss:.2f}\n"
-        stringToPrint += f"Test loss:    {testLoss:.2f}\n"
+        if self.classification:
+            stringToPrint += f"Train accuracy:  {trainLoss:.2f}\n"
+            stringToPrint += f"Test accuracy:   {testLoss:.2f}\n"
+        else:
+            stringToPrint += f"Train loss:   {trainLoss:.2f}\n"
+            stringToPrint += f"Test loss:    {testLoss:.2f}\n"
         print(stringToPrint)
 
     def train(self, extractInfoPerXEpoch = None):
@@ -250,7 +274,7 @@ class devNeuralNetwork:
                     self.feedForward()
                     self.backPropagation()
                     self.Niter += 1
-                if epoch % 100 == 0:
+                if epoch % 25 == 0:
                     self.printTrainingInfo(epoch)
         elif extractInfoPerXEpoch is not None:
             self.testLossPerEpoch = [self.get_testLoss()]

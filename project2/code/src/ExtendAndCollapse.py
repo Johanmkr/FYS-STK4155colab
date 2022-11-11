@@ -87,7 +87,11 @@ class ExtendAndCollapse:
         """
         returnWeights = []
         for i in range(self.layersToUse):
-            returnWeights.append(self.W[i][np.isfinite(self.W[i])].reshape(self.weights[i].shape))
+            try:
+                returnWeights.append(self.W[i][np.isfinite(self.W[i])].reshape(self.weights[i].shape))
+            except ValueError:
+                pass
+                # embed()
         return returnWeights
 
     def collapseBiases(self):

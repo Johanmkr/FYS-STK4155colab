@@ -133,7 +133,7 @@ def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLay
     dF.to_pickle(output_path+filename+".pkl")
 
 
-def EpochNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1, epochs=2500, batchSize=10, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
+def LayerNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1, epochs=2500, batchSize=10, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
     layers = np.arange(10)
     neurons = np.arange(1,11)*10
     mse = np.zeros((len(layers), len(neurons)))
@@ -158,11 +158,11 @@ def EpochNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1
 
 
 if __name__=="__main__":
-    # Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.0001, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
-    # Freg.train()
-    # Freg.predict()
-    # print(Freg)
-    # Freg.plot()
+    Freg = FrankeRegression(hiddenLayers=1, activationFunction="sigmoid", neuronsInEachLayer=5, outputNeurons=1, epochs=250, batchSize=10, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
+    Freg.train()
+    Freg.predict()
+    print(Freg)
+    Freg.plot()
     # EtaLambdaAnalysis("EtaLmbdaMSE")
     # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
-    EpochNeuronsAnalysis("EpochNeuron")
+    # LayerNeuronsAnalysis("LayerNeuron")

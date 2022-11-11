@@ -33,8 +33,8 @@ PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname
 # PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
 
 
-# PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
+PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
 
 # PLOT.epoch_plot("actFuncPerEpoch.pkl", pdfname="actFuncPerEpoch")
 
-#PLOT.heatmap_plot("EpochNeuron.pkl", filename="EpochNeuron", savepuch=False, xlabel="Neurons", ylabel="Hidden layers")
+PLOT.heatmap_plot("LayerNeuron.pkl", pdfname="LayerNeuron", savepush=False, xlabel="Neurons", ylabel="Hidden layers")

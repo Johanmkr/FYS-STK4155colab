@@ -38,8 +38,11 @@ class ActivationFunction:
         return self.activationFunction(a)
 
     def sigmoid(self, a):
-        return 1/(1+np.exp(-a))
-
+        try:
+            # print(a)
+            return 1/(1+np.exp(-a))
+        except RuntimeWarning:
+            print(a)
     def sigmoidDerivative(self, a):
         return (self.sigmoid(a) * (1-self.sigmoid(a)))
 
