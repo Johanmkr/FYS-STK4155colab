@@ -47,6 +47,10 @@ def create_mock_data(seed=169, noise_scale=noiseScale, theta_actual=thetaActual,
     np.savetxt(output_path + 'design_matrix.txt', X, delimiter=", ")
     np.savetxt(output_path + 'target_data.txt', y, delimiter=", ")
 
+    info.set_file_info('design_matrix.txt', n_obs=no_of_observations, note='$X = [x\, x^2\, x^3]$ (scaled)')
+    info.set_file_info('target_data.txt', n_obs=no_of_observations, note='$y  = %.2f x + %.2f x^2 + %.2f x^3 \, + \, %.2f \cdot N(0, 1)$ (scaled)' %(theta_actual[0], theta_actual[1], theta_actual[2], noise_scale))
+    
+
     return X_train, y_train, X_test, y_test
 
 

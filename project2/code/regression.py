@@ -5,7 +5,24 @@ from time import time
 from IPython import embed
 import pandas as pd
 
+
+import src.infoFile_ala_Nanna as info
 output_path = "../output/data/network_regression/"
+info.init(path=output_path)
+info.sayhello()
+
+info.define_categories({
+    "method":"method", 
+    "opt":"optimiser", 
+    "n_obs":r"$n_\mathrm{obs}$", 
+    "no_epochs":"#epochs", 
+    "no_minibatches":r"$m$",
+    "eta":r"$\eta$", 
+    "lmbda":r"$\lambda$",
+    "gamma":r"$\gamma$", 
+    "rho":r"$\varrho_1$, $\varrho_2$",
+    "theta0":r"$\theta_0$",
+    "timer":"run time (s)"})
 
 
 class FrankeRegression:
@@ -210,6 +227,8 @@ def EpochMinibatchAnalysis(filename):
     cols = [r"{%.0f}"%k for k in minibatch_array]
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
+
+    info.set_file_info(filename+".pkl", method='SGD', )
 
 
 

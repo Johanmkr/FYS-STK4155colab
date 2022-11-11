@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.ticker as ticker
 import pandas as pd
-from IPython import embed
+
 
 # The style we want
 plt.style.use('seaborn')
@@ -79,7 +79,8 @@ Nanna.define_categories({
     'rho':r'$\varrho_1$, $\varrho_2$',      #   parameters in adaptive optimisers
     'theta0':r'$\boldsymbol{\theta}_0$',    #   start value
     'L':r'$L-1$',                           #   #hidden layers
-    'N':r'$N_l$'                            #   #neurons per layer
+    'N':r'$N_l$',                           #   #neurons per layer
+    #'note':'note'                           #   comment 
     })  
 
 
@@ -92,6 +93,9 @@ def set_pdf_info(pdfname, **params):
 def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
     X = np.loadtxt(data_path + "simple_regression/design_matrix.txt", delimiter=",")
     y = np.loadtxt(data_path + "simple_regression/target_data.txt", delimiter=",")
+    info1pd = pd.read_pickle(data_path + "simple_regression/info.pkl")
+    info1 = info1pd.transpose().to_dict()
+
     x = X[:,0]
     #X = np.sort(X, axis=0)
     fig, ax = plt.subplots(layout="constrained")
@@ -110,6 +114,16 @@ def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(
         eta_opt = eta[np.argmin(MSE2)]
         #ax.plot(X[:,0], X@theta_opt, 'o', lw=1.5, ms=4, label=labels[k] + r" ($\eta = %.2f \cdot 10^{-3}$)" %(eta_opt*1e3))
         ax.plot(X[:,0], X@theta_opt, lw=1.2, alpha=.8, label=labels[k] + r" ($\eta = %.2f \cdot 10^{-3}$)" %(eta_opt*1e3))
+    
+    params = {} 
+    for param in ['method', 'n_obs', 'no_epochs', 'no_minibatches', 'lmbda', 'theta0']:
+        title = Nanna.CATEGORIES[param]
+        try:
+            params[param] = info1[filenames[0]][title]
+        except KeyError:
+            continue
+    params['eta'] = '...'
+    params['opt'] = '...'
 
     ax.set_xlabel(r"$x$")
     ax.set_ylabel(r"$y$")
@@ -117,18 +131,31 @@ def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=show)
+        set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
     
 
 def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 50), pdfname="untitled", savepush=True, show=True):
+    info1pd = pd.read_pickle(data_path + "simple_regression/info.pkl")
+    info1 = info1pd.transpose().to_dict()
     fig, ax = plt.subplots(layout="constrained")
     for k, file in enumerate(filenames):
         eta, MSE1, MSE2 = np.loadtxt(data_path + "simple_regression/" + file.replace("simple_regression/", ""), delimiter=",")
         ax.plot(eta, MSE1, "o--", lw=2, ms=8, alpha=.8)
         ax.plot(eta, MSE2, "o-",  lw=2, ms=8, alpha=.8, c=get_last_colour(), label=labels[k])
     
+    params = {} 
+    for param in ['method', 'n_obs', 'no_epochs', 'no_minibatches', 'lmbda', 'theta0']:
+        try:
+            params[param] = info1[filenames[0]][Nanna.CATEGORIES[param]]
+        except KeyError:
+            continue
+    params['eta'] = '...'
+    params['opt'] = '...'
+
+
     ax.plot(eta[0], -10, 'o--', lw=2, ms=8, color='grey', label=f"after {epochs[0]} epochs", alpha=0.7)
     ax.plot(eta[0], -10, 'o-',  lw=2, ms=8, color='grey', label=f"after {epochs[1]} epochs", alpha=0.7)
 
@@ -140,6 +167,7 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=show)
+        set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
@@ -159,7 +187,7 @@ def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xla
         if show:
             plt.show()
 
-def epoch_plot(filename, pdfname="untitled", savepush=False):
+def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
     fig, ax = plt.subplots(layout="constrained")
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     for func in score.columns:
@@ -178,7 +206,8 @@ def epoch_plot(filename, pdfname="untitled", savepush=False):
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
     if not savepush:
-        plt.show()
+        if show:
+            plt.show()
 
 
 def update():
