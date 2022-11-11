@@ -38,6 +38,7 @@ class devNeuralNetwork:
                 optimizer = 'plain',
                 epochs = None,
                 batchSize = None,
+                nrMinibatches = None,
                 eta = 0.01,
                 lmbda = 0.0,
                 testSize = 0.2,
@@ -57,6 +58,7 @@ class devNeuralNetwork:
             optimizer (str, optional): Optimizer to use when performing gradient descent. Defaults to 'plain'.
             epochs (int, optional): Number of epochs over which we train the network. Defaults to None.
             batchSize (int, optional): Number of data points per batch used is stochastic gradient descent. Defaults to None.
+            nrMinibatches (int, optional): Number of minibatches to generate. Cannot be combined with batchSize. Defaults to None.
             eta (float, optional): Learning rate. Defaults to 0.01.
             lmbda (float, optional): Regularisation parameter. Defaults to 0.0.
             testSize (float, optional): Fraction of input data used for testing. Defaults to 0.2.
@@ -68,6 +70,9 @@ class devNeuralNetwork:
         self.comparisonData = self.targetData
         self.hiddenLayers = hiddenLayers
         self.neuronsInEachLayer = neuronsInEachLayer
+        self.activationFunctionString = activationFunction
+        self.outputFunctionString = outputFunction
+        self.lossFunctionString = lossFunction
         self.activationFunction = ActivationFunction(activationFunction)
         self.outputFunction = ActivationFunction(outputFunction)
         self.lossFunction = LossFunctions(lossFunction)
@@ -84,8 +89,15 @@ class devNeuralNetwork:
         self.setInputFeatures(self.trainData)
         self.outputNeurons = outputNeurons or self.features
         self.epochs = epochs
-        self.batchSize = batchSize or self.inputs
-        self.iterations = self.inputs//self.batchSize
+        if batchSize is not None:
+            self.batchSize = batchSize
+            self.nrMinibatches = self.inputs//self.batchSize
+        elif nrMinibatches is not None:
+            self.nrMinibatches = nrMinibatches
+            self.batchSize = self.inputs//self.nrMinibatches
+        else:
+            self.batchSize = self.inputs 
+            self.nrMinibatches = 1
         self.eta = eta
         self.lmbda = lmbda
         self.Niter = 0  # Keep track of training iterations
@@ -110,8 +122,20 @@ class devNeuralNetwork:
         stringToReturn      += f'Input layer: {self.layers[0].neurons} neurons\n'
         for i in range(1, len(self.layers)-1):
             stringToReturn  += f'H-layer {i}: {self.layers[i].neurons} neurons\n'
-        stringToReturn      += f'Output layer: {self.layers[-1].neurons} neurons\n'
-        
+        stringToReturn      += f'Output layer: {self.layers[-1].neurons} neurons\n\n'
+
+        stringToReturn += f"Nr. epochs: {self.epochs}\n"
+        stringToReturn += f"Batch size: {self.batchSize}\n"
+        stringToReturn += f"Nr batches: {self.nrMinibatches}\n"
+        stringToReturn += f"Test size: {self.testSize}\n"
+        stringToReturn += f"Total iterations: {self.nrMinibatches * self.epochs}\n"
+        stringToReturn += f"Lambda: {self.lmbda}\n"
+        stringToReturn += f"Eta: {self.eta}\n\n"
+
+        stringToReturn += f"Activation function: {self.activationFunctionString}\n"
+        stringToReturn += f"Output function: {self.outputFunctionString}\n"
+        stringToReturn += f"Loss function: {self.lossFunctionString}\n"
+        stringToReturn += f"Optimizer: {self.optimizer}\n\n"
         return stringToReturn
 
     def __call__(self, X=None):
@@ -269,7 +293,7 @@ class devNeuralNetwork:
         self.updateInputLayer(self.trainData)
         if self.terminalUpdate:
             for epoch in trange(1, self.epochs+1):
-                for i in range(self.iterations):
+                for i in range(self.nrMinibatches):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()
                     self.backPropagation()
@@ -280,7 +304,7 @@ class devNeuralNetwork:
             self.testLossPerEpoch = [self.get_testLoss()]
             self.lossEpochs = [0]
             for epoch in range(1, self.epochs+1):
-                for i in range(self.iterations):
+                for i in range(self.nrMinibatches):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()
                     self.backPropagation()
@@ -290,7 +314,7 @@ class devNeuralNetwork:
                     self.lossEpochs.append(epoch)
         else:
             for epoch in range(1, self.epochs + 1):
-                for i in range(self.iterations):
+                for i in range(self.nrMinibatches):
                     self.sliceInputAndComparison(self.setRandomIndecies())
                     self.feedForward()
                     self.backPropagation()

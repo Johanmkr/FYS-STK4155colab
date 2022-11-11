@@ -130,10 +130,10 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
             plt.show()
     
 
-def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_regression/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': 'Test MSE', "extend": "max"})
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "Test MSE", "extend": "max"})
     ax.invert_yaxis()
     # ax.set_title("Test MSE")
     ax.set_xlabel(xlabel)

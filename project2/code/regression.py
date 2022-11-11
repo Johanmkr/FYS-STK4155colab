@@ -17,33 +17,28 @@ class FrankeRegression:
                 outputFunction = 'linear',
                 outputNeurons = None,
                 lossFunction = 'mse',
-                optimizer = 'plain',
+                optimizer = 'RMSProp',
                 epochs = None,
                 batchSize = None,
+                nrMinibatches = None,
                 eta = 0.01,
                 lmbda = 0.0,
                 testSize = 0.2,
                 terminalUpdate = False):
 
-        self.activationFunction = activationFunction
-        self.outputFunction = outputFunction
-        self.lossFunction = lossFunction
-        self.gridSize = gridSize
-        self.optimizer = optimizer
+
         space = np.linspace(0,1,gridSize)
         self.xx, self.yy = np.meshgrid(space,space)
-        # self.xx = (self.xx-np.mean(self.xx))/np.std(self.xx)
-        # self.yy = (self.yy-np.mean(self.yy))/np.std(self.yy)
         self.zz = self.FrankeFunction(self.xx, self.yy)
         self.zzr = self.zz.ravel()
-        # self.zzr = (self.zzr-np.mean(self.zzr))/np.std(self.zzr)
+
 
         self.FrankeX = np.zeros((len(self.zzr), 2))
         self.FrankeX[:,0] = self.xx.ravel()
         self.FrankeX[:,1] = self.yy.ravel()
         self.FrankeY = self.zzr[:, np.newaxis]
         self.Net = NeuralNet(self.FrankeX, self.FrankeY, hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputFunction=outputFunction, outputNeurons=outputNeurons, lossFunction=lossFunction,
-        optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize,
+        optimizer=optimizer, epochs=epochs, batchSize=batchSize, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize,
         terminalUpdate = terminalUpdate)
 
     def __str__(self):
@@ -51,19 +46,7 @@ class FrankeRegression:
         self.finalTrainLoss()
         print(self.Net)
 
-        stringToReturn = f"Nr. epochs: {self.Net.epochs}\n"
-        stringToReturn += f"Batch size: {self.Net.batchSize}\n"
-        stringToReturn += f"Test size: {self.Net.testSize}\n"
-        stringToReturn += f"Total iterations: {self.Net.Niter}\n"
-        stringToReturn += f"Lambda: {self.Net.lmbda}\n"
-        stringToReturn += f"Eta: {self.Net.eta}\n\n"
-
-        stringToReturn += f"Activation function: {self.activationFunction}\n"
-        stringToReturn += f"Output function: {self.outputFunction}\n"
-        stringToReturn += f"Loss function: {self.lossFunction}\n"
-        stringToReturn += f"Optimizer: {self.optimizer}\n\n"
-
-        stringToReturn += f"Train loss:  {self.trainLoss:.2f}\n"
+        stringToReturn = f"Train loss:  {self.trainLoss:.2f}\n"
         stringToReturn += f"Test loss:  {self.testLoss:.2f}\n"
         return stringToReturn
 
@@ -102,14 +85,29 @@ class FrankeRegression:
         plt.show()
 
 
-def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500,  batchSize=20, testSize=0.2, optimizer='RMSProp'):
-    etas = np.logspace(-9,-1,9)
-    lmbdas = np.logspace(-9,-1,9)
+def EtaLambdaAnalysis(filename):
+    #   Fixed parameters
+    hiddenLayers = 1
+    neuronsInEachLayer=5
+    outputNeurons=1
+    activationFunction = 'sigmoid'
+    epochs=250
+    nrMinibatches=5
+    testSize=0.2
+    optimizer='RMSProp'
+
+    #   Parameters to test
+    etas = np.logspace(-9,0,10)
+    lmbdas = np.logspace(-9,0,10)
+
+    #   Paramteres to find
     mse = np.zeros((len(lmbdas), len(etas)))
+
+    #   Testing loop
     for i, lmbda in enumerate(lmbdas):
         for j, eta in enumerate(etas):
             print(f"Lmbda: {lmbda}\nEta: {eta}")
-            Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
             Freg.train()
             print(Freg)
             print("\n\n\n\n")
@@ -119,11 +117,56 @@ def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500, batchSize=20, eta=0.01, lmbda=1e-7, testSize=0.2, optimizer="RMSProp"):
+def LayerNeuronsAnalysis(filename):
+    #   Fixed parameters
+    eta = 1e-2  #FIXME
+    lmbda = 1e-3   #FIXME
+    outputNeurons=1
+    activationFunction = 'sigmoid'
+    epochs=250
+    nrMinibatches=5
+    testSize=0.2
+    optimizer='RMSProp'
+
+    #   Parameters to test
+    layers = np.arange(10)
+    neurons = np.arange(1,11)*5
+
+    #   Parameters to find
+    mse = np.zeros((len(layers), len(neurons)))
+
+    #   Test loop
+    for i, layer in enumerate(layers):
+        for j, neuron in enumerate(neurons):
+            print(f"Layer: {layer}\nNeuron: {neuron}")
+            Freg = FrankeRegression(hiddenLayers=layer, neuronsInEachLayer=neuron, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            Freg.train()
+            print(Freg)
+            print("\n\n\n\n")
+            mse[i,j] = Freg.finalTestLoss()
+    idx = [r"{%.0f}"%k for k in layers]
+    cols = [r"{%.0f}"%k for k in neurons]
+    dF = pd.DataFrame(mse, index=idx, columns=cols)
+    dF.to_pickle(output_path+filename+".pkl")
+
+def activationFunctionPerEpochAnalysis(filename):
+    #   Fixed parameters
+    hiddenLayers = 1    #FIXME
+    neuronsInEachLayer=5    #FIXME
+    eta = 0.01
+    lmbda = 1e-5
+    outputNeurons=1
+    epochs=250
+    nrMinibatches=5
+    testSize=0.2
+    optimizer='RMSProp'
+
+    #   Parameters to test
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
+
     dF = pd.DataFrame()
     for function in activationFunctions:
-        Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+        Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
         print(Freg)
         Freg.Net.train(extractInfoPerXEpoch=1)
         loss = np.asarray(Freg.Net.testLossPerEpoch)
@@ -132,21 +175,37 @@ def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLay
     dF["epochs"] = epochslist
     dF.to_pickle(output_path+filename+".pkl")
 
+def EpochMinibatchAnalysis(filename):
+    #   Fixed parameters
+    hiddenLayers = 1    #FIXME
+    neuronsInEachLayer=5    #FIXME
+    eta = 0.01  #FIXME
+    lmbda = 1e-5    #FIXME
+    outputNeurons=1
+    activationFunction = 'sigmoid'
+    epochs=250
+    nrMinibatches=5
+    testSize=0.2
+    optimizer='RMSProp'
 
-def LayerNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1, epochs=2500, batchSize=10, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
-    layers = np.arange(10)
-    neurons = np.arange(1,11)*10
-    mse = np.zeros((len(layers), len(neurons)))
-    for i, layer in enumerate(layers):
-        for j, neuron in enumerate(neurons):
-            print(f"Layer: {layer}\nNeuron: {neuron}")
-            Freg = FrankeRegression(hiddenLayers=layer, neuronsInEachLayer=neuron, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+    #   Parameters to test
+    epoch_array = np.linspace(250, 2500, 10, dtype="int")
+    minibatch_array = np.linspace(5, 50, 10, dtype="int")
+
+    #  Parameters to find
+    mse = np.zeros((len(epoch_array), len(minibatch_array)))
+
+    #   Test loop
+    for i, epoch in enumerate(epoch_array):
+        for j, minibatch in enumerate(minibatch_array):
+            print(f"Epoch: {epoch}\nMinibatch: {minibatch}")
+            Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epoch, nrMinibatches=minibatch, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
             Freg.train()
             print(Freg)
             print("\n\n\n\n")
             mse[i,j] = Freg.finalTestLoss()
-    idx = [r"{%.0f}"%k for k in layers]
-    cols = [r"{%.0f}"%k for k in neurons]
+    idx = [r"{%.0f}"%k for k in epoch_array]
+    cols = [r"{%.0f}"%k for k in minibatch_array]
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
@@ -158,11 +217,16 @@ def LayerNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1
 
 
 if __name__=="__main__":
-    Freg = FrankeRegression(hiddenLayers=1, activationFunction="sigmoid", neuronsInEachLayer=5, outputNeurons=1, epochs=250, batchSize=10, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
-    Freg.train()
-    Freg.predict()
-    print(Freg)
-    Freg.plot()
+    # Freg = FrankeRegression(hiddenLayers=1, activationFunction="sigmoid", neuronsInEachLayer=5, outputNeurons=1, epochs=250, nrMinibatches=100, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
+    # Freg.train()
+    # Freg.predict()
+    # print(Freg)
+    # Freg.plot()
+
     # EtaLambdaAnalysis("EtaLmbdaMSE")
+
+    LayerNeuronsAnalysis("LayerNeuron")
+
     # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
-    # LayerNeuronsAnalysis("LayerNeuron")
+
+    # EpochMinibatchAnalysis("EpochMinibatch")
