@@ -24,25 +24,39 @@ info.define_categories({
 from src.GradientDescent import GD, SGD
 
 
-n_etas = 10
-learningRates = np.logspace(-5, -1, n_etas)     #   the η's we consider
 
-n_obs = 1000
-x = np.linspace(-1,1, n_obs)
-X = np.zeros((len(x),3))
-X[:,0] = x
-X[:,1] = x**2
-X[:,2] = x**3
-noise_scale = 0.1
-theta_actual = np.array([2,1.7,-0.4])
-y = X@theta_actual+ np.random.randn(n_obs)*noise_scale
+noiseScale = 0.1
+no_of_etas = 11
+learningRates = np.logspace(-5, 0, no_of_etas)     #   the η's we consider
+no_of_observations = 400
+thetaActual = [2,1.7,-0.4]
 
-X, y, X_train, y_train, X_test, y_test = Z_score_normalise_split(X, y)
+def create_mock_data(seed=169, noise_scale=noiseScale, theta_actual=thetaActual, n_obs=no_of_observations):
+    np.random.seed(seed)
+
+    x = np.linspace(-1,1, n_obs)
+    X = np.zeros((len(x),3))
+    X[:,0] = x
+    X[:,1] = x**2
+    X[:,2] = x**3
+    theta_actual = np.asarray(theta_actual)
+    y = X@theta_actual + np.random.randn(n_obs)*noise_scale
+
+    X, y, X_train, y_train, X_test, y_test = Z_score_normalise_split(X, y)
+
+    np.savetxt(output_path + 'design_matrix.txt', X, delimiter=", ")
+    np.savetxt(output_path + 'target_data.txt', y, delimiter=", ")
+
+    return X_train, y_train, X_test, y_test
 
 
-noEpochs1, noEpochs2 = 500, 1000
-noMinibatches = 50
-theta0 = np.array([1,0.5,4])
+
+X_train, y_train, X_test, y_test = create_mock_data()
+
+noEpochs1, noEpochs2 = 25, 50
+no_of_minibatches = no_of_observations//10
+np.random.seed(269)
+theta0 = np.random.randn(3)
 
 
 
@@ -53,8 +67,8 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
     last = []
     for k, eta in enumerate(learningRates):
         print('\n' + '_'*50)
-        print(f'    eta = {eta:.2e}   ({k+1}/{n_etas})\n')
-        sgd = SGD(X_train, y_train, eta, theta0, noEpochs1, noMinibatches)
+        print(f'    eta = {eta:.2e}   ({k+1}/{no_of_etas})\n')
+        sgd = SGD(X_train, y_train, eta, theta0, noEpochs1, no_of_minibatches)
         sgd.set_update_rule(optimiser, params)
         sgd.regression_setting(lmbda)
         sgd(noEpochs1, 6000) 
@@ -69,11 +83,15 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
     
     np.savetxt(output_path+filename, (learningRates, test_MSE1, test_MSE2), delimiter=", ", header=f"optimal theta = {theta2}", footer=f"\nrun time: {t1-t0:.0f} s")
     
-    Params = params_info or params
+    Params_ = params_info or params
+    Params = Params_.copy()
     Params['lmbda'] = lmbda
-    info.set_file_info(filename, method="SGD", opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=noMinibatches, n_obs=n_obs, theta0=theta0, timer=f"{t1-t0:.0f}")
+    info.set_file_info(filename, method="SGD", opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, theta0=theta0, timer=f"{t1-t0:.0f}")
 
 
+
+
+# OLS: 
 
 # simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
 # simple_analysis("plain", "plain_SGD.txt")
@@ -82,18 +100,18 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
 # simple_analysis("Adam", "adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)})
 
 
-
+# Ridge:
 lmbda0 = 0.1
-# simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
-# simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
-# simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
-# simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
-# simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
+simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
+simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
+simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
+simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
+simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
 
 
 
-info.additional_information(r"$f(x) = %.2f x + %.2f x^2 + %.2f x^3 \, + \, %.2f \cdot N(0, 1)$"  %(theta_actual[0], theta_actual[1], theta_actual[2], noise_scale))
+info.additional_information(r"$f(x) = %.2f x + %.2f x^2 + %.2f x^3 \, + \, %.2f \cdot N(0, 1)$"  %(thetaActual[0], thetaActual[1], thetaActual[2], noiseScale))
 
-info.additional_information(r"Considered %i logarithmically spaced learning rates $\eta \in [%.1e, \, %.1e]$." %(n_etas, learningRates[0], learningRates[-1]))
+info.additional_information(r"Considered %i logarithmically spaced learning rates $\eta \in [%.1e, \, %.1e]$." %(no_of_etas, learningRates[0], learningRates[-1]))
 
 info.update(header="(S)GD with different update rules and hyperparameters")

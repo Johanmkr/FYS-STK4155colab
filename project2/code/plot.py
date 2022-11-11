@@ -67,7 +67,15 @@ import src.infoFile_ala_Nanna as Nanna
 Nanna.init()
 
 Nanna.sayhello()
-Nanna.define_categories({'method':'method', 'opt':'optimiser', 'n_obs':r'$n_\mathrm{obs}$', 'no_epochs':'#epochs', 'eta':r'$\eta$', 'gamma':r'$\gamma$', 'rho':r'$\varrho_1$, $\varrho_2$'})
+Nanna.define_categories({
+    'method':'method', 
+    'opt':'optimiser', 
+    'n_obs':r'$n_\mathrm{obs}$', 
+    'no_epochs':'#epochs', 
+    'no_minibatches':'#minibatches',
+    'eta':r'$\eta$', 
+    'gamma':r'$\gamma$', 
+    'rho':r'$\varrho_1$, $\varrho_2$'})
 
 
 def set_pdf_info(pdfname, **params):
@@ -76,7 +84,9 @@ def set_pdf_info(pdfname, **params):
 
 
 
-def simple_regression_polynomial(X:ndarray, y:ndarray, filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
+def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
+    X = np.loadtxt(data_path + "simple_regression/design_matrix.txt", delimiter=",")
+    y = np.loadtxt(data_path + "simple_regression/target_data.txt", delimiter=",")
     x = X[:,0]
     #X = np.sort(X, axis=0)
     fig, ax = plt.subplots(layout="constrained")
@@ -107,7 +117,7 @@ def simple_regression_polynomial(X:ndarray, y:ndarray, filenames:list[str], labe
             plt.show()
     
 
-def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
+def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 50), pdfname="untitled", savepush=True, show=True):
     fig, ax = plt.subplots(layout="constrained")
     for k, file in enumerate(filenames):
         eta, MSE1, MSE2 = np.loadtxt(data_path + "simple_regression/" + file.replace("simple_regression/", ""), delimiter=",")
@@ -119,7 +129,7 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
 
     ax.set_xlabel(r"$\eta$")
     ax.set_ylabel("MSE")
-    ax.set_ylim(0,1.0)
+    ax.set_ylim(0, 1.0)
     ax.set_xscale("log")
     ax.legend()
 
