@@ -2,15 +2,6 @@ from src.utils import *
 import plot as PLOT
 
 
-# SIMPLE REGRESSION
-
-
-no_of_observations = 400
-no_epochs1, no_epochs2 = 25, 50
-no_of_minibatches = no_of_observations//10
-np.random.seed(269)
-theta0 = np.random.randn(3)
-lmbda_ridge = 0.1
 
 SHOW = False
 
@@ -20,19 +11,17 @@ SIMPLE REGRESSION ANALYSIS
 --------------------------
 '''
 
+
 files = ["plain_SGD.txt", "momentum_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
 labels =  ["plain SGD", "momentum SGD", "AdaGrad", "RMSProp", "Adam"]
 
 ''' OLS '''
-# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
-PLOT.set_pdf_info("errors_gradient_descent", method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=0) 
+PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
 
-# PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
-# PLOT.set_pdf_info("polynomial_gradient_descent",  method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=0) 
+PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
 
 ''' Ridge '''
-# PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
-# PLOT.set_pdf_info("ridge_errors_gradient_descent",  method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=lmbda_ridge) 
+PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
 
 
 '''
@@ -60,6 +49,15 @@ no_neurons = 5
 
 PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
+
+
+
+
+
+
+
+'''
+'''
 
 # Update README.md:
 PLOT.update()
