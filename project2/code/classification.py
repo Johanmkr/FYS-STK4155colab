@@ -18,9 +18,11 @@ outputs = cancer.target
 labels = cancer.feature_names[0:30]
 correlation_matrix = cancerpd.corr().round(1)
 
-Creg = NeuralNet(inputs, outputs[:,np.newaxis], hiddenLayers=5, neuronsInEachLayer=7, activationFunction='sigmoid', outputFunction='softmax', outputNeurons=1, lossFunction="crossentropy", optimizer="RMSProp", epochs=100, batchSize=10, eta=0.01, lmbda=1e-5, testSize=0.2, terminalUpdate=True)
+Creg = NeuralNet(inputs, outputs[:,np.newaxis], hiddenLayers=1, neuronsInEachLayer=5, activationFunction='tanh', outputFunction='sigmoid', outputNeurons=1, lossFunction="crossentropy", optimizer="RMSProp", epochs=250, batchSize=10, eta=0.01, lmbda=1e-5, testSize=0.2, terminalUpdate=True, classification=True)
 
+print(Creg)
 Creg.train()
+
 
 if __name__=="__main__":
     #   Correlation matrix
@@ -28,5 +30,7 @@ if __name__=="__main__":
     # sns.heatmap(data=correlation_matrix, annot=True)
     # plt.show()
     # Creg = 
-    embed()
-    # pass
+    # for i, val in enumerate(Creg()):
+    #     print(f"{val[0]:.0f}  -  {Creg.testOut[i]}")
+    # embed()
+    pass

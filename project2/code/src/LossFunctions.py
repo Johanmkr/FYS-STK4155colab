@@ -1,4 +1,6 @@
 import numpy as np
+from sys import float_info
+epsilon = float_info.epsilon
 
 class LossFunctions:
     def __init__(self,
@@ -27,8 +29,8 @@ class LossFunctions:
         return (prediction-target)
 
     def crossentropy(self, prediction, target):
-        return -(target*np.log(prediction) + (1-target)*np.log(1-prediction))
+        return -(target*np.log(prediction+epsilon) + (1-target)*np.log(1-prediction+epsilon))
 
     def crossentropyDerivative(self, prediction, target):
-        return (prediction-target)/(1-prediction)/prediction
+        return (prediction-target)/(1-prediction+epsilon)/(prediction+epsilon)
 

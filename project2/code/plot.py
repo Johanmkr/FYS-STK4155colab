@@ -131,11 +131,11 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
     
 
 def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
-    fig, ax = plt.subplots(layout='constrained')
+    fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_regression/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1)
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': 'Test MSE', "extend": "max"})
     ax.invert_yaxis()
-    ax.set_title("MSE")
+    # ax.set_title("Test MSE")
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
@@ -157,7 +157,7 @@ def epoch_plot(filename, pdfname="untitled", savepush=False):
             ax.plot(x,y, label=func)
     # ax.set_ylim(0,1)
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("MSE")
+    ax.set_ylabel("Test MSE")
     plt.legend()
     # set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
 
