@@ -45,7 +45,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
         \end{equation}
         for an initial rate $\eta_0$ and lower limit $\eta_\tau \sim 0.01 \eta_0$.
 
-        % A is step seize
+        % A is step size
         \fillertext
 
         What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. If we define $\mathcal{A}_k \equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k)$ to be the direction and magnitude of the steepest ascent in parameter space, eq. \eqref{eq:steepest_descent} reads 
@@ -227,6 +227,24 @@ and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\
 % beta or theta?
 \fillertext
 
+% \begin{equation}\label{eq:logistic_cost_function}
+%     \mathcal{L}(\svec{\beta}) = - \sum_{i=1}^n \Big[ y^{(i)} \big(\beta_0+ \beta_1 x^{(i)}\big) - \log{\Big(1+e^{\beta_0 + \beta_1 x^{(i)}}\Big)} \Big]
+% \end{equation}
+
+
+\comment{This is rubbish}
+
+
 \begin{equation}\label{eq:logistic_cost_function}
-    \mathcal{L}(\svec{\beta}) = - \sum_{i=1}^n \Big[ y^{(i)} \big(\beta_0+ \beta_1 x^{(i)}\big) - \log{\Big(1+e^{\beta_0 + \beta_1 x^{(i)}}\Big)} \Big]
+    \mathcal{L}(\svec{\theta}) = -  \frac{1}{n}\sum_{i=1}^n \Big[ y^{(i)} \big(\theta_0 + (X\svec{\theta})^{(i)}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
+\end{equation}
+
+In terms of weights and biases ($ (\theta_0,  \svec{\theta} ) \to (\vec{b}, W)$),
+
+\begin{equation}\label{eq:logistic_cost_function_NN}
+    \mathcal{L}(\vec{b}, W) = -  \frac{1}{n}\sum_{i=1}^n \Big[ y^{(i)} \big(\vec{b} + W\TT \vec{h}^{l}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
+\end{equation}
+
+\begin{equation}\label{eq:logistic_cost_function_NN}
+    \mathcal{L}(l) = -  \frac{1}{N_l} \Big[ (\vec{h}^{l})\TT\vec{a}^{l} - \log{\big(1+e^{\vec{a}^{l}}\big)} \Big]
 \end{equation}
