@@ -73,7 +73,11 @@ class devNeuralNetwork:
         self.terminalUpdate = terminalUpdate
 
         self.testSize = testSize
-        self.ttSplit(self.testSize)
+        # self.ttSplit(self.testSize)
+        if outputFunction == "softmax":
+            self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = feature_scale_split(self.inputData, self.targetData, train_size=1-self.testSize)
+        else:
+            self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = Z_score_normalise_split(self.inputData, self.targetData, train_size=1-self.testSize)
         self.setInputFeatures(self.trainData)
         self.outputNeurons = outputNeurons or self.features
         self.epochs = epochs
@@ -91,8 +95,6 @@ class devNeuralNetwork:
 
         #   Initialise the weights
         self.initialiseWeights()
-        #   Split into training and test data
-        # embed()
 
     def __str__(self):
         """Generates print of the network structure.
@@ -115,37 +117,29 @@ class devNeuralNetwork:
         self.feedForward()
         return self.outputData
 
-    def ttSplit(self, testSize):
-        testIdx = np.random.choice(np.arange(len(self.inputData)), int(len(self.inputData) * testSize), replace=False)
-        self.testData = self.inputData[testIdx]
-        self.testOut = self.targetData[testIdx]
-        self.trainData = np.delete(self.inputData, testIdx, axis=0)
-        self.trainOut = np.delete(self.targetData, testIdx, axis=0)
+    # def ttSplit(self, testSize):
+    #     testIdx = np.random.choice(np.arange(len(self.inputData)), int(len(self.inputData) * testSize), replace=False)
+    #     self.testData = self.inputData[testIdx]
+    #     self.testOut = self.targetData[testIdx]
+    #     self.trainData = np.delete(self.inputData, testIdx, axis=0)
+    #     self.trainOut = np.delete(self.targetData, testIdx, axis=0)
 
     def updateInputLayer(self, data):
         self.setInputFeatures(data)
         self.layers[0].UpdateLayer(self.inputs, self.features)
-        # if data.ndim == 1 or data.ndim:
-        #     self.layers[0].h = data
-        # else:
-        #     self.layers[0].h = data
         self.layers[0].h = data
 
     def sliceInputAndComparison(self, idx):
-        self.layers[0].h = self.inputData[idx]
-        self.comparisonData = self.targetData[idx]
+        self.layers[0].h = self.trainData[idx]
+        self.comparisonData = self.trainOut[idx]
 
     def setInputFeatures(self, data):
-        # self.inputs = len(data)
-        # self.features = 1 
         if data.ndim == 1 or data.ndim == 0:
             self.inputs = len(data)
             self.features = 1 
         else:
             self.inputs, self.features = data.shape
 
-
-    
     def setInitialisedLayers(self):
         #   Append input layer
         self.layers.append(Layer(activationFunction=self.activationFunction, inputs=self.inputs, features=self.features))
@@ -154,7 +148,6 @@ class devNeuralNetwork:
             self.layers.append(Layer(neurons=self.neuronsInEachLayer, activationFunction=self.activationFunction))
         #   Append output layers
         self.layers.append(Layer(self.outputNeurons, activationFunction=self.outputFunction))
-
 
     def addLayer(self,
                 layer = None,
@@ -168,7 +161,6 @@ class devNeuralNetwork:
         self.layers.insert(idx, LayerToAdd)
         self.nrOfLayers += 1
         self.initialiseWeights()
-
 
     def initialiseWeights(self):
 
@@ -197,6 +189,7 @@ class devNeuralNetwork:
             delta = self.layers[l+1].delta
             w = self.layers[l+1].w
             a = self.layers[l].a
+            # embed()
             self.layers[l].delta = (delta @ w) * self.activationFunction.derivative(a)
 
         F = EAC(self.layers) # Generating full matrices W, B, D, H

@@ -65,3 +65,23 @@ def Z_score_normalise_split(X:ndarray, y:ndarray, train_size=0.80) -> tuple[ndar
 
 
     return X, y, X_train, y_train, X_test, y_test
+
+def feature_scale_split(X, y, train_size=0.80):
+    n_obs = np.shape(X)[0]
+    indices = np.arange(n_obs)
+    np.random.shuffle(indices)
+    cut = int(n_obs*train_size)
+    train_indices = indices[:cut]
+    test_indices = indices[cut:]
+    
+    X_train, y_train = X[train_indices], y[train_indices]
+    X_test, y_test = X[test_indices], y[test_indices]
+
+    X_mu = np.mean(X_train, axis=0, keepdims=True)
+    X_sigma = np.std(X_train, axis=0, keepdims=True)
+
+    X_train -= X_mu; X_train /= X_sigma
+    X_test -= X_mu; X_test /= X_sigma
+    X -= X_mu; X /= X_sigma
+
+    return X, y, X_train, y_train, X_test, y_test

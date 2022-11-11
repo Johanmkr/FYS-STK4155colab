@@ -36,7 +36,7 @@ class FrankeRegression:
         # self.yy = (self.yy-np.mean(self.yy))/np.std(self.yy)
         self.zz = self.FrankeFunction(self.xx, self.yy)
         self.zzr = self.zz.ravel()
-        self.zzr = (self.zzr-np.mean(self.zzr))/np.std(self.zzr)
+        # self.zzr = (self.zzr-np.mean(self.zzr))/np.std(self.zzr)
 
         self.FrankeX = np.zeros((len(self.zzr), 2))
         self.FrankeX[:,0] = self.xx.ravel()
@@ -119,7 +119,7 @@ def EtaLambdaAnalysis(filename, activationFunction='sigmoid', neuronsInEachLayer
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=1000, batchSize=1, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
+def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLayers=3, outputNeurons=1, epochs=2500, batchSize=20, eta=0.01, lmbda=1e-7, testSize=0.2, optimizer="RMSProp"):
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
     dF = pd.DataFrame()
     for function in activationFunctions:
@@ -133,14 +133,36 @@ def activationFunctionPerEpochAnalysis(filename, neuronsInEachLayer=7, hiddenLay
     dF.to_pickle(output_path+filename+".pkl")
 
 
+def EpochNeuronsAnalysis(filename, activationFunction="sigmoid", outputNeurons=1, epochs=2500, batchSize=10, eta=0.1, lmbda=1e-5, testSize=0.2, optimizer="RMSProp"):
+    layers = np.arange(10)
+    neurons = np.arange(1,11)*10
+    mse = np.zeros((len(layers), len(neurons)))
+    for i, layer in enumerate(layers):
+        for j, neuron in enumerate(neurons):
+            print(f"Layer: {layer}\nNeuron: {neuron}")
+            Freg = FrankeRegression(hiddenLayers=layer, neuronsInEachLayer=neuron, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, batchSize=batchSize, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            Freg.train()
+            print(Freg)
+            print("\n\n\n\n")
+            mse[i,j] = Freg.finalTestLoss()
+    idx = [r"{%.0f}"%k for k in layers]
+    cols = [r"{%.0f}"%k for k in neurons]
+    dF = pd.DataFrame(mse, index=idx, columns=cols)
+    dF.to_pickle(output_path+filename+".pkl")
+
+
+
+
+
         
 
 
 if __name__=="__main__":
-    # Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=50, testSize=0.2, lmbda=0.0001, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
+    # Freg = FrankeRegression(hiddenLayers=3, activationFunction="sigmoid", neuronsInEachLayer=50, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.0001, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
     # Freg.train()
     # Freg.predict()
     # print(Freg)
     # Freg.plot()
     # EtaLambdaAnalysis("EtaLmbdaMSE")
-    activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    EpochNeuronsAnalysis("EpochNeuron")

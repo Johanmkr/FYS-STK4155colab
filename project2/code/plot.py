@@ -130,14 +130,14 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(500,
             plt.show()
     
 
-def heatmap_plot(filename, pdfname='untitled', savepush=True, show=True):
+def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
     fig, ax = plt.subplots(layout='constrained')
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1)
     ax.invert_yaxis()
     ax.set_title("MSE")
-    ax.set_xlabel(r"$\eta$")
-    ax.set_ylabel(r"$\lambda$")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
@@ -145,7 +145,7 @@ def heatmap_plot(filename, pdfname='untitled', savepush=True, show=True):
         if show:
             plt.show()
 
-def epoch_plot(filename, pdfname="untitled", save_push=False):
+def epoch_plot(filename, pdfname="untitled", savepush=False):
     fig, ax = plt.subplots(layout="constrained")
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     for func in score.columns:
@@ -155,13 +155,15 @@ def epoch_plot(filename, pdfname="untitled", save_push=False):
             x = np.asarray(score["epochs"])
             y = np.asarray(score[func])
             ax.plot(x,y, label=func)
-    # ax.set_xlabel("Epoch")
-    # ax.set_ylabel("MSE")
-    set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
+    # ax.set_ylim(0,1)
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("MSE")
+    plt.legend()
+    # set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
 
-    if save_push:
+    if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
-    if not save_push:
+    if not savepush:
         plt.show()
 
 

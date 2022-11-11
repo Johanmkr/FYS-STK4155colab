@@ -10,6 +10,9 @@ class LossFunctions:
         if stringToParse == 'mse':
             self.lossFunction = self.mse 
             self.derivativeFunction = self.mseDerivative
+        elif stringToParse == "crossentropy":
+            self.lossFunction = self.crossentropy
+            self.derivativeFunction = self.crossentropyDerivative
 
     def derivative(self, prediction, target):
         return self.derivativeFunction(prediction, target)
@@ -24,5 +27,8 @@ class LossFunctions:
         return (prediction-target)
 
     def crossentropy(self, prediction, target):
-        pass
+        return -(target*np.log(prediction) + (1-target)*np.log(1-prediction))
+
+    def crossentropyDerivative(self, prediction, target):
+        return (prediction-target)/(1-prediction)/prediction
 
