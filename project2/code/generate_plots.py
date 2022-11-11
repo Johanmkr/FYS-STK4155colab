@@ -47,7 +47,7 @@ no_neurons = 5
 # #xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
 # PLOT.set_pdf_info("layer_neuron_analysis", method='SGD', opt=optimiser, eta='?', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='?', L=r'$0,1,\dots,9$', N=r'$5, 10, \dots, 50$') 
 
-# PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
+PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 

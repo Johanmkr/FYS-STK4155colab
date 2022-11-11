@@ -256,16 +256,15 @@ if __name__=="__main__":
     # print(Freg)
     # Freg.plot()
 
-
     #EtaLambdaAnalysis("EtaLmbdaMSE")
 
     #LayerNeuronsAnalysis("LayerNeuron")
 
     #activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
-    #EpochMinibatchAnalysis("EpochMinibatch")
 
 
 
     # Update README.md and info.pkl
     info.update(header="Results from Franke regression analysis using NN")
+    # EpochMinibatchAnalysis("EpochMinibatch")

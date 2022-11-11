@@ -144,13 +144,6 @@ class devNeuralNetwork:
         self.feedForward()
         return self.outputData
 
-    # def ttSplit(self, testSize):
-    #     testIdx = np.random.choice(np.arange(len(self.inputData)), int(len(self.inputData) * testSize), replace=False)
-    #     self.testData = self.inputData[testIdx]
-    #     self.testOut = self.targetData[testIdx]
-    #     self.trainData = np.delete(self.inputData, testIdx, axis=0)
-    #     self.trainOut = np.delete(self.targetData, testIdx, axis=0)
-
     def updateInputLayer(self, data):
         self.setInputFeatures(data)
         self.layers[0].UpdateLayer(self.inputs, self.features)
