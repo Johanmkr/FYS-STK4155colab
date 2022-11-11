@@ -174,6 +174,8 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 
     
 
 def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+    info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
+    info2 = info2pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "Test MSE", "extend": "max"})
@@ -181,8 +183,16 @@ def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xla
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
+    params = {} 
+    for param, title in Nanna.CATEGORIES.items():
+        try:
+            params[param] = info2[filename][title]
+        except KeyError:
+            continue
+
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
