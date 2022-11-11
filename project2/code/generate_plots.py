@@ -49,16 +49,16 @@ optimiser = 'RMSProp'
 no_hidden_layers = 1
 no_neurons = 5
 
-PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
-PLOT.set_pdf_info("eta_lambda_analysis", method='SGD', opt=optimiser, eta='', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='...', L=no_hidden_layers, N=no_neurons) 
+# PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
+# PLOT.set_pdf_info("eta_lambda_analysis", method='SGD', opt=optimiser, eta='', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='...', L=no_hidden_layers, N=no_neurons) 
 
-PLOT.epoch_plot("actFuncPerEpoch.pkl", pdfname="actFuncPerEpoch")
+# PLOT.epoch_plot("actFuncPerEpoch.pkl", pdfname="actFuncPerEpoch")
 
-PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
-#xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
-PLOT.set_pdf_info("layer_neuron_analysis", method='SGD', opt=optimiser, eta='?', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='?', L=r'$0,1,\dots,9$', N=r'$5, 10, \dots, 50$') 
+# PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
+# #xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
+# PLOT.set_pdf_info("layer_neuron_analysis", method='SGD', opt=optimiser, eta='?', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='?', L=r'$0,1,\dots,9$', N=r'$5, 10, \dots, 50$') 
 
-# PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
+PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 # Update README.md:

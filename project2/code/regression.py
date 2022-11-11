@@ -232,4 +232,4 @@ if __name__=="__main__":
 
     # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
-    EpochMinibatchAnalysis("EpochMinibatch")
+    # EpochMinibatchAnalysis("EpochMinibatch")
