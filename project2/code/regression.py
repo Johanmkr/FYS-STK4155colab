@@ -19,10 +19,14 @@ info.define_categories({
     "no_minibatches":r"$m$",
     "eta":r"$\eta$", 
     "lmbda":r"$\lambda$",
+    "L":r"$L-1$", 
+    "N":r"$N_l$",
+    "g":r"$g$",
+    "timer":"train time (s)",
     "gamma":r"$\gamma$", 
     "rho":r"$\varrho_1$, $\varrho_2$",
-    "theta0":r"$\theta_0$",
-    "timer":"run time (s)"})
+    "theta0":r"$\theta_0$"
+    })
 
 
 class FrankeRegression:
@@ -46,6 +50,7 @@ class FrankeRegression:
 
         space = np.linspace(0,1,gridSize)
         self.xx, self.yy = np.meshgrid(space,space)
+        self.n_obs = int(gridSize*gridSize)
 
         self.zz = self.FrankeFunction(self.xx, self.yy)
         self.zzr = self.zz.ravel()
@@ -136,6 +141,9 @@ def EtaLambdaAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=hiddenLayers, eta=r"$[%s, %s]$" %(cols[0], cols[-1]), N=neuronsInEachLayer, lmbda=r"$[%s, %s]$" %(idx[0], idx[-1]), g=activationFunction)# n_obs=Freg.n_obs)
+    
+
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
     eta = 1e-2  #FIXME
@@ -168,6 +176,8 @@ def LayerNeuronsAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=r"$[%s, %s]$" %(idx[0], idx[-1]), N=r"$[%s, %s]$" %(cols[0], cols[-1]), eta=eta, lmbda=lmbda, g=activationFunction)# n_obs=Freg.n_obs)
+
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
     hiddenLayers = 1    #FIXME
@@ -193,6 +203,8 @@ def activationFunctionPerEpochAnalysis(filename):
         dF[function] = loss
     dF["epochs"] = epochslist
     dF.to_pickle(output_path+filename+".pkl")
+
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...')#, n_obs=Freg.n_obs)
 
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
@@ -228,7 +240,7 @@ def EpochMinibatchAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', )
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=r"$[%s, %s]$" %(idx[0], idx[-1]), no_minibatches=r"$[%s, %s]$" %(cols[0], cols[-1]), L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction)#, n_obs=Freg.n_obs)
 
 
 
@@ -244,13 +256,15 @@ if __name__=="__main__":
     # print(Freg)
     # Freg.plot()
 
+    #EtaLambdaAnalysis("EtaLmbdaMSE")
 
-    # EtaLambdaAnalysis("EtaLmbdaMSE")
+    #LayerNeuronsAnalysis("LayerNeuron")
 
-    # LayerNeuronsAnalysis("LayerNeuron")
+    #activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
-    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
+
+
+    # Update README.md and info.pkl
+    info.update(header="Results from Franke regression analysis using NN")
     # EpochMinibatchAnalysis("EpochMinibatch")
-
-    pass
