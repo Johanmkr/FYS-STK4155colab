@@ -2,51 +2,63 @@ from src.utils import *
 import plot as PLOT
 
 
-
-
-
-
-
 # SIMPLE REGRESSION
-# TODO: put necessary info in utils? 
-n_etas = 10
-learningRates = np.logspace(-5, -1, n_etas)     #   the η's we consider
-
-n_obs = 1000
-x = np.linspace(-1,1, n_obs)
-X = np.zeros((len(x),3))
-X[:,0] = x
-X[:,1] = x**2
-X[:,2] = x**3
-noise_scale = 0.1
-theta_actual = np.array([2,1.7,-0.4])
-y = X@theta_actual+ np.random.randn(n_obs)*noise_scale
-
-X, y, X_train, y_train, X_test, y_test = Z_score_normalise_split(X, y)
 
 
-noEpochs1, noEpochs2 = 500, 1000
-noMinibatches = 50
-theta0 = np.array([1,0.5,4])
+no_of_observations = 400
+no_epochs1, no_epochs2 = 25, 50
+no_of_minibatches = no_of_observations//10
+np.random.seed(269)
+theta0 = np.random.randn(3)
+lmbda_ridge = 0.1
 
-files = ["momentum_SGD.txt", "plain_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
-labels =  ["momentum SGD", "plain SGD", "AdaGrad", "RMSProp", "Adam"]
+SHOW = False
 
-# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=True)
-# PLOT.set_pdf_info("errors_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
+'''
+--------------------------
+SIMPLE REGRESSION ANALYSIS
+--------------------------
+'''
 
-# PLOT.simple_regression_polynomial(X, y, files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=True)
-# PLOT.set_pdf_info("polynomial_gradient_descent", method='SGD', eta='...', theta0=theta0) # more here?
+files = ["plain_SGD.txt", "momentum_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
+labels =  ["plain SGD", "momentum SGD", "AdaGrad", "RMSProp", "Adam"]
 
-# PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=True)
-# 
+''' OLS '''
+# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
+PLOT.set_pdf_info("errors_gradient_descent", method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=0) 
+
+# PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
+# PLOT.set_pdf_info("polynomial_gradient_descent",  method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=0) 
+
+''' Ridge '''
+# PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
+# PLOT.set_pdf_info("ridge_errors_gradient_descent",  method='SGD', opt='...', eta='...', theta0=theta0, no_epochs=(no_epochs1, no_epochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda=lmbda_ridge) 
 
 
-# PLOT.heatmap_plot("EtaLmbdaMSE.pkl")
+'''
+-----------------------------
+FRANKE NN REGRESSION ANALYSIS
+-----------------------------
+'''
 
 
-PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl")
+no_of_observations = int(20*20)
+no_epochs = 500 #???
+no_of_minibatches = no_of_observations//10
+optimiser = 'RMSProp'
+no_hidden_layers = 1
+no_neurons = 5
+
+# PLOT.heatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
+PLOT.set_pdf_info("eta_lambda_analysis", method='SGD', opt=optimiser, eta='', no_epochs='?', no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='...', L=no_hidden_layers, N=no_neurons) 
 
 # PLOT.epoch_plot("actFuncPerEpoch.pkl", pdfname="actFuncPerEpoch")
 
-# PLOT.heatmap_plot("LayerNeuron.pkl", pdfname="LayerNeuron", savepush=False, xlabel="Neurons", ylabel="Hidden layers")
+PLOT.heatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
+#xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
+PLOT.set_pdf_info("layer_neuron_analysis", method='SGD', opt=optimiser, eta='?', no_epochs='?', no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='?', L=r'$0,1,\dots,9$', N=r'$10, 20, \dots, 100$') 
+
+
+
+# Update README.md:
+PLOT.update()

@@ -39,7 +39,24 @@ def Z_score_normalise(X:ndarray, y:ndarray, keepdims:bool=True) -> tuple[ndarray
     return X, y
 
 
-def Z_score_normalise_split(X:ndarray, y:ndarray, train_size=0.80) -> tuple[ndarray, ndarray]:
+def train_test_split(X:ndarray, y:ndarray, train_size=0.80, seed=200):
+    np.random.seed(seed)
+    n_obs = np.shape(X)[0]
+    indices = np.arange(n_obs)
+    np.random.shuffle(indices)
+    cut = int(n_obs*train_size)
+    train_indices = indices[:cut]
+    test_indices = indices[cut:]
+    
+    X_train, y_train = X[train_indices], y[train_indices]
+    X_test, y_test = X[test_indices], y[test_indices]
+
+    return X_train, y_train, X_test, y_test
+
+
+
+def Z_score_normalise_split(X:ndarray, y:ndarray, train_size=0.80, seed=200) -> tuple[ndarray]:
+    np.random.seed(seed)
     n_obs = np.shape(X)[0]
     indices = np.arange(n_obs)
     np.random.shuffle(indices)
