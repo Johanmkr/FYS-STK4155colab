@@ -110,8 +110,8 @@ def EtaLambdaAnalysis(filename):
     optimizer='RMSProp'
 
     #   Parameters to test
-    etas = np.logspace(-9,0,10)
-    lmbdas = np.logspace(-9,0,10)
+    etas = np.logspace(-5,1,7)
+    lmbdas = np.logspace(-5,1,7)
 
     #   Paramteres to find
     accuracy = np.zeros((len(lmbdas), len(etas)))
@@ -132,8 +132,8 @@ def EtaLambdaAnalysis(filename):
 
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
-    eta = 1e-2  #FIXME
-    lmbda = 1e-3   #FIXME
+    eta = 0.1  #FIXME
+    lmbda = 1e-5   #FIXME
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
@@ -166,7 +166,7 @@ def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
     hiddenLayers = 1    #FIXME
     neuronsInEachLayer=5    #FIXME
-    eta = 0.01
+    eta = 0.1
     lmbda = 1e-5
     outputNeurons=1
     epochs=250
@@ -192,7 +192,7 @@ def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
     hiddenLayers = 1    #FIXME
     neuronsInEachLayer=5    #FIXME
-    eta = 0.01  #FIXME
+    eta = 0.1  #FIXME
     lmbda = 1e-5    #FIXME
     outputNeurons=1
     activationFunction = 'tanh'
