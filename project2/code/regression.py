@@ -29,9 +29,11 @@ class FrankeRegression:
 
         space = np.linspace(0,1,gridSize)
         self.xx, self.yy = np.meshgrid(space,space)
+
         self.zz = self.FrankeFunction(self.xx, self.yy)
         self.zzr = self.zz.ravel()
-
+        noise = 0.1 * np.random.randn(len(self.zzr))
+        self.zzr += noise
 
         self.FrankeX = np.zeros((len(self.zzr), 2))
         self.FrankeX[:,0] = self.xx.ravel()
@@ -182,14 +184,14 @@ def EpochMinibatchAnalysis(filename):
     eta = 0.01  #FIXME
     lmbda = 1e-5    #FIXME
     outputNeurons=1
-    activationFunction = 'sigmoid'
+    activationFunction = 'tanh'
     epochs=250
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
 
     #   Parameters to test
-    epoch_array = np.linspace(250, 2500, 10, dtype="int")
+    epoch_array = np.linspace(100, 1000, 10, dtype="int")
     minibatch_array = np.linspace(5, 50, 10, dtype="int")
 
     #  Parameters to find
@@ -217,16 +219,17 @@ def EpochMinibatchAnalysis(filename):
 
 
 if __name__=="__main__":
-    # Freg = FrankeRegression(hiddenLayers=1, activationFunction="sigmoid", neuronsInEachLayer=5, outputNeurons=1, epochs=250, nrMinibatches=100, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
+    # Freg = FrankeRegression(hiddenLayers=2, activationFunction="tanh", neuronsInEachLayer=25, outputNeurons=1, epochs=250, nrMinibatches=100, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
     # Freg.train()
     # Freg.predict()
     # print(Freg)
     # Freg.plot()
 
+
     # EtaLambdaAnalysis("EtaLmbdaMSE")
 
-    LayerNeuronsAnalysis("LayerNeuron")
+    # LayerNeuronsAnalysis("LayerNeuron")
 
     # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
-    # EpochMinibatchAnalysis("EpochMinibatch")
+    EpochMinibatchAnalysis("EpochMinibatch")
