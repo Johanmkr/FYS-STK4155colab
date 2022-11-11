@@ -45,23 +45,12 @@ PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=
 PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
 # #xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
 
-# PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
+PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 
-'''
------------------------------
-Breast Cancer NN REGRESSION ANALYSIS
------------------------------
-'''
 
-PLOT.CancerHeatmap_plot("EtaLmbdaMSECancer.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
 
-PLOT.Cancerepoch_plot("actFuncPerEpochCancer.pkl", pdfname="actFuncPerEpoch")
-
-PLOT.CancerHeatmap_plot("LayerNeuronCancer.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
-
-PLOT.CancerHeatmap_plot("EpochMinibatchCancer.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 
