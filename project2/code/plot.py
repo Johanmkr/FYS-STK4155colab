@@ -68,14 +68,19 @@ Nanna.init()
 
 Nanna.sayhello()
 Nanna.define_categories({
-    'method':'method', 
-    'opt':'optimiser', 
-    'n_obs':r'$n_\mathrm{obs}$', 
-    'no_epochs':'#epochs', 
-    'no_minibatches':'#minibatches',
-    'eta':r'$\eta$', 
-    'gamma':r'$\gamma$', 
-    'rho':r'$\varrho_1$, $\varrho_2$'})
+    'method':'method',                      #   steepest descent scheme
+    'opt':'optimiser',                      #   update rule name
+    'n_obs':r'$n_\mathrm{obs}$',            #   #observations
+    'no_epochs':'#epochs',                  #   #epochs
+    'no_minibatches':'#minibatches',        #   #minibatches
+    'lmbda':r'$\lambda$',                   #   penalty parameter
+    'eta':r'$\eta$',                        #   global learning rate
+    'gamma':r'$\gamma$',                    #   momentum scale
+    'rho':r'$\varrho_1$, $\varrho_2$',      #   parameters in adaptive optimisers
+    'theta0':r'$\boldsymbol{\theta}_0$',    #   start value
+    'L':r'$L-1$',                           #   #hidden layers
+    'N':r'$N_l$'                            #   #neurons per layer
+    })  
 
 
 def set_pdf_info(pdfname, **params):
@@ -145,7 +150,6 @@ def heatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': 'Test MSE', "extend": "max"})
     ax.invert_yaxis()
-    # ax.set_title("Test MSE")
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 

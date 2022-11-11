@@ -102,11 +102,11 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
 
 # Ridge:
 lmbda0 = 0.1
-simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
-simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
-simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
-simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
-simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
+# simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
+# simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
+# simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
+# simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
+# simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
 
 
 
@@ -114,4 +114,4 @@ info.additional_information(r"$f(x) = %.2f x + %.2f x^2 + %.2f x^3 \, + \, %.2f 
 
 info.additional_information(r"Considered %i logarithmically spaced learning rates $\eta \in [%.1e, \, %.1e]$." %(no_of_etas, learningRates[0], learningRates[-1]))
 
-info.update(header="(S)GD with different update rules and hyperparameters")
+info.update(header="Results from simple regression analysis using (S)GD")
