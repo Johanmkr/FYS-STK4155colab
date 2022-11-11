@@ -209,6 +209,42 @@ def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
         if show:
             plt.show()
 
+def CancerHeatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+    fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
+    score = pd.read_pickle(data_path+"network_classification/"+filename)
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "Test accuracy", "extend": "max"})
+    ax.invert_yaxis()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    if savepush:
+        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+    else:
+        if show:
+            plt.show()
+
+def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
+    fig, ax = plt.subplots(layout="constrained")
+    score = pd.read_pickle(data_path+"network_classification/"+filename)
+    for func in score.columns:
+        if func == "epochs":
+            pass
+        else:
+            x = np.asarray(score["epochs"])
+            y = np.asarray(score[func])
+            ax.plot(x,y, label=func)
+    # ax.set_ylim(0,1)
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Test accuracy")
+    plt.legend()
+    # set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
+
+    if savepush:
+        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+    if not savepush:
+        if show:
+            plt.show()
+
 
 def update():
     Nanna.update()

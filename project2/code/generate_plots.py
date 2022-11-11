@@ -15,13 +15,13 @@ SIMPLE REGRESSION ANALYSIS
 files = ["plain_SGD.txt", "momentum_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
 labels =  ["plain SGD", "momentum SGD", "AdaGrad", "RMSProp", "Adam"]
 
-''' OLS '''
-PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
+# ''' OLS '''
+# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
 
-PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
+# PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
 
-''' Ridge '''
-PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
+# ''' Ridge '''
+# PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
 
 
 '''
@@ -47,12 +47,23 @@ no_neurons = 5
 # #xlabel="#neurons", ylabel=r"#hidden layers", show=SHOW)
 # PLOT.set_pdf_info("layer_neuron_analysis", method='SGD', opt=optimiser, eta='?', no_epochs=no_epochs, no_minibatches=no_of_minibatches, n_obs=no_of_observations, lmbda='?', L=r'$0,1,\dots,9$', N=r'$5, 10, \dots, 50$') 
 
-PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
+# PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 
+'''
+-----------------------------
+Breast Cancer NN REGRESSION ANALYSIS
+-----------------------------
+'''
 
+PLOT.CancerHeatmap_plot("EtaLmbdaMSECancer.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
 
+PLOT.Cancerepoch_plot("actFuncPerEpochCancer.pkl", pdfname="actFuncPerEpoch")
+
+PLOT.CancerHeatmap_plot("LayerNeuronCancer.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
+
+PLOT.CancerHeatmap_plot("EpochMinibatchCancer.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"m", ylabel=r"Epochs", show=SHOW)
 
 
 

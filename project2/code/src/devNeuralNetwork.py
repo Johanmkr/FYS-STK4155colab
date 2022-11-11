@@ -244,7 +244,7 @@ class devNeuralNetwork:
     def setRandomIndecies(self):
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
-    def accuracy(self, prediction, target, tol=1e-3):
+    def accuracy(self, prediction, target, tol=1e-2):
         samples = len(target)
         accuracy = 0
         for i in range(samples):
