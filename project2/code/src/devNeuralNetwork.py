@@ -78,6 +78,10 @@ class devNeuralNetwork:
         self.lossFunction = LossFunctions(lossFunction)
         self.optimizer = optimizer
         self.terminalUpdate = terminalUpdate
+        if activationFunction in ["sigmoid", "tanh"]:
+            self.weightInitialiser = "xavier"
+        elif activationFunction in ["relu", "lrelu", "relu*"]:
+            self.weightInitialiser = "He"
 
         self.testSize = testSize
         # self.ttSplit(self.testSize)
@@ -183,11 +187,10 @@ class devNeuralNetwork:
         self.initialiseWeights()
 
     def initialiseWeights(self):
-
         for i in range(1, self.nrOfLayers): #looping over hidden layers + output layer
             nIn = self.layers[i-1].neurons
             nOut = self.layers[i].neurons
-            self.layers[i].setWmatrix(nIn,nOut)
+            self.layers[i].setWmatrix(nIn,nOut, initialisation=self.weightInitialiser)
 
     def feedForward(self):
         for i in range(1, self.nrOfLayers):

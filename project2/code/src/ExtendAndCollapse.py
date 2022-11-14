@@ -1,8 +1,8 @@
 import numpy as np
-from IPython import embed
+from Layer import Layer
 
 class ExtendAndCollapse:
-    def __init__(self, layers):
+    def __init__(self, layers:list[Layer]) -> None:
         """Sets parameters for and initialises the full weight, bias, delta and h matrices. Makes sure that equal index h correspond to the previous layer compared to weight, bias and delta
 
         Args:
