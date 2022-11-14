@@ -268,8 +268,6 @@ if __name__=="__main__":
     # EpochMinibatchAnalysis("EpochMinibatch")
 
 
-    info.omit_file("dummy.jpg")
-
 
     # Update README.md and info.pkl
     info.additional_information("Loss function: mean squared error (with regularisation)")
