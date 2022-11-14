@@ -5,15 +5,36 @@ except ModuleNotFoundError:
 
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad
-import matplotlib.pyplot as plt
 
 
+import numpy as np0
 
 
 
 
 class noneRULE:
-    def __init__(self, theta0, eta:float=0.0, gamma:float=0.0, rho1:float=0.0, rho2:float=0.0, epsilon:float=0.0):
+    """
+    Mother-class for update rules.
+    """
+    def __init__(self, theta0:np0.ndarray, eta:float=0.0, gamma:float=0.0, rho1:float=0.0, rho2:float=0.0, epsilon:float=0.0):
+        """
+        Contruct the update rule (optimiser) with initial vector and parameter values.
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta : float, optional
+            global learning rate, by default 0.0
+        gamma : float, optional
+            momentum parameter, by default 0.0
+        rho1 : float, optional
+            hyperparameter, by default 0.0
+        rho2 : float, optional
+            hyperparameter, by default 0.0
+        epsilon : float, optional
+            small number for numerical stability, by default 0.0
+        """
         self.theta = theta0
         self.eta = eta
         self.params = {'eta':eta, 'gamma':gamma, 'rho1':rho1, 'rho2':rho2, 'epsilon':epsilon}
@@ -22,25 +43,90 @@ class noneRULE:
         self.schedule = lambda k: self.eta
 
     def set_params(self, eta:float=None, gamma:float=None, rho1:float=None, rho2:float=None, epsilon:float=None):
+        """
+        Set parameters needed for update rule
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default self.params['eta']
+        gamma : float, optional
+            momentum parameter, by default self.params['gamma']
+        rho1 : float, optional
+            hyperparameter, by default self.params['rho1']
+        rho2 : float, optional
+            hyperparameter, by default self.params['rho2']
+        epsilon : float, optional
+            small number for numerical stability, by default self.params['epsilon']
+        """
         for param in self.params:
             val = eval(param) or self.params[param]
             self.params[param] = val
         self.eta = self.params['eta']
     
-    def __call__(self, grad, theta):
+    def __call__(self, grad:np0.ndarray, theta:np0.ndarray):
+        """
+        Find next θ.
+
+        Parameters
+        ----------
+        grad : ndarray
+            gradient of loss function for correct argument θ
+        theta : ndarray
+            current parameter vector
+
+        Returns
+        -------
+        ndarray
+            updated parameter vector
+        """
         self.update(theta, grad)
         return self.theta
 
     def next(self, it:int=None):
+        """
+        Update iteration number of instance.
+
+        Parameters
+        ----------
+        it : int, optional
+            current iteration, by default self.idx+1
+        """
         self.idx = self.idx+1 or it
         self.schedule(self.idx) # not sure this is necessary
 
     def set_learning_schedule(self, tau:int, eta_0:float=None, eta_tau:float=None):
+        """
+        Set a learning schedule for the learning parameter η.
+
+        Parameters
+        ----------
+        tau : int
+            max. iteration that schedule cares about
+        eta_0 : float, optional
+            initial η, by default self.eta
+        eta_tau : float, optional
+            last η, by default 0.01*eta_0
+        """
         eta0 = eta_0 or self.eta
         etatau = eta_tau or 0.01*eta0
         self.schedule = lambda k: self.standard_learning_schedule(k, eta0, etatau, tau)
         
-    def standard_learning_schedule(self, k, eta_0, eta_tau, tau):
+    def standard_learning_schedule(self, k:int, eta_0:float, eta_tau:float, tau:int):
+        """
+        Apply the standard learning schedule.
+
+        Parameters
+        ----------
+        k : int
+            _description_
+        eta_0 : float
+            initial η
+        eta_tau : float
+            last η
+        tau : int
+            max. iteration that schedule cares about
+        """
         kt = k/tau
         if kt <= 1:
             eta = (1-kt) * eta_0 + kt*eta_tau
@@ -49,81 +135,275 @@ class noneRULE:
         self.set_learning_rate(eta)
     
     def set_learning_rate(self, eta:float):
+        """
+        Set instance's learning rate to some value.
+
+        Parameters
+        ----------
+        eta : float
+            global learning rate
+        """
         self.eta = eta
 
-    def update(self, theta, grad):
+    def update(self, theta:np0.ndarray, grad:np0.ndarray):
+        """
+        Update θ by momentum (plain if γ=0) method.
+
+        Parameters
+        ----------
+        theta : ndarray
+            current θ
+        grad : ndarray
+            gradient of loss function at befitting arguments
+        """
         # standard:
         self.v = self.gamma*self.v - self.eta*grad
         self.theta = theta + self.v
 
     def get_diff(self):
+        """
+        Return the change in θ from last iteration to current.
+
+        Returns
+        -------
+        ndarray
+            change in θ
+        """
         return self.v
 
 class noneRULEadaptive(noneRULE):
-    def __init__(self, theta0, eta:float=0, rho1:float=0, rho2:float=0, epsilon:float=1e-7):
+    """
+    Mother-class for adaptive update rules.
+    """
+    def __init__(self, theta0:np0.ndarray, eta:float=0, rho1:float=0, rho2:float=0, epsilon:float=1e-7):
+        """
+        Initialise an adaptive optimiser
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta : float, optional
+            global learning rate, by default 0.0
+        rho1 : float, optional
+            hyperparameter, by default 0.0
+        rho2 : float, optional
+            hyperparameter, by default 0.0
+        epsilon : float, optional
+            small number for numerical stability, by default 1e-7
+        """
         super().__init__(theta0, eta, epsilon=epsilon, rho1=rho1, rho2=rho2)
         self.r = np.zeros_like(self.theta)
         self.epsilon = epsilon # numerical stability
 
-    
-    def set_params(self, eta: float = None, rho1: float = None, rho2: float = None, epsilon: float = None):
+    def set_params(self, eta:float=None, rho1:float=None, rho2:float=None, epsilon:float=None):
+        """
+        _summary_
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default self.params['eta']
+        rho1 : float, optional
+            hyperparameter, by default self.params['rho1']
+        rho2 : float, optional
+            hyperparameter, by default self.params['rho2']
+        epsilon : float, optional
+            small number for numerical stability, by default self.params['epsilon']
+        """
         super().set_params(eta, 0, rho1, rho2, epsilon)
         self.epsilon = self.params['epsilon']
 
 
 
 class rule_ClassicalSGD(noneRULE):
-    def __init__(self, theta0, eta0:float=0.01):
+    def __init__(self, theta0:np0.ndarray, eta0:float=0.01):
+        """
+        Construct the plain (S)GD scheme.
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta0 : float, optional
+            global learning rate, by default 0.01
+        """
         super().__init__(theta0, eta0, gamma=0)
         self.params = {key:self.params[key] for key in ['eta']}
         
     def set_params(self, eta:float=None):
+        """
+        Set learning rate.
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default None
+        """
         super().set_params(eta, 0)
         self.gamma = 0
 
 class rule_MomentumSGD(noneRULE):
-    def __init__(self, theta0, eta0:float=0.01, gamma:float=0.9):
+    def __init__(self, theta0:np0.ndarray, eta0:float=0.01, gamma:float=0.9):
+        """
+        Construct the momentum (S)GD scheme.
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta0 : float, optional
+            global learning rate, by default 0.01
+        gamma : float, optional
+            momentum parameter, by default 0.9
+        """
         super().__init__(theta0, eta0, gamma=gamma)
         self.params = {key:self.params[key] for key in ['eta', 'gamma']}
 
     def set_params(self, eta0:float=None, gamma:float=None):
+        """
+        Set learning rate and momentum parameter.
+
+        Parameters
+        ----------
+        eta0 : float, optional
+            global learning rate, by default None
+        gamma : float, optional
+            momentum parameter, by default None
+        """
         super().set_params(eta0, gamma)
         self.gamma = self.params['gamma']
 
 class rule_AdaGrad(noneRULEadaptive):
-    def __init__(self, theta0, eta:float=0.01, epsilon:float=1e-7):
+    def __init__(self, theta0:np0.ndarray, eta:float=0.01, epsilon:float=1e-7):
+        """
+        Construct the AdaGrad scheme.
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta : float, optional
+            global learning rate, by default 0.01
+        epsilon : float, optional
+            small number for numerical stability, by default 1e-7
+        """
         super().__init__(theta0, eta, epsilon=epsilon)
         self.params = {key:self.params[key] for key in ['eta', 'epsilon']}
     
-    def update(self, theta, grad):
+    def update(self, theta:np0.ndarray, grad:np0.ndarray):
+        """
+        Update θ by the AdaGrad rule.
+
+        Parameters
+        ----------
+        theta : ndarray
+            current θ
+        grad : ndarray
+            gradient of loss function at befitting arguments
+        """
         self.r = self.r + grad**2
         self.v = - self.eta*(self.epsilon+np.sqrt(self.r))**(-1) * grad # check if this is element-wise
         self.theta = theta + self.v 
 
-    def set_params(self, eta: float = None, epsilon: float = None):
+    def set_params(self, eta:float=None, epsilon:float=None):
+        """
+        Set parameters for AdaGrad.
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default None
+        epsilon : float, optional
+            small number for numerical stability, by default None
+        """
         super().set_params(eta, None, None, epsilon)
 
 class rule_RMSProp(noneRULEadaptive):
-    def __init__(self, theta0, eta:float=0.01, rho:float=0.9, epsilon:float=1e-7):
+    def __init__(self, theta0:np0.ndarray, eta:float=0.01, rho:float=0.9, epsilon:float=1e-7):
+        """
+        Construct the RMSProp scheme.
+
+        Parameters
+        ----------
+        theta0 : np0.ndarray
+            initial parameter vector
+        eta : float, optional
+            global learning rate, by default 0.01
+        rho : float, optional
+            hyperparameter ρ in RMSProp, by default 0.9
+        epsilon : float, optional
+           small number for numerical stability, by default 1e-7
+        """
         super().__init__(theta0, eta, rho2=rho, epsilon=epsilon)
         self.params = {key:self.params[key] for key in ['eta', 'rho2', 'epsilon']}
 
-    def update(self, theta, grad):
+    def update(self, theta:np0.ndarray, grad:np0.ndarray):
+        """
+        Update θ by the RMSProp rule.
+
+        Parameters
+        ----------
+        theta : ndarray
+            current θ
+        grad : ndarray
+            gradient of loss function at befitting arguments
+        """
         self.r = self.rho*self.r + (1-self.rho)*grad**2
         self.v = - self.eta / (np.sqrt(self.epsilon + self.r))*grad # is this element-wise? should be...
         self.theta = theta + self.v
 
     def set_params(self, eta:float=None, rho:float=None,  epsilon:float=None):
+        """
+        Set parameters for RMSProp.
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default None
+        rho : float, optional
+            hyperparameter ρ in RMSProp
+        epsilon : float, optional
+            small number for numerical stability, by default None
+        """
         super().set_params(eta, None, rho, epsilon)
         self.rho = self.params['rho2']
 
 class rule_Adam(noneRULEadaptive):
-    def __init__(self, theta0, eta:float=0.001, rho1:float=0.9, rho2:float=0.999, epsilon:float=1e-8):
+    def __init__(self, theta0:np0.ndarray, eta:float=0.001, rho1:float=0.9, rho2:float=0.999, epsilon:float=1e-8):
+        """
+        Construct the Adam scheme.
+
+        Parameters
+        ----------
+        theta0 : ndarray
+            initial parameter vector
+        eta : float, optional
+            global learning rate, by default 0.001
+        rho1 : float, optional
+            hyperparameter ρ1 in Adam, by default 0.9
+        rho2 : float, optional
+            hyperparameter ρ2 in Adam,, by default 0.999
+        epsilon : float, optional
+            _description_, by default 1e-8
+        """
         super().__init__(theta0, eta, rho1=rho1, rho2=rho2, epsilon=epsilon)
         self.params = {key:self.params[key] for key in ['eta', 'rho1', 'rho2', 'epsilon']}
         self.s = np.zeros_like(self.theta)
             
-    def update(self, theta, grad, k=None):
+    def update(self, theta:np0.ndarray, grad:np0.ndarray, k:int=None):
+        """
+        Update θ by the Adam rule.
+
+        Parameters
+        ----------
+        theta : ndarray
+            current θ
+        grad : ndarray
+            gradient of loss function at befitting arguments
+        k : int
+            current iteration
+        """
         k = k or self.idx; k+=1
         self.s = self.rho1*self.s + (1-self.rho1)*grad
         self.r = self.rho2*self.r + (1-self.rho2)*grad**2
@@ -133,6 +413,20 @@ class rule_Adam(noneRULEadaptive):
         self.theta = theta + self.v
 
     def set_params(self, eta:float=None, rho1:float=None, rho2:float=None, epsilon:float=None):
+        """
+        _summary_
+
+        Parameters
+        ----------
+        eta : float, optional
+            global learning rate, by default None
+        rho1 : float, optional
+            hyperparameter ρ1 in Adam, by default None
+        rho2 : float, optional
+            hyperparameter ρ2 in Adam,, by default None
+        epsilon : float, optional
+            _description_, by default None
+        """
         super().set_params(eta, rho1, rho2, epsilon)
         self.rho1 = self.params['rho1']
         self.rho2 = self.params['rho2']
@@ -145,7 +439,28 @@ class rule_Adam(noneRULEadaptive):
 
 
 class noneGradientDescent:
-    def __init__(self, X, y, eta:float, theta0, no_epochs:int, tolerance:float):
+    """
+    Mother-class for GD and SGD.
+    """
+    def __init__(self, X:np0.ndarray, y:np0.ndarray, eta:float, theta0:np0.ndarray, no_epochs:int, tolerance:float):
+        """
+        Set up a (S)GD algorithm.
+
+        Parameters
+        ----------
+        X : np0.ndarray
+            design matrix
+        y : np0.ndarray
+            target data
+        eta : float
+            global learning rate
+        theta0 : np0.ndarray
+            initial parameter vector
+        no_epochs : int
+            number of complete iterations (epochs)
+        tolerance : float
+            tolerance for when to stop iterations
+        """
         self.X = X
         self.y = y
         self.eta = eta  #Learning rate
@@ -163,26 +478,86 @@ class noneGradientDescent:
 
     @classmethod
     def simple_initialise(cls, eta:float, tolerance:float=1e-7):
+        """
+        Class method for using update rules with NeuralNetwork.
+
+        Parameters
+        ----------
+        eta : float
+            gloabl learning rate
+        tolerance : float, optional
+            (unnecessary tolerance), by default 1e-7
+
+        Returns
+        -------
+        SGD or GD
+            the instance resulting from the dummy initialisation 
+        """
         return cls(np.zeros((10,1)), np.zeros(10), eta, 0, 100, tolerance)
 
-    def simple_update(self, gradient, theta):
+    def simple_update(self, gradient:np0.ndarray, theta:np0.ndarray):
+        """
+        Method for updating correctly with NeuralNetwork.
+
+        Parameters
+        ----------
+        gradient : ndarray
+            gradient of loss function at befitting arguments
+        theta : ndarray
+            current θ
+            
+        Returns
+        -------
+        ndarray
+            updated θ
+        """
         theta_new = self.update_rule(gradient, theta)
         return theta_new
 
-    def per_batch(self, grad):
-        # if test that breaks loop if self.v is less than self.tol
+    def per_batch(self, grad:np0.ndarray):
+        """
+        Algortihm for a batch.
+
+        Parameters
+        ----------
+        grad : ndarray
+            gradient of loss function at befitting arguments
+        """
         self.theta = self.update(grad)
         self.update_rule.next()
        
     def set_params(self, **params):
+        """
+        Set parameters in update rule.
+        """
         # set params in update rule
         self.update_rule.set_params(**params)
 
     def add_nag(self):
+        """
+        Apply Nesterov momentum.
+        """
         # try-except?
         self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.gamma+self.v)
 
     def set_update_rule(self, scheme:str, params:dict={}, NAG=False):
+        """
+        Define update rule.
+
+        Parameters
+        ----------
+        scheme : str
+            name of optimiser
+        params : dict, optional
+            relevant hyperparameters, by default {}
+        NAG : bool, optional
+            whether to apply NAG (True) or not (False), by default False
+
+        Raises
+        ------
+        ValueError
+            if the scheme is not recognised
+        """
         rule = scheme.strip().lower()
         momentum = False
         self.adaptive = False
@@ -221,9 +596,29 @@ class noneGradientDescent:
             self.add_nag()
 
     def apply_learning_schedule(self, eta_0:float=None, eta_tau:float=None, tau:int=None):
+        """
+        Apply standard learning schedyke.
+
+        Parameters
+        ----------
+        eta_0 : float, optional
+            initial learning rate, by default None
+        eta_tau : float, optional
+            last learning rate, by default None
+        tau : int, optional
+            number of iterations the schedule considers, by default self.n_obs*200
+        """
         self.update_rule.set_learning_schedule(tau or self.n_obs*200, eta_0 or self.eta, eta_tau)
 
     def regression_setting(self, regularisation:float=0):
+        """
+        Use the MSE as loss function.
+
+        Parameters
+        ----------
+        regularisation : float, optional
+            penalty parameter λ (in Ridge regression), by default 0
+        """
         self.lmbda = regularisation
 
         def gradient(x, y, theta):
@@ -233,6 +628,14 @@ class noneGradientDescent:
         self.grad = gradient
 
     def classification_setting(self, regularisation:float=0):
+        """
+        Use the cross entropy as loss function. OBS! Not yet tested.
+
+        Parameters
+        ----------
+        regularisation : float, optional
+            small regularisation λ, by default 0
+        """
         def gradient(x, y, theta):
             # FIXME
             def lf(theta):
@@ -241,7 +644,22 @@ class noneGradientDescent:
             return egrad(lf)(theta)
         self.grad = gradient
         
-    def __call__(self, no_epochs=None, deregestration_every=None):
+    def __call__(self, no_epochs:int=None, deregestration_every:int=None):
+        """
+        Find minimium of loss function.
+
+        Parameters
+        ----------
+        no_epochs : int, optional
+            number of iterations, by default self.no_epochs
+        deregestration_every : int, optional
+            print MSE every ... iteration, by default self.no_epochs//4
+
+        Returns
+        -------
+        ndarray
+            the optimal θ
+        """
         n_iter = no_epochs or self.no_epochs
         say = deregestration_every or self.no_epochs//4
         say = int(say)
@@ -259,10 +677,35 @@ class noneGradientDescent:
         self.no_epochs = self.current_epoch
         return self.theta
 
-    def set_loss_function(self, loss_function):
+    def set_loss_function(self, loss_function:Callable):
+        """
+        Manually set loss function.
+
+        Parameters
+        ----------
+        loss_function : Callable(x:ndarray, y:ndarray, theta:ndarray)
+            loss function as function of the features (x), the target value (y) and the parameter vector (theta)
+        """
         self.grad = lambda x, y, theta: egrad(lambda theta: loss_function(x, y, theta))(theta)
 
     def mean_squared_error(self, X:ndarray=None, y:ndarray=None, theta:ndarray=None):
+        """
+        Return the mean squared error.
+
+        Parameters
+        ----------
+        X : ndarray, optional
+            design matrix, by default self.X
+        y : ndarray, optional
+            target values, by default self.y
+        theta : ndarray, optional
+            parameter vector, by default self.theta
+
+        Returns
+        -------
+        float
+            the MSE
+        """
         # wack solution 
         try:
             X = X or self.X
@@ -275,17 +718,20 @@ class noneGradientDescent:
             theta = theta 
         return np.mean((X@theta - y)**2)
 
-    def accuracy_score(self):
-        # FIXME
-        X = self.X
-        y = self.y
-        theta = self.theta
-        tol = 1e-12
-        xt = x@theta
-        I = np.where(np.abs(xt-y)<tol, 1, 0)
-        return np.mean(I)
-
     def get_params(self, terminal_print=True):
+        """
+        Give information related to update rule.
+
+        Parameters
+        ----------
+        terminal_print : bool, optional
+            whether to print (True) the information or not (False), by default True
+
+        Returns
+        -------
+        dict
+            hyperparameters in update rule
+        """
         if terminal_print:
             for param in self.update_rule.params:
                 val = self.update_rule.params[param]
@@ -298,31 +744,99 @@ class noneGradientDescent:
 
 
 class GD(noneGradientDescent):
-    def __init__(self, X:ndarray, y:ndarray, eta:float, theta0:ndarray, no_epochs:int=500, tolerance=1e-6):
+    def __init__(self, X:np0.ndarray, y:np0.ndarray, eta:float, theta0:np0.ndarray, no_epochs:int=500, tolerance=1e-6):
+        """
+        Set up a GD algorithm.
+
+        Parameters
+        ----------
+        X : np0.ndarray
+            design matrix
+        y : np0.ndarray
+            target data
+        eta : float
+            global learning rate
+        theta0 : ndarray
+            initial parameter vector
+        no_epochs : int
+            number of complete iterations (epochs)
+        tolerance : float
+            tolerance for when to stop iterations
+        """
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
     
     def __str__(self):
+        """
+        Return name of scheme.
+
+        Returns
+        -------
+        str
+            name of update rule
+        """
         return self.optimiser + " GD"
 
-    def per_epoch(self, grad):
+    def per_epoch(self, grad:Callable):
+        """
+        Algorithm for a single epoch.
+
+        Parameters
+        ----------
+        grad : Callable(X:ndarray, y:ndarray, theta:ndarray)
+            the gradient as a function of the design matrix (X), the target values (y) and the parameter vector (theta)
+        """
         self.per_batch(grad(self.X, self.y, self.theta))
 
 
 class SGD(noneGradientDescent):
-    def __init__(self, X, y, eta:float, theta0, no_epochs:int=500, no_minibatches:int=5, tolerance=1e-6):
+    def __init__(self, X, y, eta:float, theta0:np0.ndarray, no_epochs:int=500, no_minibatches:int=5, tolerance=1e-6):
+        """
+        Set up an SGD algorithm.
+
+        Parameters
+        ----------
+        X : np0.ndarray
+            design matrix
+        y : np0.ndarray
+            target data
+        eta : float
+            global learning rate
+        theta0 : np0.ndarray
+            initial parameter vector
+        no_epochs : int
+            number of complete iterations (epochs)
+        no_minibatches : int
+            number of minibatches (subsets)
+        tolerance : float
+            tolerance for when to stop iterations
+        """
         super().__init__(X, y, eta, theta0, no_epochs, tolerance)
         self.m = int(no_minibatches)
         assert self.m <= self.n_obs
 
     def __str__(self):
+        """
+        Return name of scheme.
+
+        Returns
+        -------
+        str
+            name of update rule
+        """
         if self.adaptive:
             return self.optimiser
         else:
             return self.optimiser + " SGD"
-
-
-        
+   
     def per_epoch(self, grad):
+        """
+        Algorithm for a single epoch.
+
+        Parameters
+        ----------
+        grad : Callable(X:ndarray, y:ndarray, theta:ndarray)
+            the gradient as a function of the design matrix (X), the target values (y) and the parameter vector (theta)
+        """
         indices = np.arange(self.n_obs)
         np.random.shuffle(indices)
         batches = np.array_split(indices, self.m)
@@ -338,149 +852,4 @@ class SGD(noneGradientDescent):
 
 
 
-
-
-
-
-
-
-
-
-if __name__=="__main__":
-    x = np.linspace(-1,1, 1000)
-    f = lambda x, theta: theta[0]*x + theta[1]*x**2 + theta[2]*x**3
-    #f = lambda x, theta: theta[0]*x *np.cos(theta[1]*x) + theta[2]*x**2
-    y = f(x, (2, 1.7, -0.4)) + np.random.randn(len(x))*0.05
-
-    X = np.zeros((len(x),3))
-    X[:,0] = x
-    X[:,1] = x**2
-    X[:,2] = x**3
-
-    y = X@np.array([2,1.7,-0.4]) + np.random.randn(len(x))*0.05
-
-
-    NN = 100
-    theta0 = [0.23, 0.31, 1]
-
-
-    #print(X@theta0)
-    eta0 = 0.2
-    lmbda = 0.1
-    LF_R = lambda x, y, theta: (np.sum((f(x, theta) - y)**2)+ lmbda * np.sum(theta**2) )/ (2*len(y))
- 
-
-    sgd = SGD(X, y, eta0, theta0, NN)
-    # #sgd2 = SGD(x, y, eta0, theta0, NN)
-    sgd.set_update_rule('plain')
-
-    # # sgd2.set_update_rule('momentum')
-    # # sgd2.set_params(gamma=0.5)
-    # #sgd.apply_learning_schedule(tau=len(x)*100)
-    sgd.regression_setting()
-    # # sgd2.set_loss_function(LF_R)
-
-    theta = sgd()
-    yhat = X@theta
-
-    # theta2 = sgd2()
-    # yhat2 = f(x, theta2)
-
-    # gd = GD(x, y, eta0, theta0, NN)
-    # gd.set_update_rule('plain')
-    # gd.set_loss_function(LF_R)
-
-    # sgd3 = SGD(x, y, eta0, theta0, NN)
-    # sgd3.set_update_rule('AdaGrad')
-    # sgd3.set_loss_function(LF_R)
-
-    # theta3 = sgd3()
-    # yhat3 = f(x, theta3)
-
-    # sgd4 = SGD(x, y, eta0, theta0, NN)
-    # sgd4.set_update_rule('RMSProp')
-    # sgd4.set_loss_function(LF_R)
-
-    # theta4 = sgd4()
-    # yhat4 = f(x, theta4)
-
-    # sgd5 = SGD(x, y, eta0, theta0, NN)
-    # sgd5.set_update_rule('Adam')
-    # sgd5.set_loss_function(LF_R)
-
-    # theta5 = sgd5()
-    # yhat5 = f(x, theta5)
-
-
-
-    # fig, ax = plt.subplots()
-    # ax.plot(x, y, 'o', c='k', alpha=0.5)
-    # ax.plot(x, yhat, '-', label='plain SGD')
-    # # # ax.plot(x, yhat2, '--', label='momentum SGD')
-    # # # ax.plot(x, yhat3, ':', label='AdaGrad')
-    # # # ax.plot(x, yhat4, '-', label='RMSProp')
-    # # # ax.plot(x, yhat5, '--', label='Adam')
-    # ax.legend()
-    # plt.show()
-    
-
-    space = np.linspace(-1,1,20)
-    xx, yy = np.meshgrid(space,space)
-
-    def FrankeFunction(x,y):
-        term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
-        term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
-        term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
-        term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-        return term1 + term2 + term3 + term4
-
-    zz = FrankeFunction(xx, yy)
-    zzr = zz.ravel()
-    zzr = (zzr-np.mean(zzr))/np.std(zzr)
-
-    dd = 20
-    FrankeX = np.zeros((len(zzr),dd))
-    FrankeX[:,0] = xx.ravel()
-    FrankeX[:,1] = yy.ravel()
-    FrankeY = zzr#[:,np.newaxis]
-
-    FrankeX[:,2] = xx.ravel()**2
-    FrankeX[:,3] = xx.ravel()*yy.ravel()
-    FrankeX[:,4] = yy.ravel()**2
-
-    FrankeX[:,5] = xx.ravel()**3
-    FrankeX[:,6] = xx.ravel()**2*yy.ravel()
-    FrankeX[:,7] = xx.ravel()*yy.ravel()**2
-    FrankeX[:,8] = yy.ravel()**3
-
-    FrankeX[:,9] = xx.ravel()**4
-    FrankeX[:,10] = xx.ravel()**3*yy.ravel()
-    FrankeX[:,11] = xx.ravel()**2*yy.ravel()**2
-    FrankeX[:,12] = xx.ravel()*yy.ravel()**3
-    FrankeX[:,13] = yy.ravel()**4
-
-    FrankeX[:,14] = xx.ravel()**5
-    FrankeX[:,15] = xx.ravel()**4*yy.ravel()
-    FrankeX[:,16] = xx.ravel()**3*yy.ravel()**2
-    FrankeX[:,17] = xx.ravel()**2*yy.ravel()**3
-    FrankeX[:,18] = xx.ravel()*yy.ravel()**4
-    FrankeX[:,19] = yy.ravel()**5
-
-    for i in range(dd):
-        FrankeX[:,i] = (FrankeX[:,i]-np.mean(FrankeX[:,i]))/np.std(FrankeX[:,i])
-
-
-    Sgd_F = SGD(FrankeX, FrankeY, 0.08, np.random.randn(dd), no_epochs=2000, no_minibatches=30)
-    Sgd_F.set_update_rule("rms")
-    #Sgd_F.set_params(gamma=0.4)
-    Sgd_F.regression_setting()
-    beta = Sgd_F()
-    print(Sgd_F.mean_sqared_error())
-
-    FrankeY_hat = FrankeX@beta
-    fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
-    ax.plot_trisurf(FrankeX[:,0], FrankeX[:,1], FrankeY_hat, cmap='coolwarm')
-    ax.scatter(FrankeX[:,0], FrankeX[:,1], FrankeY, color='k')
-
-    plt.show()
 
