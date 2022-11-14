@@ -32,7 +32,7 @@ FRANKE NN REGRESSION ANALYSIS
 
 
 
-PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
+# PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
 
 # PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
 
@@ -58,9 +58,9 @@ CANCER NN CLASSIFICATION ANALYSIS
 
 # PLOT.CancerHeatmap_plot("LayerNeuronCancer.pkl", pdfname="layer_neuron_analysisCancer", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
 
-# PLOT.Cancerepoch_plot("actFuncPerEpochCancer1000.pkl", pdfname="actFuncPerEpochCancer", savepush=True, show=SHOW)
+PLOT.Cancerepoch_plot("actFuncPerEpochCancer1000.pkl", pdfname="actFuncPerEpochCancer", savepush=True, show=SHOW)
 
-# PLOT.Cancerepoch_plot("actFuncPerEpochCancer250.pkl", pdfname="actFuncPerEpochCancer", savepush=True, show=SHOW)
+PLOT.Cancerepoch_plot("actFuncPerEpochCancer250.pkl", pdfname="actFuncPerEpochCancer", savepush=True, show=SHOW)
 
 # PLOT.CancerHeatmap_plot("EpochMinibatchCancer.pkl", pdfname="epoch_minibatch_analysisCancer", savepush=True, xlabel=r"$m$", ylabel=r"no. of epochs", show=SHOW)
 

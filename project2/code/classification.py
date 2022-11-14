@@ -93,19 +93,19 @@ class CancerData:
 
 def EtaLambdaAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1
-    neuronsInEachLayer=5
+    hiddenLayers = 3
+    neuronsInEachLayer=(15,10,5)
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
-    etas = np.logspace(-8,1,10)
-    lmbdas = np.logspace(-8,1,10)
+    etas = np.logspace(-9,0,10)
+    lmbdas = np.logspace(-9,0,10)
 
     #   Paramteres to find
     accuracy = np.zeros((len(lmbdas), len(etas)))
@@ -129,11 +129,11 @@ def EtaLambdaAnalysis(filename):
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
     eta = 1e-3  #Based on previous results
-    lmbda = 1e-4    #Based on previous results
+    lmbda = 1e-6    #Based on previous results
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -164,12 +164,12 @@ def LayerNeuronsAnalysis(filename):
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
     hiddenLayers = 2    #Based on previous results
-    neuronsInEachLayer=30    #Based on previous results
+    neuronsInEachLayer=10    #Based on previous results
     eta = 1e-3  #Based on previous results
-    lmbda = 1e-4    #Based on previous results
+    lmbda = 1e-6    #Based on previous results
     outputNeurons=1
     epochs=[250, 1000]
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -194,11 +194,11 @@ def activationFunctionPerEpochAnalysis(filename):
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
     hiddenLayers = 2    #Based on previous results
-    neuronsInEachLayer=30   #Based on previous results
+    neuronsInEachLayer=10   #Based on previous results
     eta = 1e-3  #Based on previous results
-    lmbda = 1e-4    #Based on previous results
+    lmbda = 1e-6    #Based on previous results
     outputNeurons=1
-    activationFunction = 'tanh'
+    activationFunction = 'relu'
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -272,9 +272,9 @@ if __name__=="__main__":
             pass
     
     except IndexError:
-        EtaLambdaAnalysis("EtaLmbdaMSECancer")
+        # EtaLambdaAnalysis("EtaLmbdaMSECancer")
         # LayerNeuronsAnalysis("LayerNeuronCancer")
-        # activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
+        activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
         # EpochMinibatchAnalysis("EpochMinibatchCancer")
     
 

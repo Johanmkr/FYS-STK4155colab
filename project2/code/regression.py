@@ -144,8 +144,8 @@ def EtaLambdaAnalysis(filename):
 
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
-    eta = 1e-2  #Based on previous plot
-    lmbda = 1e-5   #Based on previous plot
+    eta = 1e-1  #Based on previous plot
+    lmbda = 1e-4   #Based on previous plot
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
@@ -179,13 +179,13 @@ def LayerNeuronsAnalysis(filename):
 
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 3    #Based on previous results
-    neuronsInEachLayer = 40    #Based on previous results
-    eta = 1e-2
-    lmbda = 1e-5
+    hiddenLayers = 1    #Based on previous results
+    neuronsInEachLayer = 30    #Based on previous results
+    eta = 1e-1
+    lmbda = 1e-4
     outputNeurons=1
     epochs=[250,1000]
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -209,12 +209,12 @@ def activationFunctionPerEpochAnalysis(filename):
 
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 3    #Based on previous results
-    neuronsInEachLayer = 40 #Based on previous results 
-    eta = 1e-2  #Based on previous results
-    lmbda = 1e-5    #Based on previous results#Based on previous results
+    hiddenLayers = 1    #Based on previous results
+    neuronsInEachLayer = 30 #Based on previous results 
+    eta = 1e-1  #Based on previous results
+    lmbda = 1e-4    #Based on previous results#Based on previous results
     outputNeurons=1
-    activationFunction = 'tanh'
+    activationFunction = 'sigmoid'
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -256,11 +256,11 @@ if __name__=="__main__":
     # print(Freg)
     # Freg.plot()
 
-    EtaLambdaAnalysis("EtaLmbdaMSE")
+    # EtaLambdaAnalysis("EtaLmbdaMSE")
 
     # LayerNeuronsAnalysis("LayerNeuron")
 
-    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
     # EpochMinibatchAnalysis("EpochMinibatch")
 

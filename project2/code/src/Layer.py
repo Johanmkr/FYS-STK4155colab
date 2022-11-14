@@ -43,7 +43,7 @@ class Layer:
             limit = np.sqrt(2 / float(neuronsIn + neuronsOut))
             self.w = np.random.normal(0.0, limit, size=(neuronsIn, neuronsOut)).T
         elif initialisation in ["He", "he", "kaiming", "Kaimin", "MSRA", "msra"]:
-            limit = np.sqrt(2/float(neuronsIn))
+            limit = np.sqrt(2/float(neuronsOut))
             self.w = np.random.normal(0.0, limit, size=(neuronsIn, neuronsOut)).T
 
     def UpdateLayer(self,
