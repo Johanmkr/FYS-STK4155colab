@@ -35,9 +35,9 @@ In addition to the regular libraries, such as `numpy` and `matplotlib`, the user
 
 The main programs are run from the following scripts:
 
-* `simple_regression.py`: SGD 3rd order polynomial fiit
-* `regression.py`: NN Franke function fit
-* `classification.py`: NN Cancer data fit
+* `simple_regression.py`: SGD 3rd order polynomial fit (results in `../output/data/simple_regression`)
+* `regression.py`: NN Franke function fit (results in `../output/data/network_regression`)
+* `classification.py`: NN Cancer data fit( results in `../output/data/network_classification`)
 
 The main `.py`-files import various source files. We present a short description of each of them.
 
