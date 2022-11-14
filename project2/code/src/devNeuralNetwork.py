@@ -244,14 +244,16 @@ class devNeuralNetwork:
     def setRandomIndecies(self):
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
-    def accuracy(self, prediction, target, tol=1e-2):
-        samples = len(target)
-        accuracy = 0
-        for i in range(samples):
-            if abs(prediction[i]-target[i]) < tol:
-                accuracy += 1
-        accuracy /= samples
-        return accuracy
+    def accuracy(self, prediction, target, tol=1e-5):
+        # samples = len(target)
+        prediction = np.where(prediction > 0.5, 1, 0)
+        # accuracy = 0
+        accuracy = np.where(np.abs(prediction-target) < tol, 1, 0)
+        # for i in range(samples):
+        #     if abs(prediction[i]-target[i]) < tol:
+        #         accuracy += 1
+        # accuracy /= samples
+        return np.mean(accuracy)
 
     def get_testLoss(self):
         if self.classification:
