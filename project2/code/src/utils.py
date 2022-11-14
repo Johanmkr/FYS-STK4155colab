@@ -26,7 +26,17 @@ np.random.seed(ourSeed)
 ndarray = npt.NDArray[np.float64]
 
 
-def Z_score_normalise(X:ndarray, y:ndarray, keepdims:bool=True) -> tuple[ndarray, ndarray]:
+def Z_score_normalise(X:np.ndarray, y:np.ndarray, keepdims:bool=True) -> tuple[np.ndarray, np.ndarray]:
+    """Z-score normalised the input and output data.
+
+    Args:
+        X (ndarray): Input data.
+        y (ndarray): Output data.
+        keepdims (bool, optional): If true, dimensions are kept constant. Defaults to True.
+
+    Returns:
+        tuple[ndarray, ndarray]: Scaled X, y
+    """
     X_mu = np.mean(X, axis=0, keepdims=keepdims)
     X_sigma = np.std(X, axis=0, keepdims=keepdims)
 
@@ -39,7 +49,18 @@ def Z_score_normalise(X:ndarray, y:ndarray, keepdims:bool=True) -> tuple[ndarray
     return X, y
 
 
-def train_test_split(X:ndarray, y:ndarray, train_size=0.80, seed=200):
+def train_test_split(X:np.ndarray, y:np.ndarray, train_size:float=0.80, seed:int=200) -> tuple[np.ndarray]:
+    """Splits the input and corresponding output data into a training set and a testing set. 
+
+    Args:
+        X (ndarray): Input data.
+        y (ndarray): Output data.
+        train_size (float, optional): Fraction of data to be used for training. Defaults to 0.80.
+        seed (int, optional): Random seed. Defaults to 200.
+
+    Returns:
+        tuple[np.ndarray]: X_train, y_train, X_test, y_test
+    """
     np.random.seed(seed)
     n_obs = np.shape(X)[0]
     indices = np.arange(n_obs)
@@ -55,7 +76,18 @@ def train_test_split(X:ndarray, y:ndarray, train_size=0.80, seed=200):
 
 
 
-def Z_score_normalise_split(X:ndarray, y:ndarray, train_size=0.80, seed=200) -> tuple[ndarray]:
+def Z_score_normalise_split(X:np.ndarray, y:np.ndarray, train_size:float=0.80, seed:int=200) -> tuple[np.ndarray]:
+    """Splits input and output data into training and test data, while also performing Z-score normalisation.
+
+    Args:
+        X (np.ndarray): Input data.
+        y (np.ndarray): Output data.
+        train_size (float, optional): Fraction of data to be used for training. Defaults to 0.80.
+        seed (int, optional): Random seed. Defaults to 200.
+
+    Returns:
+        tuple[np.ndarray]: X, y, X_train, y_train, X_test, y_test
+    """
     np.random.seed(seed)
     n_obs = np.shape(X)[0]
     indices = np.arange(n_obs)
@@ -83,7 +115,17 @@ def Z_score_normalise_split(X:ndarray, y:ndarray, train_size=0.80, seed=200) -> 
 
     return X, y, X_train, y_train, X_test, y_test
 
-def feature_scale_split(X, y, train_size=0.80):
+def feature_scale_split(X:np.ndarray, y:np.ndarray, train_size:float=0.80) -> tuple[np.ndarray]:
+    """Scales only the features of the input data, while splitting everything into train and test.
+
+    Args:
+        X (np.ndarray): Input data.
+        y (np.ndarray): Output data.
+        train_size (float, optional): Fraction of data to be used for training. Defaults to 0.80.
+
+    Returns:
+        tuple[np.ndarray]: X, y, X_train, y_train, X_test, y_test
+    """
     n_obs = np.shape(X)[0]
     indices = np.arange(n_obs)
     np.random.shuffle(indices)

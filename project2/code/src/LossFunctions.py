@@ -4,13 +4,23 @@ epsilon = float_info.epsilon
 
 class LossFunctions:
     def __init__(self,
-                lossFunction = 'mse'):
+                lossFunction:str = 'mse') -> None:
+        """Collection of loss functions and their derivatives.
+
+        Args:
+            lossFunction (str, optional): String to be parsed to set the function. Defaults to 'mse'.
+        """
         self.lossFunction = lossFunction
         self.parseFunction(self.lossFunction)
     
-    def parseFunction(self, stringToParse):
+    def parseFunction(self, stringToParse:str) -> None:
+        """_summary_
+
+        Args:
+            stringToParse (str): _description_
+        """
         if stringToParse == 'mse':
-            self.lossFunction = self.mse 
+            self.lossFunction = self.mse
             self.derivativeFunction = self.mseDerivative
         elif stringToParse == "crossentropy":
             self.lossFunction = self.crossentropy

@@ -116,8 +116,8 @@ def EtaLambdaAnalysis(filename):
     rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
-    etas = np.logspace(-5,1,7)
-    lmbdas = np.logspace(-5,1,7)
+    etas = np.logspace(-8,1,10)
+    lmbdas = np.logspace(-8,1,10)
 
     #   Paramteres to find
     accuracy = np.zeros((len(lmbdas), len(etas)))
@@ -140,8 +140,8 @@ def EtaLambdaAnalysis(filename):
 
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
-    eta = 0.1  #FIXME
-    lmbda = 1e-5   #FIXME
+    eta = 1e-3  #Based on previous results
+    lmbda = 1e-4    #Based on previous results
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
@@ -175,12 +175,12 @@ def LayerNeuronsAnalysis(filename):
 
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1    #FIXME
-    neuronsInEachLayer=5    #FIXME
-    eta = 0.1
-    lmbda = 1e-5
+    hiddenLayers = 2    #Based on previous results
+    neuronsInEachLayer=30    #Based on previous results
+    eta = 1e-3  #Based on previous results
+    lmbda = 1e-4    #Based on previous results
     outputNeurons=1
-    epochs=250
+    epochs=[250, 1000]
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
@@ -189,36 +189,35 @@ def activationFunctionPerEpochAnalysis(filename):
     #   Parameters to test
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
 
-    dF = pd.DataFrame()
-    for function in activationFunctions:
-        Creg = CancerData(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
-        print(Creg)
-        Creg.Net.train(extractInfoPerXEpoch=1)
-        loss = np.asarray(Creg.Net.testLossPerEpoch)
-        epochslist = np.asarray(Creg.Net.lossEpochs)
-        dF[function] = loss
-    dF["epochs"] = epochslist
-    dF.to_pickle(output_path+filename+".pkl")
+    for epoch in epochs:
+        dF = pd.DataFrame()
+        for function in activationFunctions:
+            Creg = CancerData(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epoch, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            print(Creg)
+            Creg.Net.train(extractInfoPerXEpoch=1)
+            loss = np.asarray(Creg.Net.testLossPerEpoch)
+            epochslist = np.asarray(Creg.Net.lossEpochs)
+            dF[function] = loss
+        dF["epochs"] = epochslist
+        dF.to_pickle(output_path+filename+str(epoch)+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...', n_obs=Creg.n_obs, rho=rho)
+        info.set_file_info(filename+str(epoch)+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...', n_obs=Creg.n_obs, rho=rho)
 
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1    #FIXME
-    neuronsInEachLayer=5    #FIXME
-    eta = 0.1  #FIXME
-    lmbda = 1e-5    #FIXME
+    hiddenLayers = 2    #Based on previous results
+    neuronsInEachLayer=30   #Based on previous results
+    eta = 1e-3  #Based on previous results
+    lmbda = 1e-4    #Based on previous results
     outputNeurons=1
     activationFunction = 'tanh'
-    epochs=250
-    nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     epoch_array = np.linspace(100, 1000, 10, dtype="int")
-    minibatch_array = np.linspace(5, 50, 10, dtype="int")
+    minibatch_array = np.linspace(1, 10, 10, dtype="int")
 
     #  Parameters to find
     accuracy = np.zeros((len(epoch_array), len(minibatch_array)))
@@ -239,7 +238,39 @@ def EpochMinibatchAnalysis(filename):
 
     info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=r"$[%s, %s]$" %(idx[0], idx[-1]), no_minibatches=r"$[%s, %s]$" %(cols[0], cols[-1]), L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction, n_obs=Creg.n_obs, rho=rho)
 
+def logisticRegression(filename="logistic"):
+    #   Fixed parameters
+    hiddenLayers = 0
+    outputNeurons=1
+    activationFunction = 'sigmoid'
+    epochs=250
+    nrMinibatches=5
+    testSize=0.2
+    optimizer='adaGrad'
+    rho = (0.9,0.999) # default hyperparams in RMSProp
 
+    #   Parameters to test
+    etas = np.logspace(-9,0,10)
+    lmbdas = np.logspace(-9,0,10)
+
+    #   Paramteres to find
+    accuracy = np.zeros((len(lmbdas), len(etas)))
+
+    #   Testing loop
+    for i, lmbda in enumerate(lmbdas):
+        for j, eta in enumerate(etas):
+            print(f"Lmbda: {lmbda}\nEta: {eta}")
+            Creg = CancerData(hiddenLayers=hiddenLayers, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            Creg.train()
+            print(Creg)
+            print("\n\n\n\n")
+            accuracy[i,j] = Creg.finalTestLoss()
+    idx = [r"$10^{%.0f}$"%k for k in np.log10(lmbdas)]
+    cols = [r"$10^{%.0f}$"%k for k in np.log10(etas)]
+    dF = pd.DataFrame(accuracy, index=idx, columns=cols)
+    dF.to_pickle(output_path+filename+".pkl")
+
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=hiddenLayers, eta=r"$[%s, %s]$" %(cols[0], cols[-1]), lmbda=r"$[%s, %s]$" %(idx[0], idx[-1]), g=activationFunction, n_obs=Creg.n_obs, rho=rho)
 
 
 
@@ -253,13 +284,16 @@ if __name__=="__main__":
     # for i, val in enumerate(Creg()):
     #     print(f"{val[0]:.0f}  -  {Creg.testOut[i]}")
     # embed()
+
     # EtaLambdaAnalysis("EtaLmbdaMSECancer")
 
     # LayerNeuronsAnalysis("LayerNeuronCancer")
 
-    # activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
+    activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
 
     # EpochMinibatchAnalysis("EpochMinibatchCancer")
+
+    # logisticRegression()
 
     # Update README.md and info.pkl
     info.additional_information("Loss function: cross entropy (with regularisation)")

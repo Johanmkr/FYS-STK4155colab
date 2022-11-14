@@ -1,8 +1,8 @@
 import numpy as np
-from Layer import Layer
+# from Layer import Layer
 
 class ExtendAndCollapse:
-    def __init__(self, layers:list[Layer]) -> None:
+    def __init__(self, layers:list[object]) -> None:
         """Sets parameters for and initialises the full weight, bias, delta and h matrices. Makes sure that equal index h correspond to the previous layer compared to weight, bias and delta
 
         Args:
@@ -36,7 +36,7 @@ class ExtendAndCollapse:
             self.H[i,:,:] = self.extendHDelta(self.hs[i])
             self.D[i,:,:] = self.extendHDelta(self.deltas[i])
 
-    def extendWeight(self, weight):
+    def extendWeight(self, weight:np.ndarray) -> None:
         """Extends each weight matrix to the largest common dimension in the network. Empty entries are filled with nan-values.
 
         Args:
@@ -50,7 +50,7 @@ class ExtendAndCollapse:
         returnWeight[:weight.shape[0], :weight.shape[1]] = weight
         return returnWeight
 
-    def extendBias(self, bias):
+    def extendBias(self, bias:np.ndarray) -> None:
         """Extend each bias vector to the largest common dimension in the network. Empty entries are filled with nan-values. 
 
         Args:
@@ -65,7 +65,7 @@ class ExtendAndCollapse:
         return returnBias
 
 
-    def extendHDelta(self, hdelta):
+    def extendHDelta(self, hdelta:np.ndarray) -> None:
         """Extends each delta (error) array to the largest common dimension in the network. Empty entries are filled with nan-values. 
 
         Args:
@@ -79,7 +79,7 @@ class ExtendAndCollapse:
         returnHDelta[:hdelta.shape[0], :hdelta.shape[1]] = hdelta 
         return returnHDelta
 
-    def collapseWeights(self):
+    def collapseWeights(self) -> list:
         """Collapse the full weight matrix W back into individual weight matrices for each layer, removing potential nan-vales in order to obtain original dimensionality.
 
         Returns:
@@ -94,7 +94,7 @@ class ExtendAndCollapse:
                 # embed()
         return returnWeights
 
-    def collapseBiases(self):
+    def collapseBiases(self) -> list:
         """Collapse the full bias matrix B back into individual bias vectors for each layer, removing potential nan-vales in order to obtain original dimensionality.
 
         Returns:
@@ -105,13 +105,29 @@ class ExtendAndCollapse:
             returnBiases.append(self.B[i][np.isfinite(self.B[i])].reshape(self.biases[i].shape))
         return returnBiases
 
-    def regGradW(self, idx=None):
+    def regGradW(self, idx:np.ndarray=None) -> np.ndarray:
+        """Finds gradient of the extended weight matrix W. 
+
+        Args:
+            idx (np.ndarray, optional): Indices of input features. Defaults to None.
+
+        Returns:
+            np.ndarray: Gradient.
+        """
         if idx is not None:
             return np.transpose(self.D[:,idx,:], axes=(0,2,1)) @ self.H[:,idx,:]
         else:
             return np.transpose(self.D, axes=(0,2,1)) @ self.H
 
-    def regGradB(self, idx=None):
+    def regGradB(self, idx:np.ndarray=None) -> np.ndarray:
+        """Finds gradient of the extended bias matrix B.
+
+        Args:
+            idx (np.ndarray, optional): Indices of input features. Defaults to None.
+
+        Returns:
+            np.ndarray: Gradient.
+        """
         if idx is not None:
             return np.sum(self.D[:,idx,:], axis=1, keepdims=True)
         else:

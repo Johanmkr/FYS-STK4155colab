@@ -3,9 +3,17 @@ import numpy as np
 class Layer:
     def __init__(self, 
                 neurons:int = None,
-                activationFunction:function = None,
+                activationFunction:classmethod = None,
                 inputs:int = None,
                 features:int = None) -> None:
+        """Initalise layer with class methods and class variables.
+
+        Args:
+            neurons (int, optional): Number of neurons in layer. Defaults to None.
+            activationFunction (classmethod, optional): Activation function. Defaults to None.
+            inputs (int, optional): Number of data inputs. Defaults to None.
+            features (int, optional): Number of features. Defaults to None.
+        """
 
         if inputs and features is not None:
             self.neurons = features
@@ -41,6 +49,12 @@ class Layer:
     def UpdateLayer(self,
                     inputs:int = None,
                     features:int = None) -> None:
+        """Updates the layer with new input data and features.
+
+        Args:
+            inputs (int, optional): Number of data inputs. Defaults to None.
+            features (int, optional): Number of features. Defaults to None.
+        """
         self.__init__(inputs=inputs, features=features)
 
     

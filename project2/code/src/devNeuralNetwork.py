@@ -5,7 +5,6 @@ try:
     from src.LossFunctions import LossFunctions
     from src.ActivationFunction import ActivationFunction
     import src.GradientDescent as GradientDescent
-    from src.DataHandler import DataHandler
     from src.ExtendAndCollapse import ExtendAndCollapse as EAC
     from src.utils import *
 except ModuleNotFoundError:
@@ -13,7 +12,6 @@ except ModuleNotFoundError:
     from LossFunctions import LossFunctions
     from ActivationFunction import ActivationFunction
     import GradientDescent as GradientDescent
-    from DataHandler import DataHandler
     from ExtendAndCollapse import ExtendAndCollapse as EAC
     from utils import *
 from IPython import embed
@@ -79,7 +77,7 @@ class devNeuralNetwork:
         self.optimizer = optimizer
         self.terminalUpdate = terminalUpdate
         if activationFunction in ["sigmoid", "tanh"]:
-            self.weightInitialiser = "xavier"
+            self.weightInitialiser = "Xavier"
         elif activationFunction in ["relu", "lrelu", "relu*"]:
             self.weightInitialiser = "He"
 

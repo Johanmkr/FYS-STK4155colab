@@ -41,7 +41,7 @@ class ActivationFunction:
             raise ValueError(f"The library does not have functionalities for {g} activation function.")
 
 
-    def derivative(self, a:np.ndarray) -> function:
+    def derivative(self, a:np.ndarray) -> classmethod:
         """Return the correct derivative of the argument
 
         Args:
@@ -52,7 +52,7 @@ class ActivationFunction:
         """
         return self.derivativeFunction(a)
 
-    def __call__(self, a:np.ndarray) -> function:
+    def __call__(self, a:np.ndarray) -> classmethod:
         """Return the correct function value of the argument.
 
         Args:

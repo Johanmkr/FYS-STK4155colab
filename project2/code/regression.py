@@ -147,8 +147,8 @@ def EtaLambdaAnalysis(filename):
 
 def LayerNeuronsAnalysis(filename):
     #   Fixed parameters
-    eta = 1e-2  #FIXME
-    lmbda = 1e-3   #FIXME
+    eta = 1e-2  #Based on previous plot
+    lmbda = 1e-5   #Based on previous plot
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
@@ -182,12 +182,12 @@ def LayerNeuronsAnalysis(filename):
 
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1    #FIXME
-    neuronsInEachLayer=5    #FIXME
-    eta = 0.01
+    hiddenLayers = 3    #Based on previous results
+    neuronsInEachLayer = 40    #Based on previous results
+    eta = 1e-2
     lmbda = 1e-5
     outputNeurons=1
-    epochs=250
+    epochs=[250,1000]
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
@@ -196,36 +196,35 @@ def activationFunctionPerEpochAnalysis(filename):
     #   Parameters to test
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
 
-    dF = pd.DataFrame()
-    for function in activationFunctions:
-        Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
-        print(Freg)
-        Freg.Net.train(extractInfoPerXEpoch=1)
-        loss = np.asarray(Freg.Net.testLossPerEpoch)
-        epochslist = np.asarray(Freg.Net.lossEpochs)
-        dF[function] = loss
-    dF["epochs"] = epochslist
-    dF.to_pickle(output_path+filename+".pkl")
+    for epoch in epochs:
+        dF = pd.DataFrame()
+        for function in activationFunctions:
+            Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=function, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epoch, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+            print(Freg)
+            Freg.Net.train(extractInfoPerXEpoch=1)
+            loss = np.asarray(Freg.Net.testLossPerEpoch)
+            epochslist = np.asarray(Freg.Net.lossEpochs)
+            dF[function] = loss
+        dF["epochs"] = epochslist
+        dF.to_pickle(output_path+filename+str(epoch)+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...', n_obs=Freg.n_obs, rho=rho)
+        info.set_file_info(filename+str(epoch)+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...', n_obs=Freg.n_obs, rho=rho)
 
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1    #FIXME
-    neuronsInEachLayer=5    #FIXME
-    eta = 0.01  #FIXME
-    lmbda = 1e-5    #FIXME
+    hiddenLayers = 3    #Based on previous results
+    neuronsInEachLayer = 40 #Based on previous results 
+    eta = 1e-2  #Based on previous results
+    lmbda = 1e-5    #Based on previous results#Based on previous results
     outputNeurons=1
     activationFunction = 'tanh'
-    epochs=250
-    nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     epoch_array = np.linspace(100, 1000, 10, dtype="int")
-    minibatch_array = np.linspace(5, 50, 10, dtype="int")
+    minibatch_array = np.linspace(1, 10, 10, dtype="int")
 
     #  Parameters to find
     mse = np.zeros((len(epoch_array), len(minibatch_array)))
@@ -264,9 +263,11 @@ if __name__=="__main__":
 
     # LayerNeuronsAnalysis("LayerNeuron")
 
-    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
     # EpochMinibatchAnalysis("EpochMinibatch")
+
+
     info.omit_file("dummy.jpg")
 
 
