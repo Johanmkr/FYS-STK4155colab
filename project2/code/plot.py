@@ -72,7 +72,7 @@ Nanna.define_categories({
     'opt':'optimiser',                      #   update rule name
     'n_obs':r'$n_\mathrm{obs}$',            #   #observations
     'no_epochs':'#epochs',                  #   #epochs
-    'no_minibatches':'#minibatches',        #   #minibatches
+    'no_minibatches':'$m$',                 #   #minibatches
     'lmbda':r'$\lambda$',                   #   penalty parameter
     'eta':r'$\eta$',                        #   global learning rate
     'gamma':r'$\gamma$',                    #   momentum scale
@@ -84,9 +84,18 @@ Nanna.define_categories({
     })  
 
 
-def set_pdf_info(pdfname, **params):
+def set_pdf_info(pdfname:str, **params):
     Nanna.set_file_info(pdfname.replace('.pdf', '') + '.pdf', **params)
 
+
+def copy_info(info:dict, filename:str):
+    params = {} 
+    for param, title in Nanna.CATEGORIES.items():
+        try:
+            params[param] = info[filename][title]
+        except KeyError:
+            continue
+    return params
 
 
 
@@ -183,21 +192,17 @@ def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xla
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
-    params = {} 
-    for param, title in Nanna.CATEGORIES.items():
-        try:
-            params[param] = info2[filename][title]
-        except KeyError:
-            continue
-
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        params = copy_info(info2, filename)
         set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
 
 def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
+    info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
+    info2 = info2pd.transpose().to_dict()
     fig, ax = plt.subplots(layout="constrained")
     score = pd.read_pickle(data_path+"network_regression/"+filename)
     for func in score.columns:
@@ -211,29 +216,36 @@ def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Test MSE")
     plt.legend()
-    # set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
-    if not savepush:
+        params = copy_info(info2, filename)
+        set_pdf_info(pdfname, **params)
+    else:
         if show:
             plt.show()
 
 def CancerHeatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+    info3pd = pd.read_pickle(data_path + "network_classification/info.pkl")
+    info3 = info3pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_classification/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "Test accuracy", "extend": "max"})
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_ACCURACY, vmin=0, vmax=1, cbar_kws={'label': "Test accuracy", "extend": "max"})
     ax.invert_yaxis()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        params = copy_info(info3, filename)
+        set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
 
 def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
+    info3pd = pd.read_pickle(data_path + "network_classification/info.pkl")
+    info3 = info3pd.transpose().to_dict()
     fig, ax = plt.subplots(layout="constrained")
     score = pd.read_pickle(data_path+"network_classification/"+filename)
     for func in score.columns:
@@ -247,10 +259,11 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Test accuracy")
     plt.legend()
-    # set_axes_2d(ax, xlabel="Epoch", ylabel="MSE")
 
     if savepush:
         save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        params = copy_info(info3, filename)
+        set_pdf_info(pdfname, **params)
     if not savepush:
         if show:
             plt.show()
