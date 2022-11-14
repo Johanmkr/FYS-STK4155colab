@@ -66,6 +66,8 @@ def set_file_info(filename:str, **params):
     for category in CATEGORIES.keys():
         try:
             s = str(params[category])
+            if s.lower() in ["none", "nan"]:
+                s = None
         except KeyError:
             s = None
         INFO[filename][CATEGORIES[category]] = s

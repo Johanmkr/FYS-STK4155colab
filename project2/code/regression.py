@@ -119,6 +119,7 @@ def EtaLambdaAnalysis(filename):
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
+    rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     etas = np.logspace(-9,0,10)
@@ -141,7 +142,7 @@ def EtaLambdaAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=hiddenLayers, eta=r"$[%s, %s]$" %(cols[0], cols[-1]), N=neuronsInEachLayer, lmbda=r"$[%s, %s]$" %(idx[0], idx[-1]), g=activationFunction)# n_obs=Freg.n_obs)
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=hiddenLayers, eta=r"$[%s, %s]$" %(cols[0], cols[-1]), N=neuronsInEachLayer, lmbda=r"$[%s, %s]$" %(idx[0], idx[-1]), g=activationFunction, n_obs=Freg.n_obs, rho=rho)
     
 
 def LayerNeuronsAnalysis(filename):
@@ -154,6 +155,7 @@ def LayerNeuronsAnalysis(filename):
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
+    rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     layers = np.arange(10)
@@ -176,7 +178,7 @@ def LayerNeuronsAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=r"$[%s, %s]$" %(idx[0], idx[-1]), N=r"$[%s, %s]$" %(cols[0], cols[-1]), eta=eta, lmbda=lmbda, g=activationFunction)# n_obs=Freg.n_obs)
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=r"$[%s, %s]$" %(idx[0], idx[-1]), N=r"$[%s, %s]$" %(cols[0], cols[-1]), eta=eta, lmbda=lmbda, g=activationFunction, n_obs=Freg.n_obs, rho=rho)
 
 def activationFunctionPerEpochAnalysis(filename):
     #   Fixed parameters
@@ -189,6 +191,7 @@ def activationFunctionPerEpochAnalysis(filename):
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
+    rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
@@ -204,7 +207,7 @@ def activationFunctionPerEpochAnalysis(filename):
     dF["epochs"] = epochslist
     dF.to_pickle(output_path+filename+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...')#, n_obs=Freg.n_obs)
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs='...', no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g='...', n_obs=Freg.n_obs, rho=rho)
 
 def EpochMinibatchAnalysis(filename):
     #   Fixed parameters
@@ -218,6 +221,7 @@ def EpochMinibatchAnalysis(filename):
     nrMinibatches=5
     testSize=0.2
     optimizer='RMSProp'
+    rho = (0.9,0.999) # default hyperparams in RMSProp
 
     #   Parameters to test
     epoch_array = np.linspace(100, 1000, 10, dtype="int")
@@ -240,7 +244,7 @@ def EpochMinibatchAnalysis(filename):
     dF = pd.DataFrame(mse, index=idx, columns=cols)
     dF.to_pickle(output_path+filename+".pkl")
 
-    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=r"$[%s, %s]$" %(idx[0], idx[-1]), no_minibatches=r"$[%s, %s]$" %(cols[0], cols[-1]), L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction)#, n_obs=Freg.n_obs)
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=r"$[%s, %s]$" %(idx[0], idx[-1]), no_minibatches=r"$[%s, %s]$" %(cols[0], cols[-1]), L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction, n_obs=Freg.n_obs, rho=rho)
 
 
 
@@ -256,15 +260,17 @@ if __name__=="__main__":
     # print(Freg)
     # Freg.plot()
 
-    #EtaLambdaAnalysis("EtaLmbdaMSE")
+    # EtaLambdaAnalysis("EtaLmbdaMSE")
 
-    #LayerNeuronsAnalysis("LayerNeuron")
+    # LayerNeuronsAnalysis("LayerNeuron")
 
-    #activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
-
+    # EpochMinibatchAnalysis("EpochMinibatch")
+    info.omit_file("dummy.jpg")
 
 
     # Update README.md and info.pkl
+    info.additional_information("Loss function: mean squared error (with regularisation)")
     info.update(header="Results from Franke regression analysis using NN")
-    # EpochMinibatchAnalysis("EpochMinibatch")
+   
