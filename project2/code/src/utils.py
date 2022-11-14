@@ -17,7 +17,6 @@ from tqdm import trange
 # from sklearn.utils import check_random_state
 
 
-
 # Deterministic randomised data
 ourSeed = 1697
 np.random.seed(ourSeed)
