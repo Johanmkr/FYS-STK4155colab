@@ -1,14 +1,14 @@
 
-SGD regression:
+SGDregression:
 	python3 simple_regression.py
 
-regression:
+NNregression:
 	python3 regression.py
 
-classification:
+NNclassification:
 	python3 classification.py
 
-logistic regression:
+logistic:
 	python3 classification.py logistic
 
 plots:

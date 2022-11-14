@@ -116,7 +116,7 @@ def EtaLambdaAnalysis(filename):
     nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
-    rho = (0.9,0.999) # default hyperparams in RMSProp
+    rho = 0.9# default hyperparams in RMSProp
 
     #   Parameters to test
     etas = np.logspace(-9,0,10)
@@ -152,7 +152,7 @@ def LayerNeuronsAnalysis(filename):
     nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
-    rho = (0.9,0.999) # default hyperparams in RMSProp
+    rho = 0.9 # default hyperparams in RMSProp
 
     #   Parameters to test
     layers = np.arange(10)
@@ -188,7 +188,7 @@ def activationFunctionPerEpochAnalysis(filename):
     nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
-    rho = (0.9,0.999) # default hyperparams in RMSProp
+    rho = 0.9 # default hyperparams in RMSProp
 
     #   Parameters to test
     activationFunctions = ["sigmoid", "relu", "relu*", "tanh"]
@@ -217,7 +217,7 @@ def EpochMinibatchAnalysis(filename):
     activationFunction = 'sigmoid'
     testSize=0.2
     optimizer='RMSProp'
-    rho = (0.9,0.999) # default hyperparams in RMSProp
+    rho = 0.9# default hyperparams in RMSProp
 
     #   Parameters to test
     epoch_array = np.linspace(100, 1000, 10, dtype="int")

@@ -97,7 +97,7 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
 
 # OLS: 
 
-# simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
+simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
 # simple_analysis("plain", "plain_SGD.txt")
 # simple_analysis("adagrad", "adagrad_SGD.txt")
 # simple_analysis("RMSprop", "rmsprop_SGD.txt", {"rho":0.9})
