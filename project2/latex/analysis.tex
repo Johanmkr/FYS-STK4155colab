@@ -21,7 +21,7 @@ OUTLINE:
     \end{enumerate}
 \end{enumerate}
 
-\subsection{Gradient descent}
+\subsection{Gradient descent}\label{sec:analysis_SGD}
 
     We write a code that  \fillertext
 
@@ -30,24 +30,25 @@ OUTLINE:
     \begin{equation}
         f(x) = 2.0x + 1.7x^2 -0.40x^3 \, +\, 0.10\mathcal{N}(0, 1),
     \end{equation}
-    and we consider $n_1=400$ datapoints.
-    In particular, we aim to minimise the cost function in eq. \eqref{eq:ols_cost_function} for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function in eq. \eqref{eq:ridge_cost_function}, but here we need to tune the penalty parameter $\lambda$ as well as the learning rate $\eta$. 
+    and we consider $n=400$ datapoints. In particular, we aim to minimise the cost function in eq. \eqref{eq:ols_cost_function} for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function in eq. \eqref{eq:ridge_cost_function}, but here we need to tune the penalty parameter $\lambda$ as well as the learning rate $\eta$. 
 
     We do not present many figures to describe this part of the analysis. We justify this by arguing that the purpose of this part is to test the SGD code, and then by extension the GD code, and give an idea of the effect of changing optimisers. 
 
-    In figure \ref{fig:simple_reg_errors_ols}  \fillertext
+    In figure \ref{fig:simple_reg_errors_ridge}  \fillertext
 
     \begin{figure}
         \includegraphics[width=\linewidth]{ridge_errors_gradient_descent.pdf}
-        \caption{The graphs show how the test MSE evolves as the global learning rate $\eta$ increases for different update rules in the SGD algorithm. The complete d}
+        \caption{The graphs show how the test MSE evolves as the global learning rate $\eta$ increases for different update rules in the SGD algorithm. The penalty parameter is $\lambda=0.1$, and we have used $m=40$ minibatches. $\gamma=0.5$ for the momentum SGD and the other relevant hyperparameters are set to their defaults in accordance with section \ref{sec:tuning}. The dashed graphs show the MSE after 25 iterations and the solid graphs represent the MSE after 25 additional iterations. All solvers were initilised by the same random vector $\vec{\theta}_0$}.
         \label{fig:simple_reg_errors_ridge}
     \end{figure}
+
+    We will study more thoroughly the dependencies on the number of epochs, the number of minibatches ($m$) and the penalty parameter ($\lambda$) in the NN analysis of the Franke function in section \ref{sec:analysis_NN}. 
 
 
 
 
     
-\subsection{Neural network}
+\subsection{Neural network}\label{sec:analysis_NN}
     We will build our FFNN (\ref{item:prepocess}-\ref{item:optimiser}) and solve a supervised learning problem (\ref{item:train}-\ref{item:review}) using the steps listed below \citep{mhjensen}.
 
     \begin{enumerate}[label=(\roman*)]

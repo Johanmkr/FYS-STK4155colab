@@ -107,15 +107,15 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     
     \subsubsection{Optimising the learning rate}\label{sec:tuning}
     
-    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below, that is different ways of calculating $\vec{v}$ in eq. \eqref{eq:update_rule_general}.
+    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below, that is different ways of calculating $\vec{v}$ in eq. \eqref{eq:update_rule_general}. All require an original learning rate $\eta$ and a small number $\epsilon$ for numerical stability. 
 
     \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
-        \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting.
-        \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$
-        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_1$ for this optimisation scheme.
+        \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting. By default: $\epsilon=10^{-7}$.
+        \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$. By default: $\rho = 0.9$ and $\epsilon=10^{-7}$.
+        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_1$ for this optimisation scheme. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
 
-    All three require an original learning rate $\eta$ and a small number $\epsilon$ for numerical stability. 
+    
     
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
