@@ -32,13 +32,13 @@ FRANKE NN REGRESSION ANALYSIS
 
 
 
-# PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
+PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
 
 # PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
 
-PLOT.epoch_plot("actFuncPerEpoch1000.pkl", pdfname="actFuncPerEpoch", savepush=True, show=SHOW)
+# PLOT.epoch_plot("actFuncPerEpoch1000.pkl", pdfname="actFuncPerEpoch", savepush=True, show=SHOW)
 
-PLOT.epoch_plot("actFuncPerEpoch250.pkl", pdfname="actFuncPerEpoch", savepush=True, show=SHOW)
+# PLOT.epoch_plot("actFuncPerEpoch250.pkl", pdfname="actFuncPerEpoch", savepush=True, show=SHOW)
 
 
 # PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"$m$", ylabel=r"no. of epochs", show=SHOW)
