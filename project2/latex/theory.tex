@@ -193,13 +193,12 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
             &\mathrm{ReLU}^*(\svec{\xi})  = \begin{cases}
                 \svec{\xi},\quad &\svec{\xi} >0 \\
                 0.01\svec{\xi},\quad &\svec{\xi} \leq 0
-            \end{cases} \label{eq:leaky_relu} \\
-            &\zeta(\svec{\svec{\xi}}) = \frac{e^{\svec{\xi}}}{\sum\nolimits_{j=1}^{N}e^{\xi_j}} \label{eq:softmax}
+            \end{cases} \label{eq:leaky_relu}
         \end{align}
     \end{subequations}
 
     Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
-    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction. The softmax $\zeta$ in eq. \eqref{eq:softmax} \fillertext
+    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction.
 
     
 
