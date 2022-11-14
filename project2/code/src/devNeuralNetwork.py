@@ -166,8 +166,14 @@ class devNeuralNetwork:
         #   Append input layer
         self.layers.append(Layer(activationFunction=self.activationFunction, inputs=self.inputs, features=self.features))
         #   Append hidden layers
-        for _ in range(self.hiddenLayers):
-            self.layers.append(Layer(neurons=self.neuronsInEachLayer, activationFunction=self.activationFunction))
+        for i in range(self.hiddenLayers):
+            if isinstance(self.neuronsInEachLayer, (tuple, list, np.ndarray)):
+                    try:
+                        self.layers.append(Layer(neurons=self.neuronsInEachLayer[i], activationFunction=self.activationFunction))
+                    except IndexError:
+                        self.layers.append(Layer(neurons=self.neuronsInEachLayer[-1], activationFunction=self.activationFunction))
+            else:
+                self.layers.append(Layer(neurons=self.neuronsInEachLayer, activationFunction=self.activationFunction))
         #   Append output layers
         self.layers.append(Layer(self.outputNeurons, activationFunction=self.outputFunction))
 

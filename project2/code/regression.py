@@ -111,12 +111,12 @@ class FrankeRegression:
 
 def EtaLambdaAnalysis(filename):
     #   Fixed parameters
-    hiddenLayers = 1
-    neuronsInEachLayer=5
+    hiddenLayers = 3
+    neuronsInEachLayer=(15, 10, 5)
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -152,7 +152,7 @@ def LayerNeuronsAnalysis(filename):
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
     optimizer='RMSProp'
     rho = (0.9,0.999) # default hyperparams in RMSProp
@@ -259,11 +259,11 @@ if __name__=="__main__":
     # print(Freg)
     # Freg.plot()
 
-    # EtaLambdaAnalysis("EtaLmbdaMSE")
+    EtaLambdaAnalysis("EtaLmbdaMSE")
 
     # LayerNeuronsAnalysis("LayerNeuron")
 
-    activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
     # EpochMinibatchAnalysis("EpochMinibatch")
 

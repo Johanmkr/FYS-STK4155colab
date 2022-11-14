@@ -3,6 +3,7 @@ from src.utils import *
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle as R
 from matplotlib import cm
 import matplotlib.ticker as ticker
 import pandas as pd
