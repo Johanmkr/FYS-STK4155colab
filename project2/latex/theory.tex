@@ -123,7 +123,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
 
 
     A layer $\vec{h}^l$ has an associated activation $\vec{a}^l \in \RR[N_l]$ which is a function of the previous layer values, $\vec{h}^{l-\!1}$, the weights, $W^{l-\!1\to l}$, and the biases linked with each neuron, $\vec{b}^l$. The activation is passed as argument to the activation function $g_l$ whose job is to perform the affine transformation from one layer to another in a NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression:
-    \begin{equation}
+    \begin{equation}\label{eq:NN_layers_compact}
         \begin{split}
             \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
             &\quad \vec{a}^l = W^{l\leftarrow l-\!1}\vec{h}^{l -\!1} + \vec{b}^l \,;
@@ -188,7 +188,7 @@ The standard logistic function $q:\, \RR \to (0,1)$ may be written as
 \begin{equation}\label{eq:logistic_function}
     q(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
-and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$ ($\beta_0, \beta_1 \in \RR$ arbitrary constants). This can be generalised to work with multivariable inputs $\vec{x}$: We include an intercept $\theta_0$ and let $\svec{\theta} = (\theta_1, \, \theta_2, \, \dots,\, \theta_p)$ be the same as before. Then,
+and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$ ($\beta_0, \beta_1 \in \RR$ arbitrary constants). This can be generalised to work with multivariable inputs $\vec{x}\in \RR[p]$: We include an intercept $\theta_0$ and let $\svec{\theta} = (\theta_1, \, \theta_2, \, \dots,\, \theta_p)$ be the same as before. Then,
 \begin{equation}\label{eq:logistic_function_fit}
     q(\vec{x};\,\theta_0, \svec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
 \end{equation}
@@ -202,15 +202,17 @@ so that $\hat{y}^{(i)} = q\big(\vec{x}^{(i)}\big)$. When this is the case, the l
 except for the last term which is an \lnorm[2] regularisation term.
 
 Now, if we want to perform a logistic regression analysis, given that we already have a flexible algorithm FFNN, we need only create a very simple FFNN of: 
-\begin{enumerate}
-    \item[*] $p$ input neurons ($N_0=p$)
-    \item[*] a single output neuron ($N_L=1$)
-    \item[*] no hidden layers ($L=1$)
-    \item[*] sigmoid as output activation function ($g_L=\sigma$)
-    \item[*]  
+\begin{enumerate}[label=*]
+    \item $p$ input neurons ($N_0=p$)
+    \item a single output neuron ($N_L=1$)
+    \item no hidden layers ($L=1$)
+    \item sigmoid as output activation function ($g_L=\sigma$)
 \end{enumerate}
-
-
+In doing this, following eq. \eqref{eq:NN_layers_compact}, we end up with the output 
+\begin{equation}
+    \hat{y} = \sigma(W^{L\leftarrow 0}\vec{x} + b^L) = q(\vec{x};\, b^L, W^{0 \to L}),
+\end{equation}
+where we see that $\hat{y}, b_L\in \RR$ and $ W^{0\to L} \in \RR[p\cross 1]$. 
 
 \subsection{Model validation} % Generalisation error?
 
