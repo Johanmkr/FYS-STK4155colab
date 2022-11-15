@@ -201,9 +201,9 @@ Where the actual (physical) relationship between some dependent and independent 
 \subsection{Regression}\label{sec:regression}
     When using a FFNN for a regression problems we opt to fit a function to a certain data set. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
     
-    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \Eq{ridge_cost_function} with a tunable hyperparameter $\lambda$. 
+    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \checkthis{\Eq{ridge_cost_function}} with a tunable hyperparameter $\lambda$. 
 
-    We may use a varying number of hidden layers and neurons, 
+    We may use a varying number of hidden layers and neurons, depending on the data we are trying to fit. The architecture of the network is a problem dependant feature and must be tested for. The same goes for the activation functions described in \Eq{activation_functions}. However, the output function $g^L$ can just to be the linear function: $g^L(\vec{a}^L) = \vec{a}^{L}$. 
     
     
     \feltcute{This means that the number of features is $p=2$ input dimensions, for $n=400$ data point. Each data point (a combination of $p$ features) will yield one single output. }
