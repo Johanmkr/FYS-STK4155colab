@@ -2,7 +2,7 @@
 
 Linear regression assumes a linear relationship between a set of $p$ features $\vec{x}\in\RR[p]$ and an observed value $y\in\RR$. We assume there to exist a \textit{continous} function of the input $\vec{x}$ giving the output $\hat{y}$. The coefficients $\svec{\theta}\in\RR[p]$ that determine said function can be estimated using a variety of methods, as discussed in \projectOne. In any case, the aim is to minimise some loss function $\mathcal{L}(\svec{\theta};\,\hat{y}, y)$ with respect to this parameter vector ($\svec{\theta}$) describing what we sacrifice by using this exact model. 
 
-What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific regression algorithms for finding the optimal $\svec{\theta}$, we can change modus operandi and focus solely on the minimisation of some objective function (e.g. a loss function such as the \checkthis{MSE}). For this purpose, we may use the very powerful procedure of steepest descent.
+What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific regression algorithms for finding the optimal $\svec{\theta}$, we can change modus operandi and focus solely on the minimisation of some objective function (e.g. a loss function). For this purpose, we may use the very powerful procedure of steepest descent.
 
 Where the actual (physical) relationship between some dependent and independent variable is not of \rephrase{utmost importance}, and the main aim is to predict the outcome given some setting, supervised learning problems may also be solved using neural networks. 
 
@@ -17,9 +17,6 @@ Where the actual (physical) relationship between some dependent and independent 
         \mathcal{L}(\svec{\theta}) = \frac{1}{2n} \sum_{i=1}^n (\hat{y}^{(i)}-y^{(i)})^2 + \frac{\lambda}{2p} \sum_{j=1}^{p} \theta_j^2. 
     \end{equation}
     $\lambda$ is the penalty term set to zero for OLS and a small positive value for Ridge regression. The output $\hat{y}^{(i)}$ is resulting from some function evaluated at $\vec{x}^{(i)}$, which for our purposes reads $\hat{y}^{(i)} = [\vec{x}^{(i)}]\TT \svec{\theta}$.
-
-    \fillertext
-
  
     \subsubsection{Plain gradient descent}\label{sec:plain_gradient_descent}
         The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function in $\svec{\xi}$-space, i.e. the direction of the negative gradient $-\nabla_{\!\xi} J(\svec{\xi})$. We thus have the iterative scheme to find minima,
@@ -187,27 +184,37 @@ We have so far discussed regression and given a lot of attention to the coeffici
 
 \subsection{Logistic regression}\label{sec:logistic_regression}
 
-The standard logistic function $p:\, \RR \to (0,1)$ may be written as 
+The standard logistic function $q:\, \RR \to (0,1)$ may be written as 
 \begin{equation}\label{eq:logistic_function}
-    p(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
+    q(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
 and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$ ($\beta_0, \beta_1 \in \RR$ arbitrary constants). This can be generalised to work with multivariable inputs $\vec{x}$: We include an intercept $\theta_0$ and let $\svec{\theta} = (\theta_1, \, \theta_2, \, \dots,\, \theta_p)$ be the same as before. Then,
 \begin{equation}\label{eq:logistic_function_fit}
-    p(\vec{x};\,\theta_0, \svec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
+    q(\vec{x};\,\theta_0, \svec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
 \end{equation}
-so that $\hat{y}^{(i)} = p\big(\vec{x}^{(i)}\big)$. When this is the case, the loss function simplies a bit, but we present the cross entropy for a general $\hat{y}$ resulting from a model as
+so that $\hat{y}^{(i)} = q\big(\vec{x}^{(i)}\big)$. When this is the case, the loss function simplies a bit, but we present the cross entropy for a general $\hat{y}$ resulting from a model as
 \begin{equation}\label{eq:logistic_regression_cost_function}
     \begin{split}
         \mathcal{L}(\svec{\theta}) =& -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \log{\hat{y}^{(i)}} + \big(1-y^{(i)}\big) \log{\big(1-\hat{y}^{(i)}\big)}\Big] \\
-        &+ \frac{\lambda}{2p}\sum_{j=0}^p \theta_j^2,
+        &+ \frac{\lambda}{2p}\sum_{j=1}^p \theta_j^2,
     \end{split}
 \end{equation}
 except for the last term which is an \lnorm[2] regularisation term.
 
+Now, if we want to perform a logistic regression analysis, given that we already have a flexible algorithm FFNN, we need only create a very simple FFNN of: 
+\begin{enumerate}
+    \item[*] $p$ input neurons ($N_0=p$)
+    \item[*] a single output neuron ($N_L=1$)
+    \item[*] no hidden layers ($L=1$)
+    \item[*] sigmoid as output activation function ($g_L=\sigma$)
+    \item[*]  
+\end{enumerate}
+
+
 
 \subsection{Model validation} % Generalisation error?
 
-We have discussed some loss functions, but the way we will \rephrase{give} the error in a model is not yet clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
+We have discussed some loss functions, but the way we will \rephrase{give} the error in a model has not yet been clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
 
 When we speak of the total loss, this concerns the training dataset, or more often subsets of which. Since we expect its error to be normally distributed around the target values, we evaluate our regression models using the MSE function
 \begin{equation}\label{eq:MSE}
