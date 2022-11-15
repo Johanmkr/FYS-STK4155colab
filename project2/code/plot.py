@@ -212,11 +212,12 @@ def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
         if func == "epochs":
             pass
         else:
-            x = np.asarray(score["epochs"])
-            y = np.asarray(score[func])
+            x = np.asarray(score["epochs"][::5])
+            y = np.asarray(score[func][::5])
             ax.plot(x,y, label=func)
     # ax.set_ylim(0,1)
     ax.set_xlabel("Epoch")
+    ax.set_yscale("log")
     ax.set_ylabel("Test MSE")
     plt.legend()
 
