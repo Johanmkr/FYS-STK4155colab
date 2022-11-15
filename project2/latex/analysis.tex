@@ -1,25 +1,25 @@
 \section{Analysis}\label{sec:analysis}
 
-\comment{Present datasets???}
+% \comment{Present datasets???}
 
 %$\datasetA = \big\{ (\vec{x}^{(1)}, y^{(1)}), \,  (\vec{x}^{(2)}, y^{(2)}), \,\dots, \, (\vec{x}^{({\npointsA})}, y^{(\npointsA)}) \big\}$ 
 
-\comment{Maybe write something about the codes?}
+% \comment{Maybe write something about the codes?}
 
 
-OUTLINE:
-\begin{enumerate}
-    \item Gradient descent \begin{enumerate}
-        \item[-] OLS and Ridge on regression problem
-    \end{enumerate}
-    \item Building our FFNN
-    \item Regression problem \begin{enumerate}
-        \item[-] try different activation functions
-    \end{enumerate}
-    \item Classification problem \begin{enumerate}
-        \item[-] compare with logistic regression 
-    \end{enumerate}
-\end{enumerate}
+% OUTLINE:
+% \begin{enumerate}
+%     \item Gradient descent \begin{enumerate}
+%         \item[-] OLS and Ridge on regression problem
+%     \end{enumerate}
+%     \item Building our FFNN
+%     \item Regression problem \begin{enumerate}
+%         \item[-] try different activation functions
+%     \end{enumerate}
+%     \item Classification problem \begin{enumerate}
+%         \item[-] compare with logistic regression 
+%     \end{enumerate}
+% \end{enumerate}
 
 \subsection{Gradient descent}\label{sec:analysis_SGD}
 
@@ -28,13 +28,17 @@ OUTLINE:
     \begin{equation}
         f(x) = 2.0x + 1.7x^2 -0.40x^3 \, +\, 0.10\mathcal{N}(0, 1),
     \end{equation}
-    and we consider $n=400$ datapoints in total, but save 20\% of these for validation. In particular, we aim to minimise the cost function in eq. \eqref{eq:linear_regression_cost_function} with $\lambda=0$ for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function, i.e. $\lambda > 0$ in eq. \eqref{eq:linear_regression_cost_function}, but here we need to contemplate the penalty parameter $\lambda$ as well as the learning rate $\eta$. 
+    and we consider $n=400$ datapoints in total, but save 20\% of these for validation. We use the Vandermonde matrix $X\in \RR[400 \cross 3]$ of row vectors $\vec{x} = (x, x^2, x^3)$ ($p=3$) so that the output becomes $\hat{y} = X\svec{\theta}$, where $\svec{\theta}\in \RR[3]$. We also scale the data via z-score normalisation. In particular, we aim to minimise the cost function in eq. \eqref{eq:linear_regression_cost_function} in $\svec{\theta}$-space with $\lambda=0$ for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function, i.e. $\lambda > 0$ in eq. \eqref{eq:linear_regression_cost_function}, but here we need to contemplate the penalty parameter $\lambda$ as well as the learning rate $\eta$.
 
-    For this very simple case, we realise that 
+    We want to try a variety of optimiser algorithms for different $\eta$'s. For this very simple case, after a variety of simulations, we realise a few key takeaways:
+    \begin{enumerate}[label=\alph*)]
+        \item\label{item:simple_a} SGD is much more robust GD.
+        \item\label{item:simple_b} The effect increasing $\lambda$ has on the MSE is negligable.
+        \item\label{item:simple_c} All update rules seem to find an equally good model for $\eta\in [10^{-3}, 1]$.
+    \end{enumerate}
+    Mainly, these things are found after performing OLS with GD, and both OLS and Ridge regression ($\lambda=0.1$) with SGD with $m=40$. More results than the ones presented in this paper can be found \href{\figureslink}{here}. Item \ref{item:simple_a} is not surprising, even though we might have exaggerated with the number of minibatches we chose. Point \ref{item:simple_b} is expected as the function is so simple, however, we noticed that the algorithms learned slightly faster. The last key point \ref{item:simple_c} indicates that the update rules are properly implemented in our code. In figure \ref{fig:simple_reg_errors_ridge} we present the result of the Ridge regression with SGD where we used $m=40$ and $\lambda=0.1$. The graphs are barely distinguishable from what we got with $\lambda=0$.
 
-    We do not present many figures to describe this part of the analysis. We justify this by arguing that the purpose of this part is to test the SGD code, and then by extension the GD code, and give an idea of the effect of changing optimisers. 
-
-    In figure \ref{fig:simple_reg_errors_ridge}  \fillertext
+    % We do not present many figures to describe this part of the analysis. We justify this by arguing that the purpose of this part is to test the SGD code, and then by extension the GD code, and give an idea of the effect of changing optimisers. 
 
     \begin{figure}
         \includegraphics[width=\linewidth]{ridge_errors_gradient_descent.pdf}
