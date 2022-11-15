@@ -2,7 +2,9 @@
 
 Linear regression assumes a linear relationship between a set of $p$ features $\vec{x}\in\RR[p]$ and an observed value $y\in\RR$. We assume there to exist a \textit{continous} function of the input $\vec{x}$ giving the output $\hat{y}$. The coefficients $\svec{\theta}\in\RR[p]$ that determine said function can be estimated using a variety of methods, as discussed in \projectOne. In any case, the aim is to minimise some loss function $\mathcal{L}(\svec{\theta};\,\hat{y}, y)$ with respect to this parameter vector ($\svec{\theta}$) describing what we sacrifice by using this exact model. 
 
-What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific algorithms for finding the optimal $\svec{\theta}$, it would be benefitial to use an algorithm that simply minimises a general loss function in the parameter space. This is where the very powerful method of steepest descent comes in to play. \fillertext
+What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific regression algorithms for finding the optimal $\svec{\theta}$, we can change modus operandi and focus solely on the minimisation of some objective function (e.g. a loss function).  
+
+%it would be benefitial to use an algorithm that simply minimises a general loss function in the parameter space. This is where the very powerful method of steepest descent comes in to play. \fillertext
 
 Where the actual (physical) relationship between some dependent and independent variable is not of \rephrase{utmost importance}, and the main aim is to predict the outcome given some setting, supervised learning problems may also be solved using neural networks. 
 
@@ -11,16 +13,11 @@ Where the actual (physical) relationship between some dependent and independent 
 
 
 \subsection{Stochastic gradient descent (SGD)}\label{sec:stochastic_gradient_descent}
+    Gradient descent (GD) is a technique 
     Gradient descent \citep{mhjensen} \fillertext[aim is to find beta etc]
 
     The result is a flexible way to locate the minima of \checkthis{any} cost function $\mathcal{L}(\svec{\theta})$. The ordinary least squares and Ridge schemes of linear regression that we discussed in \href{https://github.com/Johanmkr/FYS-STK4155colab/tree/main/project1}{project 1}, are then implemented by using the cost functions $\mathcal{L}^\mathrm{OLS}(\svec{\theta})$ and $\mathcal{L}^\mathrm{Ridge}(\svec{\theta})$ respectively, given by the following expressions:
 
-    % \begin{subequations}\label{eq:linear_regression_cost_functions}
-    %     \begin{align}
-    %         \mathcal{L}^\mathrm{OLS}(\svec{\theta}) &= \norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2 \label{eq:ols_cost_function}\\
-    %         \mathcal{L}^\mathrm{Ridge}(\svec{\theta})&=\norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2  -  \lambda\norm{\svec{\theta}}_2^2 \label{eq:ridge_cost_function}
-    %     \end{align}
-    % \end{subequations}
 
     \begin{subequations}\label{eq:linear_regression_cost_functions}
         \begin{align}
