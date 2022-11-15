@@ -193,19 +193,17 @@ The standard logistic function $p:\, \RR \to (0,1)$ may be written as
     p(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
 
-and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$, $\beta_0, \beta_1 \in \RR$. This can be generalised to 
+and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$ ($\beta_0, \beta_1 \in \RR$ arbitrary constants). This can be generalised to work with multivariable inputs $\vec{x}$: We include an intercept $\theta_0$ and let $\svec{\theta} = (\theta_1, \, \theta_2, \, \dots,\, \theta_p)$ be the same as before. Then,
 
+\begin{equation}\label{eq:logistic_function_fit}
+    p(\vec{x};\,\theta_0, \vec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
+\end{equation}
+
+so that $\hat{y}^{(i)} = p(\vec{x}^{(i)})$.
 
 \begin{equation}\label{eq:logistic_regression_cost_function}
-    \mathcal{L}(\svec{\theta}) = -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \big()^{(i)}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
-\end{equation}
-
-In terms of weights and biases ($ (\theta_0,  \svec{\theta} ) \to (\vec{b}, W)$),
-
-\begin{equation}\label{eq:logistic_cost_function_NN}
-    \mathcal{L}(\vec{b}, W) = -  \frac{1}{n}\sum_{i=1}^n \Big[ y^{(i)} \big(\vec{b} + W\TT \vec{h}^{l}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
-\end{equation}
-
-\begin{equation}\label{eq:logistic_cost_function_NN2}
-    \mathcal{L}(l) = -  \frac{1}{N_l} \Big[ (\vec{h}^{l})\TT\vec{a}^{l} - \log{\big(1+e^{\vec{a}^{l}}\big)} \Big]
+    \begin{split}
+        \mathcal{L}(\svec{\theta}) =& -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \log{\hat{y}^{(i)}} + \big(1-y^{(i)}\big) \log{\big(1-\hat{y}^{(i)}\big)}\Big] \nonumber \\
+        &+ \frac{1}{2p}\sum_{j=0}^p \theta_j^2
+    \end{split}
 \end{equation}
