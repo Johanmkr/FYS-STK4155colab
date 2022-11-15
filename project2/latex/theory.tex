@@ -112,7 +112,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
         \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting. By default: $\epsilon=10^{-7}$.
         \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$. By default: $\rho = 0.9$ and $\epsilon=10^{-7}$.
-        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_1$ for this optimisation scheme. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
+        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_2$ for this optimisation scheme. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
 
     
@@ -135,7 +135,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \end{subequations}
     where we defined $\vec{h}^0$ and $\vec{h}^L$ to be the input and output layer, respectively. 
 
-    The matrix of weights $W^{l-\! 1\to 1} \in \RR[N_{l-\!1} \cross N_l]$ applies weights and dimension corrections to the previous layer $\vec{h}^{l-\! 1}\in \RR[N_{l-\! 1}]$ so that the activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ can accept the input. \rephrase{Rephrase?} The bias $\vec{b}^l \in \RR[N_l]$ \wtf
+    The matrix of weights $W^{l-\! 1\to l} \in \RR[N_{l-\!1} \cross N_l]$ applies weights and dimension corrections to the previous layer $\vec{h}^{l-\! 1}\in \RR[N_{l-\! 1}]$ so that the activation function $g_l \,:\, \RR[N_l] \to \RR[N_l]$ can accept the input. The bias $\vec{b}^l \in \RR[N_l]$ may be interpreted as a safety mechanism of the neurons to prevent their layer value to become zero, and is typically set to a small non-zero value \citep{Goodfellow2016}. 
 
    
 
@@ -169,17 +169,14 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     % \begin{equation}\label{eq:softmax}
     %     \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
     % \end{equation}
-    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ containing the weights \comment{Is this general?} and biases linked with its neurons. The activation is passed as argument to the activation function $g_l$ whose job is to perform the the affine transformation from one layer to another in an NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression
-    \feltcute{
+    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ which is a function of the previous layer values ,$h^{l-\!1}$, the weights, $W^{l-\!1\to l}$, and the biases linked with each neuron $b^l$. The activation is passed as argument to the activation function $g_l$ whose job is to perform the affine transformation from one layer to another in a NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression:
     \begin{equation}
         \begin{split}
             \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
             &\quad \vec{a}^l = W^{l\leftarrow l-\!1}\vec{h}^{l -\!1} + \vec{b}^l \,;
         \end{split}
     \end{equation}
-    where $W^{l\leftarrow l-\!1} \equiv (W^{l-\! 1\to l})\TT$.}
-    
-    The output is \checkthis{$\hat{\vec{y}}^{(i)} = \vec{h}^L \in \RR[N_L]$}.
+    where $W^{l\leftarrow l-\!1} \equiv (W^{l-\! 1\to l})\TT$. The output is $\hat{\vec{y}}^{(i)} = \vec{h}^L \in \RR[N_L]$.
 
 
     \begin{subequations}\label{eq:activation_functions}
@@ -198,7 +195,7 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \end{subequations}
 
     Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
-    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but there hatch is a perfomance reduction.
+    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a perfomance reduction.
 
     
 
@@ -209,7 +206,10 @@ where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allo
     \subsubsection{Back propagation}\label{sec:back_propagation}
 
 
-    The information in an FFNN accepting input $\vec{x}$ to produce output $\hat{y}$ \checkthis{(check consistency!)} is flowing \textit{forward} \citep{Goodfellow2016}, hence the name. The initial information from $\vec{x}$ propagates through the hidden layers resulting in the production of $\hat{y}$. This information flow is called forward propagation. During training, we let forward propagation yield a cost, $\mathcal{L}(\svec{\theta})$. We may reverse this process, i.e. let $\mathcal{L}(\svec{\theta})$ provide infomation that propagates backwards through the network in order to compute the gradient, \checkthis{$\nabla_{\!\theta}\mathcal{L}(\svec{\theta})$}, corresponding to an algorithm called back-propagation.
+    The information in an FFNN accepting input $\vec{x}$ to produce output $\vec{\hat{y}}$ is flowing \textit{forward} \citep{Goodfellow2016}, hence the name. The initial information from $\vec{x}$ propagates through the hidden layers resulting in the production of $\vec{\hat{y}}$ which is the output of the final layer. This information flow is called forward propagation or forward pass. Training the network (tuning the weights and biases) consist of running forward propagation and compare the resultant output $\vec{\hat{y}}$ with the desired output $\vec{y}$, i.e. evaluate the loss function, $\mathcal{L}(\svec{\theta})$. 
+    
+
+    The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep{Goodfellow2016} chapter 6.5.
 
 
 \subsection{Classification}\label{sec:classification}

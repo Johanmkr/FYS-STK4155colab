@@ -232,9 +232,9 @@ def logisticRegression(filename="logistic"):
     outputNeurons=1
     activationFunction = 'sigmoid'
     epochs=250
-    nrMinibatches=5
+    nrMinibatches=3
     testSize=0.2
-    optimizer='adaGrad'
+    optimizer='RMSProp'
     rho = 0.9 # default hyperparams in RMSProp
 
     #   Parameters to test
@@ -274,8 +274,8 @@ if __name__=="__main__":
     except IndexError:
         # EtaLambdaAnalysis("EtaLmbdaMSECancer")
         # LayerNeuronsAnalysis("LayerNeuronCancer")
-        activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
-        # EpochMinibatchAnalysis("EpochMinibatchCancer")
+        # activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
+        EpochMinibatchAnalysis("EpochMinibatchCancer")
     
 
 
