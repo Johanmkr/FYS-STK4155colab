@@ -58,13 +58,10 @@ def create_mock_data(seed=169, noise_scale=noiseScale, theta_actual=thetaActual,
 X_train, y_train, X_test, y_test = create_mock_data()
 
 noEpochs1, noEpochs2 = 25, 50
-no_of_minibatches = no_of_observations//10
 np.random.seed(269)
 theta0 = np.random.randn(3)
 
-
-
-def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
+def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0, no_of_minibatches=40):
     test_MSE1 = np.zeros_like(learningRates); test_MSE2 = np.zeros_like(learningRates)
     theta2 = []
     t0 = time()
@@ -90,21 +87,41 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0):
     Params_ = params_info or params
     Params = Params_.copy()
     Params['lmbda'] = lmbda
-    info.set_file_info(filename, method="SGD", opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, theta0=theta0, timer=f"{t1-t0:.0f}")
+    info.set_file_info(filename, method=str(sgd).split()[1], opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, theta0=theta0, timer=f"{t1-t0:.0f}")
 
 
 
+"""
+----------
+    GD    
+----------
+"""
 
-# OLS: 
+#   OLS:
+simple_analysis("plain", "plain_GD.txt", no_of_minibatches=1)
+simple_analysis("momentum", "momentum_GD.txt", {"gamma":0.5}, no_of_minibatches=1)
+simple_analysis("adagrad", "adagrad_GD.txt", no_of_minibatches=1)
+simple_analysis("RMSprop", "rmsprop_GD.txt", {"rho":0.9}, no_of_minibatches=1)
+simple_analysis("Adam", "adam_GD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, no_of_minibatches=1)
 
-simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
+
+"""
+-----------
+    SGD    
+-----------
+"""
+
+#   OLS:
+
 # simple_analysis("plain", "plain_SGD.txt")
+# simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
 # simple_analysis("adagrad", "adagrad_SGD.txt")
 # simple_analysis("RMSprop", "rmsprop_SGD.txt", {"rho":0.9})
 # simple_analysis("Adam", "adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)})
 
 
-# Ridge:
+#   Ridge:
+
 lmbda0 = 0.1
 # simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
 # simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
