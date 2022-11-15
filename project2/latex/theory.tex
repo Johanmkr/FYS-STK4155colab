@@ -21,7 +21,7 @@ Where the actual (physical) relationship between some dependent and independent 
 
  
     \subsubsection{Plain gradient descent}\label{sec:plain_gradient_descent}
-        The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have the iterative scheme to find minima,
+        The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function in $\svec{\xi}$-space, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have the iterative scheme to find minima,
         \begin{align}\label{eq:steepest_descent}
             \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} J(\svec{\xi}_k),
         \end{align}
@@ -31,47 +31,43 @@ Where the actual (physical) relationship between some dependent and independent 
         \begin{equation}\label{eq:update_rule_general}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\,;  \\
-                &\quad \vec{v}_k = -\eta_k\mathcal{A}_k,
+                &\quad \vec{v}_k = -\eta\mathcal{A}_k,
             \end{split}
         \end{equation}
-        for substitutions $\rho\to\mathcal{L}$ and $\svec{\xi}\to \svec{\theta}$. For a sufficiently small $\eta_k$, this method will converge to a minimum of $\svec{\theta}$. (However, since we may not know the nature of $\svec{\theta}$, there is a risk that this is just a local and not a global minimum. The steepest descent method in eq. \eqref{eq:update_rule_general} is a deterministic method, which means we may get stuck in a local minimum. To avoid this we introduce stochastic gradient descent.) 
+        for substitutions $J\to\mathcal{L}$ and $\svec{\xi}\to \svec{\theta}$. For a sufficiently small $\eta$, this method will converge to a minimum of $\svec{\theta}$. However, since we may not know the nature of $\mathcal{L}$ in parameter space, there is a risk that said extremum is just a local and not a global minimum. The steepest descent method in eq. \eqref{eq:update_rule_general} is a deterministic method, which means we may get stuck in a local minimum. There are several ways around this, and one such way is to include an element of randomness in the computations, as we will see in section \ref{sec:stochasticity}.
 
     \subsubsection{Momentum}\label{sec:momentum}
         From eq. \eqref{eq:update_rule_general} we have that the movement in parameter space is given by $\vec{v}_k$ (the negative of which), which describes the direction and magnitude of the steepest ascent in parameter space. Sometimes we might want to move larger distances in one step. This can be achieved by introduction momentum: We add an addition term to $\vec{v}_k$ which lets us rewrite eq. \eqref{eq:update_rule_general} as
         \begin{equation}\label{eq:momentum_GD_algorithm}
             \begin{split}
                 \svec{\theta}_{k+1} &= \svec{\theta}_k + \vec{v}_k\, ; \\
-                &\quad \vec{v}_k =\gamma\vec{v}_{k-1} - \eta_k\mathcal{A}_k,
+                &\quad \vec{v}_k =\gamma\vec{v}_{k-1} - \eta\mathcal{A}_k,
             \end{split}
         \end{equation}
-        where $\gamma$ is a momentum parameter and $\eta_k$ is the same learning parameter as before. The basic idea is that this with this method we "overshoot" the descending step length in the direction of the previous step, with a magnitude that is controlled by $\gamma$. By doing this, we may reach the desired minimum with fewer iterations. 
+        where $\gamma$ is a momentum parameter and $\eta$ is the same global learning parameter as before. The basic idea is that this with this method we "overshoot" the descending step length in the direction of the previous step, with a magnitude that is controlled by $\gamma$. By doing this, we may reach the desired minimum with fewer iterations. 
 
-        There are several modifications we can do to optimise this algorithm. In the Nesterov momentum algorithm (NAG) one applies the following adjustment to the gradient in eq. \eqref{eq:momentum_GD_algorithm}:
-        \begin{equation}\label{eq:nag}
-            \begin{split}
-                \mathcal{A}_k &\to\nabla_{\!\tilde{\theta}}\mathcal{L}(\tilde{\svec{\theta}}_k) \, ;\\ 
-                & \quad \tilde{\svec{\theta}}_k = \svec{\theta}_k + \gamma\vec{v}_{k-1} \, ;
-            \end{split}
-        \end{equation}
+        % There are several modifications we can do to optimise this algorithm. In the Nesterov momentum algorithm (NAG) one applies the following adjustment to the gradient in eq. \eqref{eq:momentum_GD_algorithm}:
+        % \begin{equation}\label{eq:nag}
+        %     \begin{split}
+        %         \mathcal{A}_k &\to\nabla_{\!\tilde{\theta}}\mathcal{L}(\tilde{\svec{\theta}}_k) \, ;\\ 
+        %         & \quad \tilde{\svec{\theta}}_k = \svec{\theta}_k + \gamma\vec{v}_{k-1} \, ;
+        %     \end{split}
+        % \end{equation}
 
-        This is analagous to the adjustment needed to go from forward Euler to Euler-Cromer as numerical intregration method.
+        % This is analagous to the adjustment needed to go from forward Euler to Euler-Cromer as numerical intregration method.
 
-        \fillertext
-
-        
-        
-
+        % \fillertext
 
         
 
     \subsubsection{Stochasticity}\label{sec:stochasticity}
         There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\mathcal{L}(\svec{\theta})$ has numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
 
-        The main idea is that we have $n$ data points, that we divide into $m=n/M$\footnote{We of course need to make sure this is an integer. \comment{Explain?}} minibatches (subsets), meaning that we have $M$ data points in each minibatch, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\bigcup_{j=1}^m \mathcal{B}_j = \bigcap_{j=1}^m \mathcal{B}_j = \mathcal{D}$. We also recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
+        The main idea is that with the $n$ datapoints which we have in a dataset $\mathcal{D}$, we can create $m$ subsets, meaning that we have $n/m$\footnote{Give or take; needs to be an integer.} datapoints in each \textit{minibatch}, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\bigcup_{j=1}^m \mathcal{B}_j = \bigcap_{j=1}^m \mathcal{B}_j = \mathcal{D}$. We recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
         \begin{equation}
             \mathcal{L}(\svec{\theta}) =\sum_{(\vec{x}, y)\in \mathcal{D}} l\big(f(\vec{x};\,\svec{\theta}), y \big) = \sum_{i=1}^n l_i(\svec{\theta}),
         \end{equation}
-        where $l_i = l\big(f(\vec{x}^{(i)};\svec{\theta}); \, y^{(i)}\big)$, and thus its gradient reads
+        where $l_i = l\big(f(\vec{x}^{(i)};\svec{\theta}); \, y^{(i)}\big)$. Thus, its gradient is written
         \begin{equation}
             \mathcal{A} = \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) = \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}).
         \end{equation}
@@ -79,19 +75,19 @@ Where the actual (physical) relationship between some dependent and independent 
         \begin{equation}\label{eq:sgd_gradient}
             \begin{split}
             \mathcal{A}_k &= \sum_{j=1}^{m}\mathcal{A}_k^j\, ; \\
-            \mathcal{A}_k &\to \mathcal{A}^j_k = \sum_{i:\vec{x}^{(i)} \in\mathcal{B}_j }\nabla_{\!\theta} l_i(\svec{\theta}_k).
+            \mathcal{A}_k &\to \mathcal{A}^j_k = \sum_{i:\vec{x}^{(i)} \in\mathcal{B}_j }\nabla_{\!\theta} l_i(\svec{\theta}_k)\, ;
             \end{split}
         \end{equation}
         The estimate $\mathcal{A}_k^j \approx \mathcal{A}_k$ can be used in our algorithm to ensure stochasticity and relieve computational pressure.
     
     \subsubsection{Optimising the learning rate}\label{sec:tuning}
     
-    We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below, that is different ways of calculating $\vec{v}$ in eq. \eqref{eq:update_rule_general}. All require an original learning rate $\eta$ and a small number $\epsilon$ for numerical stability. 
+    There is in general no way of knowing a priori what value $\eta$ or $\gamma$ should take. Tuning such hyperparameters makes up a significant part of the work in a supervised learning problems. We can mitigate parts of the struggle with hyperparameter adjustment by using an algorithm with adaptive learning rates. We present a few such schemes in short below, that is different ways of calculating $\vec{v}$ in eq. \eqref{eq:update_rule_general}. All require an original learning rate $\eta$ and a small number $\epsilon$ for numerical stability. 
 
     \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
         \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting. By default: $\epsilon=10^{-7}$.
-        \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$. By default: $\rho = 0.9$ and $\epsilon=10^{-7}$.
-        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1, \rho_2$ for this optimisation scheme. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
+        \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$, a decay rate controlling the length scale of the moving average. By default: $\rho = 0.9$ and $\epsilon=10^{-7}$.
+        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1$ and $\rho_2$ for this optimisation scheme, representing the decay rate of the first and second moment, respectively. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
 
     
