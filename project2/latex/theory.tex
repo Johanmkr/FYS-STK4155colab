@@ -153,6 +153,18 @@ We have so far discussed regression and given a lot of attention to the coeffici
     Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
     The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a perfomance reduction.
 
+
+    \subsubsection{Initialisation}\label{sec:initialisation}
+    Before we even start to calculate anything with our network we need to know how it should be initialised. For the bias this is straightforward as all the $\vec{b}^l, \quad l=1,2,\dots,L$ are initialised with a constant small but non-zero value. For the weights on the other hand, the initialisation depends on the choice of activation functions. All weight initialisation are drawn from normal distribution, but limits are put on the variance of these distributions. For the sigmoid and hyperbolic tangent activation functions, weight are drawn from a normal distribution centred around zero, with the variance:
+    \begin{equation}\label{eq:init_xavier}
+        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}+N_l}
+    \end{equation}
+    Similarly, for the ReLU and leaky ReLU activation function, the variance of the normal distribution centred around zero must satisfy:
+    \begin{equation}\label{eq:init_he}
+        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}}
+    \end{equation}
+    We have that \Eq{init_xavier} is known as \textit{Xavier} initialisation, while \Eq{init_he} is known as \textit{He} initialisation.
+
     
 
 
@@ -180,7 +192,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
 \subsection{Classification}\label{sec:classification}
     For the case of classification, we typically have many features in the input data, which results in a more complex design matrix. The output of the network is structured into two main classes, binary and multivariate classification. In binary classification we have one single output node that ideally should be either 0 or 1. We achieve this by having a sigmoid output function. In multivariate classification on the other hand, we have multiple output nodes and a probability distribution between them. This probability distribution is found using the Softmax function. However, the data set we will analyse is the Wisconsin Breast Cancer dataset \citep{scikit-learn} which needs binary classification. Thus the main focus will be on the binary classification technique. 
 
-    When evaluating the loss we use \Eq{logistic_regression_cost_function}  which is known as the cross entropy or log loss function which measures the performance of a model whose output is a value between 0 and 1. Another argument for using cross entropy as loss function is that we expect the error to follow a binomial distribution rather than a normal distribution as for linear regression. \fillertext{????}
+    When evaluating the loss we use \Eq{logistic_regression_cost_function}  which is known as the cross entropy or log loss function which measures the performance of a model whose output is a value between 0 and 1. Another argument for using cross entropy as loss function is that we expect the error to follow a binomial distribution rather than a normal distribution as for linear regression.
 
 \subsection{Logistic regression}\label{sec:logistic_regression}
 
