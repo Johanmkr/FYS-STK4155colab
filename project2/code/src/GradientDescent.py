@@ -823,8 +823,8 @@ class SGD(noneGradientDescent):
         str
             name of update rule
         """
-        if self.adaptive:
-            return self.optimiser
+        if self.m == 1:
+            return self.optimiser + " GD"
         else:
             return self.optimiser + " SGD"
    
