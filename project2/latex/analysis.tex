@@ -36,9 +36,7 @@
         \item\label{item:simple_b} The effect increasing $\lambda$ has on the MSE is negligable.
         \item\label{item:simple_c} All update rules seem to find an equally good model for $\eta\in [10^{-3}, 1]$.
     \end{enumerate}
-    Mainly, these things are found after performing OLS with GD, and both OLS and Ridge regression ($\lambda=0.1$) with SGD with $m=40$. More results than the ones presented in this paper can be found \href{\figureslink}{here}. Item \ref{item:simple_a} is not surprising, even though we might have exaggerated with the number of minibatches we chose. Point \ref{item:simple_b} is expected as the function is so simple, however, we noticed that the algorithms learned slightly faster. The last key point \ref{item:simple_c} indicates that the update rules are properly implemented in our code. In figure \ref{fig:simple_reg_errors_ridge} we present the result of the Ridge regression with SGD where we used $m=40$ and $\lambda=0.1$. The graphs are barely distinguishable from what we got with $\lambda=0$.
-
-    % We do not present many figures to describe this part of the analysis. We justify this by arguing that the purpose of this part is to test the SGD code, and then by extension the GD code, and give an idea of the effect of changing optimisers. 
+    Mainly, these things are found after performing OLS with GD, and both OLS and Ridge regression ($\lambda=0.1$) with SGD with $m=40$. More results than the ones presented in this paper can be found \href{\figureslink}{here}. Item \ref{item:simple_a} is not surprising, even though we might have exaggerated with the number of minibatches we chose. Point \ref{item:simple_b} is expected as the function is so simple, however, we noticed that the algorithms learned slightly faster. The last key point \ref{item:simple_c} indicates that the update rules are properly implemented in our code. In figure \ref{fig:simple_reg_errors_ridge} we present the result of the Ridge regression with SGD where we used $m=40$ and $\lambda=0.1$ and stopped after 50 complete epochs. The graphs are barely distinguishable from what we got with $\lambda=0$. We see that RMSProp learns fast for small $\eta$, wheras AdaGrad seems to need a larger $\eta$ to be able to converge. With momentum, the learning requires half of the iterations needed for the plain SGD to get the same MSE, a result we repeatedly have gotten for other experiments.
 
     \begin{figure}
         \includegraphics[width=\linewidth]{ridge_errors_gradient_descent.pdf}
@@ -47,9 +45,6 @@
     \end{figure}
 
     We will study more thoroughly the dependencies on the number of epochs, the number of minibatches ($m$) and the penalty parameter ($\lambda$) in the NN analysis of the Franke function in section \ref{sec:analysis_NN}. 
-
-
-
 
     
 \subsection{Neural network}\label{sec:analysis_NN}
