@@ -97,7 +97,7 @@ Where the actual (physical) relationship between some dependent and independent 
     
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
-We have so far discussed regression and given a lot of attention to the coefficients $\svec{\theta}$ that we assume describe some physical relationship between a set of feature values and a target. More complex problems require more complex models, and many phenomena may not even be possible to describe with a smooth function. Deep learning models usually pay more attention to the output, in this section denoted $\hat{\vec{y}}$ to allow multivariable outputs\footnote{For completeness. Will not be relevant to think of the output as a vector in our case.}, after training, that is. 
+We have so far discussed regression and given a lot of attention to the coefficients $\svec{\theta}$ that we assume describe some physical relationship between a set of feature values and a target. More complex problems require more complex models, and many phenomena may not even be possible to describe with a smooth function. Deep learning models usually pay more attention to the output, in this section denoted $\hat{\vec{y}}$ to allow multivariable outputs\footnote{For completeness. Will not be relevant to think of the output as a vector in our analysis.}, after training, that is. 
 %To connect the following with what we have looked at so far, we can think of the weights and  the parameter vector $\svec{\theta}$
 
     \subsubsection{Basics}\label{sec:basics}
@@ -153,7 +153,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
 
     % add linear??
 
-    Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
+    Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
     The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a perfomance reduction.
 
     
@@ -183,7 +183,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
 \subsection{Classification}\label{sec:classification}
     For the case of classification, we typically have many features in the input data, which results in a more complex design matrix. The output of the network is structured into two main classes, binary and multivariate classification. In binary classification we have one single output node that ideally should be either 0 or 1. We achieve this by having a sigmoid output function. In multivariate classification on the other hand, we have multiple output nodes and a probability distribution between them. This probability distribution is found using the softmax function. However, the data set we will analyse is the Wisconsin Breast Cancer dataset \citep{scikit-learn} which needs binary classification. Thus the main focus will be on the binary classification technique. 
 
-    When evaluating the loss we use \Eq{logistic_cost_function}
+    When evaluating the loss we use \Eq{logistic_regression_cost_function}
 
 \subsection{Logistic regression}\label{sec:logistic_regression}
 
@@ -193,20 +193,11 @@ The standard logistic function $p:\, \RR \to (0,1)$ may be written as
     p(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
 
-and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\xi \to \beta_0 + \beta_1 \xi$. 
-% beta or theta?
-\fillertext
-
-% \begin{equation}\label{eq:logistic_cost_function}
-%     \mathcal{L}(\svec{\beta}) = - \sum_{i=1}^n \Big[ y^{(i)} \big(\beta_0+ \beta_1 x^{(i)}\big) - \log{\Big(1+e^{\beta_0 + \beta_1 x^{(i)}}\Big)} \Big]
-% \end{equation}
-
-
-\comment{This is rubbish}
+and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$, $\beta_0, \beta_1 \in \RR$. This can be generalised to 
 
 
 \begin{equation}\label{eq:logistic_regression_cost_function}
-    \mathcal{L}(\svec{\theta}) = -  \frac{1}{n}\sum_{i=1}^n \Big[ y^{(i)} \big(\theta_0 + (X\svec{\theta})^{(i)}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
+    \mathcal{L}(\svec{\theta}) = -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \big()^{(i)}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
 \end{equation}
 
 In terms of weights and biases ($ (\theta_0,  \svec{\theta} ) \to (\vec{b}, W)$),
