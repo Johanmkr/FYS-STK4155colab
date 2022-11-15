@@ -21,7 +21,7 @@ Where the actual (physical) relationship between some dependent and independent 
 
  
     \subsubsection{Plain gradient descent}\label{sec:plain_gradient_descent}
-        The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function in $\svec{\xi}$-space, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have the iterative scheme to find minima,
+        The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function in $\svec{\xi}$-space, i.e. the direction of the negative gradient $-\nabla_{\!\xi} J(\svec{\xi})$. We thus have the iterative scheme to find minima,
         \begin{align}\label{eq:steepest_descent}
             \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} J(\svec{\xi}_k),
         \end{align}
@@ -87,8 +87,10 @@ Where the actual (physical) relationship between some dependent and independent 
     \begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
         \item[]\textbf{AdaGrad} \citep[algorithm 8.4]{Goodfellow2016}, from "adaptive gradient (algorithm)", adapts $\eta$ individually to the components of $\svec{\theta}$, scaling them as $\eta \to \eta' \sim \nicefrac{\eta}{\nabla_{\! \theta} \mathcal{L}}$ (mind the simplification). This method is famously a \rephrase{trouper} in convex settings, but has the unfortunate habit of prematurely deciding on the best model in a nonconvex setting. By default: $\epsilon=10^{-7}$.
         \item[]\textbf{RMSProp} \citep[algorithm 8.5]{Goodfellow2016}, from "root mean squared propagation", is a modification to the AdaGrad algorithm. Where AdaGrad performs good, this one learns slow in comparison. However, RMSProp outperforms AdaGrad in nonconvex situations. This improvement introduces an additional hyperparameter $\rho$, a decay rate controlling the length scale of the moving average. By default: $\rho = 0.9$ and $\epsilon=10^{-7}$.
-        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", \fillertext We need two hyperparameters $\rho_1$ and $\rho_2$ for this optimisation scheme, representing the decay rate of the first and second moment, respectively. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
+        \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", calculates the update based on both the first-order momentum, the same as in momentum, and the second-order momentum, much like in RMSProp. We need two hyperparameters $\rho_1$ and $\rho_2$ for this optimisation scheme, representing the decay rate of the first and second moment, respectively. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
+    
+    The choice of default values is inspired by \citep[chapter 8.5]{Goodfellow2016}. 
 
     
     
@@ -189,7 +191,7 @@ Where the actual (physical) relationship between some dependent and independent 
 \subsection{Regression}\label{sec:regression}
     When using a FFNN for a regression problems we opt to fit a function to a certain data set. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
     
-    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \checkthis{\Eq{ridge_cost_function}} with a tunable hyperparameter $\lambda$. 
+    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \checkthis{\Eq{linear_regression_cost_function}} with a tunable hyperparameter $\lambda$. 
 
     We may use a varying number of hidden layers and neurons, depending on the data we are trying to fit. The architecture of the network is a problem dependant feature and must be tested for. The same goes for the activation functions described in \Eq{activation_functions}. However, the output function $g^L$ can just to be the linear function: $g^L(\vec{a}^L) = \vec{a}^{L}$. 
     
