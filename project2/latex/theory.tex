@@ -64,7 +64,7 @@ Where the actual (physical) relationship between some dependent and independent 
     \subsubsection{Stochasticity}\label{sec:stochasticity}
         There are several weaknesses to the plain gradient descent, perhaps the largest is the computational expense of on large datasets and its sensitivity of initial conditions and learning rates. If $\mathcal{L}(\svec{\theta})$ has numerous local minima, we will find one minimum only per set of initial conditions, and we have no good way of saying whether this minimum is global or not. One way of overcoming this is by adding stochasticity to the gradient descent algorithm. 
 
-        The main idea is that with the $n$ datapoints which we have in a dataset $\mathcal{D}$, we can create $m$ subsets, meaning that we have $n/m$\footnote{Give or take; needs to be an integer.} datapoints in each \textit{minibatch}, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\bigcup_{j=1}^m \mathcal{B}_j = \bigcap_{j=1}^m \mathcal{B}_j = \mathcal{D}$. We recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
+        The main idea is that with the $n$ datapoints which we have in a dataset $\mathcal{D}$, we can create $m$ subsets, meaning that we have $n/m$\footnote{Give or take; needs to be an integer.} datapoints in each \textit{minibatch}, denoted $\mathcal{B}_j$ for $j\in\{1,2,\dots,m\}$, s.t. $\bigcup_{j=1}^m \mathcal{B}_j = \mathcal{D}$ and $\bigcap_{j=1}^m \mathcal{B}_j = 0$. We recognise that we may write the total cost function as a sum over all data points $\vec{x}^{(i)}$ for $i\in[1,n]$, 
         \begin{equation}
             \mathcal{L}(\svec{\theta}) =\sum_{(\vec{x}, y)\in \mathcal{D}} l\big(f(\vec{x};\,\svec{\theta}), y \big) = \sum_{i=1}^n l_i(\svec{\theta}),
         \end{equation}
@@ -188,24 +188,46 @@ We have so far discussed regression and given a lot of attention to the coeffici
 \subsection{Logistic regression}\label{sec:logistic_regression}
 
 The standard logistic function $p:\, \RR \to (0,1)$ may be written as 
-
 \begin{equation}\label{eq:logistic_function}
     p(\xi) = \frac{1}{1+e^{-(\beta_0 + \beta_1\xi)}},
 \end{equation}
-
 and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\svec{\xi} \to \beta_0 + \beta_1 \xi$ ($\beta_0, \beta_1 \in \RR$ arbitrary constants). This can be generalised to work with multivariable inputs $\vec{x}$: We include an intercept $\theta_0$ and let $\svec{\theta} = (\theta_1, \, \theta_2, \, \dots,\, \theta_p)$ be the same as before. Then,
-
 \begin{equation}\label{eq:logistic_function_fit}
-    p(\vec{x};\,\theta_0, \vec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
+    p(\vec{x};\,\theta_0, \svec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
 \end{equation}
-
-so that $\hat{y}^{(i)} = p(\vec{x}^{(i)})$.
-
+so that $\hat{y}^{(i)} = p\big(\vec{x}^{(i)}\big)$. When this is the case, the loss function simplies a bit, but we present the cross entropy for a general $\hat{y}$ resulting from a model as
 \begin{equation}\label{eq:logistic_regression_cost_function}
     \begin{split}
         \mathcal{L}(\svec{\theta}) =& -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \log{\hat{y}^{(i)}} + \big(1-y^{(i)}\big) \log{\big(1-\hat{y}^{(i)}\big)}\Big] \\
-        &+ \frac{1}{2p}\sum_{j=0}^p \theta_j^2
+        &+ \frac{\lambda}{2p}\sum_{j=0}^p \theta_j^2,
     \end{split}
 \end{equation}
+except for the last term which is an \lnorm[2] regularisation term.
 
-for this
+
+\subsection{Model validation} % Generalisation error?
+
+We have discussed some loss functions, but the way we will \rephrase{give} the error in a model is not yet clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
+
+When we speak of the total loss, this concerns the training dataset, or more often subsets of which. We evaluate our regression models using the MSE function
+\begin{equation}\label{eq:MSE}
+    \mathrm{MSE} = \frac{1}{n^\mathrm{test}} \sum_{y\in \mathcal{D}^\mathrm{test}} (\hat{y} - y)^2,
+\end{equation}
+where $\hat{y}$ is the output we get from our model at corresponding $\vec{x}\in\mathcal{D}^\mathrm{test}$. The MSE is then a function of our model, e.g. of the parameter vector $\svec{\theta}$. The same goes for the binary classification problem, only here it makes sense to use the accuracy score
+\begin{equation}\label{eq:accuracy}
+    \mathrm{Accuracy} = \frac{1}{n^\mathrm{test}} \sum_{y\in \mathcal{D}^\mathrm{test}} \svec{1}_{y}(\hat{y}),
+\end{equation}
+where the indicator function can be written explicitly:
+\begin{equation}\label{eq:indicator}
+    \svec{1}_y(\hat{y}) = \begin{cases}
+        1, \quad & \hat{y} = y \\
+        0, \quad & \hat{y} \neq y
+    \end{cases}\, ;
+\end{equation}
+Note that we have assumed that the computed output is already interpreted to binary classification:
+\begin{equation}\label{eq:binary_y}
+    \hat{y} \to \begin{cases}
+        0, \quad & 0 <\hat{y} \leq \nicefrac{1}{2} \\
+        1, \quad & \nicefrac{1}{2} < \hat{y} \leq 1
+    \end{cases}\, ;
+\end{equation}
