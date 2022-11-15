@@ -183,7 +183,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
 \subsection{Classification}\label{sec:classification}
     For the case of classification, we typically have many features in the input data, which results in a more complex design matrix. The output of the network is structured into two main classes, binary and multivariate classification. In binary classification we have one single output node that ideally should be either 0 or 1. We achieve this by having a sigmoid output function. In multivariate classification on the other hand, we have multiple output nodes and a probability distribution between them. This probability distribution is found using the softmax function. However, the data set we will analyse is the Wisconsin Breast Cancer dataset \citep{scikit-learn} which needs binary classification. Thus the main focus will be on the binary classification technique. 
 
-    When evaluating the loss we use \Eq{logistic_regression_cost_function}
+    When evaluating the loss we use  \Eq{logistic_regression_cost_function}
 
 \subsection{Logistic regression}\label{sec:logistic_regression}
 
@@ -195,16 +195,17 @@ and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\
 \begin{equation}\label{eq:logistic_function_fit}
     p(\vec{x};\,\theta_0, \svec{\theta}) = \frac{1}{1+e^{-(\theta_0 + \vec{x}\TT \svec{\theta})}},
 \end{equation}
-so that $\hat{y}^{(i)} = p\big(\vec{x}^{(i)}\big)$.
-
+so that $\hat{y}^{(i)} = p\big(\vec{x}^{(i)}\big)$. When this is the case, the loss function simplies a bit, but we present the cross entropy for a general $\hat{y}$ resulting from a model as
 \begin{equation}\label{eq:logistic_regression_cost_function}
     \begin{split}
         \mathcal{L}(\svec{\theta}) =& -  \frac{1}{2n}\sum_{i=1}^n \Big[ y^{(i)} \log{\hat{y}^{(i)}} + \big(1-y^{(i)}\big) \log{\big(1-\hat{y}^{(i)}\big)}\Big] \\
-        &+ \frac{\lambda}{2p}\sum_{j=0}^p \theta_j^2
+        &+ \frac{\lambda}{2p}\sum_{j=0}^p \theta_j^2,
     \end{split}
 \end{equation}
+except for the last term which is an \lnorm[2] regularisation term.
 
-\subsection{Generalisation error} % Model validation?
+
+\subsection{Model validation} % Generalisation error?
 
 We have discussed some loss functions, but the way we will \rephrase{give} the error in a model is not yet clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
 
@@ -212,7 +213,7 @@ When we speak of the total loss, this concerns the training dataset, or more oft
 \begin{equation}\label{eq:MSE}
     \mathrm{MSE} = \frac{1}{n^\mathrm{test}} \sum_{y\in \mathcal{D}^\mathrm{test}} (\hat{y} - y)^2,
 \end{equation}
-where $\hat{y}$ is the output we get from our model at corresponding $\vec{x}\in\mathcal{D}^\mathrm{test}$. The MSE is then a function of our model, e.g. of the parameter vector $\svec{\theta}$. For the binary classification problem, it makes sense to use the accuracy score
+where $\hat{y}$ is the output we get from our model at corresponding $\vec{x}\in\mathcal{D}^\mathrm{test}$. The MSE is then a function of our model, e.g. of the parameter vector $\svec{\theta}$. The same goes for the binary classification problem, only here it makes sense to use the accuracy score
 \begin{equation}\label{eq:accuracy}
     \mathrm{Accuracy} = \frac{1}{n^\mathrm{test}} \sum_{y\in \mathcal{D}^\mathrm{test}} \svec{1}_{y}(\hat{y}),
 \end{equation}
