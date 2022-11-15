@@ -15,26 +15,18 @@ Where the actual (physical) relationship between some dependent and independent 
     \begin{equation}\label{eq:linear_regression_cost_function}
         \mathcal{L}(\svec{\theta}) = \frac{1}{2n} \sum_{i=1}^n (\hat{y}^{(i)}-y^{(i)})^2 + \frac{\lambda}{2p} \sum_{j=1}^{p} \theta_j^2. 
     \end{equation}
-    $\lambda$ is the penalty term set to zero for OLS and a small positive value for Ridge regression. The output $\hat{y}^{(i)}$ is resulting from some function evaluated at $\vec{x}^{(i)}$, which for our purposes is $\hat{y}^{(i)} = [\vec{x}^{(i)}]\TT \svec{\theta}$.
+    $\lambda$ is the penalty term set to zero for OLS and a small positive value for Ridge regression. The output $\hat{y}^{(i)}$ is resulting from some function evaluated at $\vec{x}^{(i)}$, which for our purposes reads $\hat{y}^{(i)} = [\vec{x}^{(i)}]\TT \svec{\theta}$.
+
+    \fillertext
 
  
-    \subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
-        The most basic concept is that of steepest descent. In order to find a minimum of a function $\rho(\svec{\xi})$ (allow multivariability of $\svec{\xi}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have an iterative scheme to find minima:
+    \subsubsection{Plain gradient descent}\label{sec:plain_gradient_descent}
+        The most basic concept is that of steepest descent. In order to find a minimum of a function $J=J(\svec{\xi})$, we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have the iterative scheme to find minima,
         \begin{align}\label{eq:steepest_descent}
-            \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} \rho(\svec{\xi}_k),
+            \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} J(\svec{\xi}_k),
         \end{align}
-        where the learning rate $\eta_k$ goes as
-        \begin{equation}\label{eq:learning_schedule}
-            \eta_k = \begin{cases}
-                \big(1-\frac{k}{\tau}\big)\eta_0 + \frac{k}{\tau}\eta_\tau,\quad & 0 \leq k \leq \tau \\
-                \eta_\tau, & k>\tau
-            \end{cases}
-        \end{equation}
-        for an initial rate $\eta_0$ and lower limit $\eta_\tau \sim 0.01 \eta_0$.
-
-        % A is step size
-        \fillertext
-
+        where the learning rate $\eta_k$ may follow a schedule in $k$ or stay constant. In the following, we consider a constant global\footnote{Emphesising "global" here to distinguish from the \textit{actual} rate of learning (or step size) which may depend on the specific update rule we choose.} learning rate $\eta_k=\eta$.
+        
         What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. If we define $\mathcal{A}_k \equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k)$ to be the direction and magnitude of the steepest ascent in parameter space, eq. \eqref{eq:steepest_descent} reads 
         \begin{equation}\label{eq:update_rule_general}
             \begin{split}
@@ -182,7 +174,7 @@ Where the actual (physical) relationship between some dependent and independent 
     \end{subequations}
 
     Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
-    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a performance reduction.
+    The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a perfomance reduction.
 
     
 
@@ -198,11 +190,6 @@ Where the actual (physical) relationship between some dependent and independent 
 
     The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep[chapter 6.5]{Goodfellow2016}.
 
-\subsection{Regression}\label{sec:regression}
-    When using a FFNN for a regression problem we opt to fit a function to a certain data set, and train the network to give one output (function value) per input. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
-    
-    Since we want to find a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \Eq{ridge_cost_func}
-    \feltcute{This means that the number of features is $p=2$ input dimensions, for $n=400$ data point. Each data point (a combination of $p$ features) will yield one single output. }
 
 \subsection{Classification}\label{sec:classification}
 
