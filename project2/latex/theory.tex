@@ -2,9 +2,7 @@
 
 Linear regression assumes a linear relationship between a set of $p$ features $\vec{x}\in\RR[p]$ and an observed value $y\in\RR$. We assume there to exist a \textit{continous} function of the input $\vec{x}$ giving the output $\hat{y}$. The coefficients $\svec{\theta}\in\RR[p]$ that determine said function can be estimated using a variety of methods, as discussed in \projectOne. In any case, the aim is to minimise some loss function $\mathcal{L}(\svec{\theta};\,\hat{y}, y)$ with respect to this parameter vector ($\svec{\theta}$) describing what we sacrifice by using this exact model. 
 
-What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific regression algorithms for finding the optimal $\svec{\theta}$, we can change modus operandi and focus solely on the minimisation of some objective function (e.g. a loss function).  
-
-%it would be benefitial to use an algorithm that simply minimises a general loss function in the parameter space. This is where the very powerful method of steepest descent comes in to play. \fillertext
+What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific regression algorithms for finding the optimal $\svec{\theta}$, we can change modus operandi and focus solely on the minimisation of some objective function (e.g. a loss function such as the \checkthis{MSE}). For this purpose, we may use the very powerful procedure of steepest descent.
 
 Where the actual (physical) relationship between some dependent and independent variable is not of \rephrase{utmost importance}, and the main aim is to predict the outcome given some setting, supervised learning problems may also be solved using neural networks. 
 
@@ -13,20 +11,12 @@ Where the actual (physical) relationship between some dependent and independent 
 
 
 \subsection{Stochastic gradient descent (SGD)}\label{sec:stochastic_gradient_descent}
-    Gradient descent (GD) is a technique 
-    Gradient descent \citep{mhjensen} \fillertext[aim is to find beta etc]
+    SGD and its subvariants are frequently used optimisation algorithms in machine learning \citep{Goodfellow2016}. The more basic algorithm known as gradient descent (GD) is technically a specific case of SGD\footnote{The case with number of minibatches $m=1$.} follows the gradient of some objective function $J$ downhill in some parameter space. The effect of introducing stochasticity is \rephrase{discussed} in section \ref{sec:stochasticity}. The result is a flexible way to locate the minima of \checkthis{any} $J$, exactly what we wished for. The ordinary least squares and Ridge schemes of linear regression that we discussed in \projectOne, are then implemented by using the mean squared error (MSE) function with an \lnorm[2] regularisation term,
+    \begin{equation}\label{eq:linear_regression_cost_function}
+        \mathcal{L}(\svec{\theta}) = \frac{1}{2n} \sum_{i=1}^n (\hat{y}^{(i)}-y^{(i)})^2 + \frac{\lambda}{2p} \sum_{j=1}^{p} \theta_j^2. 
+    \end{equation}
+    $\lambda$ is the penalty term set to zero for OLS and a small positive value for Ridge regression. The output $\hat{y}^{(i)}$ is resulting from some function evaluated at $\vec{x}^{(i)}$, which for our purposes is $\hat{y}^{(i)} = [\vec{x}^{(i)}]\TT \svec{\theta}$.
 
-    The result is a flexible way to locate the minima of \checkthis{any} cost function $\mathcal{L}(\svec{\theta})$. The ordinary least squares and Ridge schemes of linear regression that we discussed in \href{https://github.com/Johanmkr/FYS-STK4155colab/tree/main/project1}{project 1}, are then implemented by using the cost functions $\mathcal{L}^\mathrm{OLS}(\svec{\theta})$ and $\mathcal{L}^\mathrm{Ridge}(\svec{\theta})$ respectively, given by the following expressions:
-
-
-    \begin{subequations}\label{eq:linear_regression_cost_functions}
-        \begin{align}
-            \mathcal{L}^\mathrm{OLS}(\svec{\theta}) &=  \norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2 \label{eq:ols_cost_function}\\
-            \mathcal{L}^\mathrm{Ridge}(\svec{\theta})&=\norm{\vec{f}(X; \svec{\theta} ) - \vec{y}}_2^2  -  \lambda\norm{\svec{\theta}}_2^2 \label{eq:ridge_cost_function}
-        \end{align}
-    \end{subequations}
-
-    \comment{Explain different parts}
  
     \subsubsection{Plain gradient descent (GD)}\label{sec:plain_gradient_descent}
         The most basic concept is that of steepest descent. In order to find a minimum of a function $\rho(\svec{\xi})$ (allow multivariability of $\svec{\xi}$), we follow the steepest descent of that function, i.e. the direction of the negative gradient $-\nabla_{\!\xi} \rho(\svec{\xi})$. We thus have an iterative scheme to find minima:
@@ -206,7 +196,7 @@ Where the actual (physical) relationship between some dependent and independent 
     The information in an FFNN accepting input $\vec{x}$ to produce output $\vec{\hat{y}}$ is flowing \textit{forward} \citep{Goodfellow2016}, hence the name. The initial information from $\vec{x}$ propagates through the hidden layers resulting in the production of $\vec{\hat{y}}$ which is the output of the final layer. This information flow is called forward propagation or forward pass. Training the network (tuning the weights and biases) consist of running forward propagation and compare the resultant output $\vec{\hat{y}}$ with the desired output $\vec{y}$, i.e. evaluate the loss function, $\mathcal{L}(\svec{\theta})$. 
     
 
-    The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep{Goodfellow2016} chapter 6.5.
+    The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep[chapter 6.5]{Goodfellow2016}.
 
 
 \subsection{Classification}\label{sec:classification}

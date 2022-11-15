@@ -30,7 +30,7 @@ OUTLINE:
     \begin{equation}
         f(x) = 2.0x + 1.7x^2 -0.40x^3 \, +\, 0.10\mathcal{N}(0, 1),
     \end{equation}
-    and we consider $n=400$ datapoints. In particular, we aim to minimise the cost function in eq. \eqref{eq:ols_cost_function} for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function in eq. \eqref{eq:ridge_cost_function}, but here we need to tune the penalty parameter $\lambda$ as well as the learning rate $\eta$. 
+    and we consider $n=400$ datapoints. In particular, we aim to minimise the cost function in eq. \eqref{eq:linear_regression_cost_function} with $\lambda=0$ for which we need to tune the learning rate $\eta$. We perform the same analysis using the Ridge cost function, i.e. $\lambda > 0$ in eq. \eqref{eq:linear_regression_cost_function}, but here we need to tune the penalty parameter $\lambda$ as well as the learning rate $\eta$. 
 
     We do not present many figures to describe this part of the analysis. We justify this by arguing that the purpose of this part is to test the SGD code, and then by extension the GD code, and give an idea of the effect of changing optimisers. 
 
