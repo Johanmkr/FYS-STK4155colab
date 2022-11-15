@@ -10,6 +10,7 @@ Where the actual (physical) relationship between some dependent and independent 
 
 
 
+
 \subsection{Stochastic gradient descent (SGD)}\label{sec:stochastic_gradient_descent}
     SGD and its subvariants are frequently used optimisation algorithms in machine learning \citep{Goodfellow2016}. The more basic algorithm known as gradient descent (GD) is technically a specific case of SGD\footnote{The case with number of minibatches $m=1$.} follows the gradient of some objective function $J$ downhill in some parameter space. The effect of introducing stochasticity is \rephrase{discussed} in section \ref{sec:stochasticity}. The result is a flexible way to locate the minima of \checkthis{any} $J$, exactly what we wished for. The ordinary least squares and Ridge schemes of linear regression that we discussed in \projectOne, are then implemented by using the mean squared error (MSE) function with an \lnorm[2] regularisation term,
     \begin{equation}\label{eq:linear_regression_cost_function}
@@ -25,7 +26,7 @@ Where the actual (physical) relationship between some dependent and independent 
         \begin{align}\label{eq:steepest_descent}
             \svec{\xi}_{k+1} = \svec{\xi}_k - \eta_k\nabla_{\!\xi} J(\svec{\xi}_k),
         \end{align}
-        where the learning rate $\eta_k$ may follow a schedule in $k$ or stay constant. In the following, we consider a constant global\footnote{Emphesising "global" here to distinguish from the \textit{actual} rate of learning (or step size) which may depend on the specific update rule we choose.} learning rate $\eta_k=\eta$.
+        where the learning rate $\eta_k$ may follow a schedule in $k$ or stay constant. In the following, we consider a constant global\footnote{Emphasising "global" here to distinguish from the \textit{actual} rate of learning (or step size) which may depend on the specific update rule we choose.} learning rate $\eta_k=\eta$.
 
         What we would like to minimise is the cost function $\mathcal{L}(\svec{\theta})$ which is a function of the parameters $\svec{\theta}$ which we are trying to estimate. If we define $\mathcal{A}_k \equiv \nabla_{\!\theta} \mathcal{L}(\svec{\theta}_k)$ to be the direction and magnitude of the steepest ascent in parameter space, eq. \eqref{eq:steepest_descent} reads 
         \begin{equation}\label{eq:update_rule_general}
@@ -67,7 +68,7 @@ Where the actual (physical) relationship between some dependent and independent 
         \begin{equation}
             \mathcal{L}(\svec{\theta}) =\sum_{(\vec{x}, y)\in \mathcal{D}} l\big(f(\vec{x};\,\svec{\theta}), y \big) = \sum_{i=1}^n l_i(\svec{\theta}),
         \end{equation}
-        where $l_i = l\big(f(\vec{x}^{(i)};\svec{\theta}); \, y^{(i)}\big)$. Thus, its gradient is written
+        where $l_i(\svec{\theta}) = l\big(f(\vec{x}^{(i)};\svec{\theta}); \, y^{(i)}\big)$ is the per-example loss function. Thus, its gradient is written
         \begin{equation}
             \mathcal{A} = \nabla_{\!\theta} \mathcal{L}(\svec{\theta}) = \sum_{i=1}^n \nabla_{\!\theta}l_i(\svec{\theta}).
         \end{equation}
@@ -96,6 +97,9 @@ Where the actual (physical) relationship between some dependent and independent 
     
 \subsection{Neural Network (NN)}\label{sec:neural_network}
 
+We have so far discussed regression and given a lot of attention to the coefficients $\svec{\theta}$ that we assume describe some physical relationship between a set of feature values and a target. More complex problems require more complex models, and many phenomena may not even be possible to describe with a smooth function. Deep learning models usually pay more attention to the output, in this section denoted $\hat{\vec{y}}$ to allow multivariable outputs\footnote{For completeness. Will not be relevant to think of the output as a vector in our case.}, after training, that is. 
+%To connect the following with what we have looked at so far, we can think of the weights and  the parameter vector $\svec{\theta}$
+
     \subsubsection{Basics}\label{sec:basics}
 
     A feedforward NN (FFNN) is typically built by composing together several functions into a chain of function. Associated with this model is a directed acyclic graph (DAG) describing the explicit structure. The depth of the model is determined by the length of the abovementioned chain. Each function represents a layer in the network. The final layer of an FFNN is the output layer, and the layers between the input (prior to the first) and the output layer are called hidden layers. \citep{Goodfellow2016}
@@ -120,33 +124,8 @@ Where the actual (physical) relationship between some dependent and independent 
 
     \subsubsection{Activation functions}\label{sec:activation_function}
 
-    
-    % \begin{equation}\label{eq:sigmoid}
-    %     \sigma(\xi) = \frac{1}{1+e^{-\xi}} = 1- \sigma(-\xi)
-    % \end{equation}
 
-    % \begin{equation}\label{eq:tanh}
-    %     \tanh(\xi) = \frac{e^{2\xi}-1}{e^{2\xi}+1} = 2\sigma(2\xi) -1
-    % \end{equation}
-
-    % \begin{equation}\label{eq:relu}
-    %     \mathrm{ReLU}(\xi) = \max(0,\xi) = \begin{cases}
-    %         \xi,\quad &\mathrm{if }\, \xi >0 \\
-    %         0,\quad &\mathrm{else}
-    %     \end{cases}
-    % \end{equation}
-
-    % \begin{equation}\label{eq:leaky_relu}
-    %     \mathrm{lReLU}(\xi)  = \begin{cases}
-    %         \xi,\quad &\mathrm{if }\, \xi >0 \\
-    %         0.01\xi,\quad &\mathrm{else}
-    %     \end{cases}
-    % \end{equation}
-
-    % \begin{equation}\label{eq:softmax}
-    %     \zeta(\svec{\xi})_j = \frac{e^{\xi_j}}{\sum\nolimits_{i=1}^{N}e^{\xi_i}}, \quad \svec{\xi} \in \RR[N]
-    % \end{equation}
-    A layer $\vec{h}^l$ have an associated activation $\vec{a}^l \in \RR[N_l]$ which is a function of the previous layer values ,$h^{l-\!1}$, the weights, $W^{l-\!1\to l}$, and the biases linked with each neuron $b^l$. The activation is passed as argument to the activation function $g_l$ whose job is to perform the affine transformation from one layer to another in a NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression:
+    A layer $\vec{h}^l$ has an associated activation $\vec{a}^l \in \RR[N_l]$ which is a function of the previous layer values, $\vec{h}^{l-\!1}$, the weights, $W^{l-\!1\to l}$, and the biases linked with each neuron, $\vec{b}^l$. The activation is passed as argument to the activation function $g_l$ whose job is to perform the affine transformation from one layer to another in a NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression:
     \begin{equation}
         \begin{split}
             \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
@@ -155,6 +134,7 @@ Where the actual (physical) relationship between some dependent and independent 
     \end{equation}
     where $W^{l\leftarrow l-\!1} \equiv (W^{l-\! 1\to l})\TT$. The output is $\hat{\vec{y}}^{(i)} = \vec{h}^L \in \RR[N_L]$.
 
+    We present some examples of commonly used activation functions:
 
     \begin{subequations}\label{eq:activation_functions}
         \begin{align}
@@ -170,6 +150,8 @@ Where the actual (physical) relationship between some dependent and independent 
             \end{cases} \label{eq:leaky_relu}
         \end{align}
     \end{subequations}
+
+    % add linear??
 
     Assuming some $\svec{\xi} \in \RR[K]$, the set of expressions \eqref{eq:activation_functions} show some well-known activation functions $\RR[K] \to \RR[K]$. To translate into NN-components, set $K\to N$, $\svec{\xi} \to \vec{a}$ and e.g. $g = \tanh$. 
     The oldest and probably most famous is the slow-learning sigmoid function $\sigma$ in eq. \eqref{eq:sigmoid}. The hyperbolic tangent in eq. \eqref{eq:tanh} is closely related to the sigmoid, and is typically performing better \citep{Goodfellow2016}. The ReLU (eq. \eqref{eq:relu}) or leaky ReLU (eq. \eqref{eq:leaky_relu}) activation function provides output of the type that is easy to interpret as it resembles the linear unit. ReLU typically learns fast, but has the the unfortunate habit of killing neurons. That is to say, some neurons are deactivated for any input. The leaky ReLU can omit this issue somewhat, but the hatch is a perfomance reduction.
@@ -189,11 +171,11 @@ Where the actual (physical) relationship between some dependent and independent 
     The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep[chapter 6.5]{Goodfellow2016}.
 
 \subsection{Regression}\label{sec:regression}
-    When using a FFNN for a regression problems we opt to fit a function to a certain data set. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
+    When using a FFNN for a regression problems we opt to fit a function to a certain data set. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation (10) in the paper.} on a $20\cross 20$ grid (more on this later).
     
-    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \checkthis{\Eq{linear_regression_cost_function}} with a tunable hyperparameter $\lambda$. 
+    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \Eq{linear_regression_cost_function} with a tunable hyperparameter $\lambda$. 
 
-    We may use a varying number of hidden layers and neurons, depending on the data we are trying to fit. The architecture of the network is a problem dependant feature and must be tested for. The same goes for the activation functions described in \Eq{activation_functions}. However, the output function $g^L$ can just to be the linear function: $g^L(\vec{a}^L) = \vec{a}^{L}$. 
+    We may use a varying number of hidden layers and neurons, depending on the data we are trying to fit. The architecture of the network is a problem dependant feature and must be tested for. The same goes for the activation functions described in \Eq{activation_functions}. However, the output function $g_L$ can just to be the linear function: $g_L(\vec{a}^L) = \vec{a}^{L}$. 
     
     
     \feltcute{This means that the number of features is $p=2$ input dimensions, for $n=400$ data point. Each data point (a combination of $p$ features) will yield one single output. }
@@ -223,7 +205,7 @@ and is indeed the sigmoid function in eq. \eqref{eq:sigmoid} if we substitute $\
 \comment{This is rubbish}
 
 
-\begin{equation}\label{eq:logistic_cost_function}
+\begin{equation}\label{eq:logistic_regression_cost_function}
     \mathcal{L}(\svec{\theta}) = -  \frac{1}{n}\sum_{i=1}^n \Big[ y^{(i)} \big(\theta_0 + (X\svec{\theta})^{(i)}\big) - \log{\Big(1+e^{\theta_0 + \svec{\theta}\TT \vec{x}^{(i)}}\Big)} \Big]
 \end{equation}
 
