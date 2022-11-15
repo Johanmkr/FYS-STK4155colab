@@ -209,9 +209,13 @@ Where the actual (physical) relationship between some dependent and independent 
     The art of back propagation is to reverse this process. We let $\mathcal{L}(\svec{\theta})$ provide information about the error of the output layer, that propagates backwards through the network in order to compute the gradient of the loss function for each layer, $\nabla^l_{\!\theta}\mathcal{L}(\svec{\theta})$. These gradients are used to update the weights and biases of each layer in such a way that when forward propagation is run again, the overall output loss will be lower. Over time, we propagate forwards a backwards in order to minimise the loss function, typically using stochastic gradient descent, as explained in \Sec{stochasticity}. The optimiser of choice (\Sec{tuning}) takes the gradients found from back propagation, (and hyperparameters) as inputs and optimises the weights and biases accordingly. A thorough walkthrough of the back propagation algorithm can be found in \citep{Goodfellow2016} chapter 6.5.
 
 \subsection{Regression}\label{sec:regression}
-    When using a FFNN for a regression problem we opt to fit a function to a certain data set, and train the network to give one output (function value) per input. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
+    When using a FFNN for a regression problems we opt to fit a function to a certain data set. One approach to this is to let the number of features be the dimensionality of the input data, and the number of data points be the data points in the domain we are considering. In this investigation we will use the two dimensional Franke function from \projectOne\footnote{Equation 10} on a $20\cross 20$ grid (more on this later).
     
-    Since we want to find a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \Eq{ridge_cost_func}
+    Since we want to fit a function to data points, the obvious way of measured the error from the output layer is by considering the mean squared error (MSE). Thus, our loss function will as given in \Eq{ridge_cost_function} with a tunable hyperparameter $\lambda$. 
+
+    We may use a varying number of hidden layers and neurons, 
+    
+    
     \feltcute{This means that the number of features is $p=2$ input dimensions, for $n=400$ data point. Each data point (a combination of $p$ features) will yield one single output. }
 
 \subsection{Classification}\label{sec:classification}
