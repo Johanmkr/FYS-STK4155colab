@@ -1,14 +1,14 @@
 \section{Theory}\label{sec:theory}
 
-In linear regression we have the famous assumption that 
+Linear regression assumes a linear relationship between a set of $p$ features $\vec{x}\in\RR[p]$ and an observed value $y\in\RR$. We assume there to exist a \textit{continous} function of the input $\vec{x}$ giving the output $\hat{y}$. The coefficients $\svec{\theta}\in\RR[p]$ that determine said function can be estimated using a variety of methods, as discussed in \projectOne. In any case, the aim is to minimise some loss function $\mathcal{L}(\svec{\theta};\,\hat{y}, y)$ with respect to this parameter vector ($\svec{\theta}$) describing what we sacrifice by using this exact model. 
 
-\begin{align}
-    y_i = f(\vec{x}_i) + \epsilon_i \simeq \vec{x}_i\TT \svec{\beta} + \epsilon_i,
-\end{align}
+What if the function we want to fit is \textit{discontinous}? We consider the binary situation where the observed $y$ only takes one of two discrete values; 0 or 1. Logistic regression proposes a model where the output $\hat{y}$ is obtained from  a probability distribution and subsequently a befitting total loss function that can be minimised with respect to a set of parameters $\svec{\theta}$. Now, instead of using the method-specific algorithms for finding the optimal $\svec{\theta}$, it would be benefitial to use an algorithm that simply minimises a general loss function in the parameter space. This is where the very powerful method of steepest descent comes in to play. \fillertext
 
-where $f$ is a continous funtion of $\vec{x}$. \checkthis{If we now were to allow said function to represent discrete outputs, we would benefit from moving on to \textit{logsitic} regression.} \comment{Maybe move to intro?}
+Where the actual (physical) relationship between some dependent and independent variable is not of \rephrase{utmost importance}, and the main aim is to predict the outcome given some setting, supervised learning problems may also be solved using neural networks. 
 
-\fillertext[smooth transition to steepest descent]
+\par{*} NN - no parameter vector - allow multivariable y
+
+
 
 \subsection{Stochastic gradient descent (SGD)}\label{sec:stochastic_gradient_descent}
     Gradient descent \citep{mhjensen} \fillertext[aim is to find beta etc]
