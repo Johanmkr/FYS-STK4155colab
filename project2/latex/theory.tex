@@ -224,7 +224,7 @@ In doing this, following eq. \eqref{eq:NN_layers_compact}, we end up with the ou
 \begin{equation}
     \hat{y} = \sigma(W^{L\leftarrow 0}\vec{x} + b^L) = q(\vec{x};\, b^L, W^{0 \to L}),
 \end{equation}
-where we see that $\hat{y}, b_L\in \RR$ and $ W^{0\to L} \in \RR[p\cross 1]$. 
+where we see that $\hat{y}, b_L\in \RR$ and $ W^{0\to L} \in \RR[p\cross 1]$. Thus, we have a simple way of fitting a dataset using logistic regression without creating any more algorithms. If we need the coefficients $\theta_0, \svec{\theta}$, we can obtain them as $b^L, W^{0\to L}$.
 
 \subsection{Model validation} % Generalisation error?
 
