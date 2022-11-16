@@ -1,6 +1,7 @@
 \clearpage
 
 
+
 \appendix
 
 \section{Regression figures}
@@ -70,4 +71,15 @@
     \includegraphics[width=\linewidth]{epoch_minibatch_analysisCancer.pdf}
     \caption{Heatmap of accuracy as function of the number of minibatches $m$ and training epochs, using SGD with RMSProp as optimiser performing regression analysis with $L-1=2$ hidden layer with $N_l=10$ neurons with $\eta=10^{-3}$ and $\lambda=10^{-6}$ using RELU as activation function. }
     \label{fig:class_minibatch_epoch}
+\end{figure}
+
+
+\clearpage
+
+\section{Logistic Regression figure}
+
+\begin{figure}[h!]
+    \includegraphics[width=\linewidth]{logistic.pdf}
+    \caption{Heatmap of the MSE as function of learning rate $\eta$ and regularisation parameter $\lambda$, using SGD with RMSProp as optimiser performing regression analysis of a network with no hidden layers using the sigmoid function as activation function. This is equivalent of performing logistic regression.}
+    \label{fig:logistic_eta_lambda}
 \end{figure}

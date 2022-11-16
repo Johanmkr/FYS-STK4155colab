@@ -1,6 +1,9 @@
 \section{Conclusion}
 
+For linear regression on the Franke function, the optimal model is a neural network of 1 hidden layer with 30 neurons. The hyperparameters are tuned to be $\eta=10^{-1}$, $\lambda=10^{-4}$. We use the sigmoid activation function and train the model over 700 epochs using SGD with RMSProp optimiser using 2 mini batches. The result is $\mathrm{MSE} = 0.052$. This is significantly better than 0.15, which was obtained with OLS on the same function, with comparable noise in \projectOne. This is only one of many model that could deliver an equally good result. It is fairly computational efficient, and accurately fits a function to the data. 
 
-\noindent\textbf{* Make sure not to include discussion here, Nanna! (I know you want to...I know you care...)}
+For the classification task, we found the optimal model to be a neural network with 2 hidden layers with 10 neurons each. The hyperparameters are tuned to be $\eta=10^{-3}$ and $\lambda=10^{-6}$. We use the ReLU activation function and train the model over 900 epochs using SGD with RMSProp optimiser using 5 mini batches. The result is an accuracy of 1, which is the best possible accuracy. 
 
-\noindent\textbf{* Future work!}
+For logistic regression we use a neural network with no hidden layers, and sigmoid activation function. This also given an accuracy of 1 for $\eta=10^{-3}$ and $\lambda=10^{-8}$. Since this is a simple model than the neural network with 2 hidden layers, we may conclude that logistic regression does an equally good job in this case. 
+
+A continuation of this work would be to troubleshoot the code for implementation errors and perform more simulation of different network type, initialise the weights and biases differently and tune the architecture and hyperparameters in different ways and orders. 
