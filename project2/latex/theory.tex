@@ -186,8 +186,6 @@ We have so far discussed regression and given a lot of attention to the coeffici
 
     We may use a varying number of hidden layers and neurons, depending on the data we are trying to fit. The architecture of the network is a problem dependant feature and must be tested for. The same goes for the activation functions described in \Eq{activation_functions}. However, the output function $g_L$ can just to be the linear function: $g_L(\vec{a}^L) = \vec{a}^{L}$. 
     
-    
-    \feltcute{This means that the number of features is $p=2$ input dimensions, for $n=400$ data point. Each data point (a combination of $p$ features) will yield one single output. }
 
 \subsection{Classification}\label{sec:classification}
     For the case of classification, we typically have many features in the input data, which results in a more complex design matrix. The output of the network is structured into two main classes, binary and multivariate classification. In binary classification we have one single output node that ideally should be either 0 or 1. We achieve this by having a sigmoid output function. In multivariate classification on the other hand, we have multiple output nodes and a probability distribution between them. This probability distribution is found using the Softmax function. However, the data set we will analyse is the Wisconsin Breast Cancer dataset \citep{scikit-learn} which needs binary classification. Thus the main focus will be on the binary classification technique. 

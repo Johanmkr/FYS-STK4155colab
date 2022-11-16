@@ -1,5 +1,6 @@
 from src.utils import *
 from src.devNeuralNetwork import devNeuralNetwork as NeuralNet
+import matplotlib.pyplot as plt
 
 
 
@@ -242,6 +243,30 @@ def EpochMinibatchAnalysis(filename):
 
     info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=r"$[%s, %s]$" %(idx[0], idx[-1]), no_minibatches=r"$[%s, %s]$" %(cols[0], cols[-1]), L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction, n_obs=Freg.n_obs, rho=rho)
 
+def compareModel(filename):
+    hiddenLayers = 1
+    neuronsInEachLayer = 30
+    eta = 1e-1
+    lmbda = 1e-4
+    outputNeurons = 1
+    activationFunction = 'sigmoid'
+    testSize = 0.2
+    optimizer = 'RMSProp'
+    rho = 0.9
+    epochs = 700
+    nrMinibatches = 2
+    Freg = FrankeRegression(hiddenLayers=hiddenLayers, neuronsInEachLayer=neuronsInEachLayer, activationFunction=activationFunction, outputNeurons=outputNeurons, optimizer=optimizer, epochs=epochs, nrMinibatches=nrMinibatches, eta=eta, lmbda=lmbda, testSize=testSize, terminalUpdate=False)
+    Freg.train()
+    print(Freg)
+    Freg.predict()
+    # Freg.plot()
+    # from IPython import embed; embed()
+    saveInfo = np.array([Freg.xx.ravel(), Freg.yy.ravel(), Freg.zzr, Freg.prediction[:,0]])
+    dF = pd.DataFrame(saveInfo)
+    dF.to_pickle(output_path+filename+'.pkl')
+
+    info.set_file_info(filename+".pkl", method='SGD', opt=optimizer, no_epochs=epochs, no_minibatches=nrMinibatches, L=hiddenLayers, N=neuronsInEachLayer, eta=eta, lmbda=lmbda, g=activationFunction, n_obs=Freg.n_obs, rho=rho)
+
 
 
 
@@ -260,10 +285,11 @@ if __name__=="__main__":
 
     # LayerNeuronsAnalysis("LayerNeuron")
 
-    activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
 
     # EpochMinibatchAnalysis("EpochMinibatch")
 
+    compareModel('compareModel')
 
 
     # Update README.md and info.pkl

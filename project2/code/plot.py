@@ -275,5 +275,26 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
             plt.show()
 
 
+def FrankePlot(filename, pdfname='untitled', savepush=True, show=True):
+    info = pd.read_pickle(data_path + "network_regression/compareModel.pkl")
+
+    fig, ax = plt.subplots(layout='constrained', figsize=(15,15), subplot_kw={'projection':'3d'})
+    info = np.transpose(info)
+    x, y, z, f = info[0], info[1], info[2], info[3]
+    ax.scatter(x, y, z, marker="^", color="green", s=25)
+    ax.plot_trisurf(x, y, f, cmap='RdBu')
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    ax.view_init(16,-33)
+
+    if savepush:
+        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        # params = copy_info(info3, filename)
+        # set_pdf_info(pdfname, **params)
+    if not savepush:
+        if show:
+            plt.show()
+
 def update():
     Nanna.update()
