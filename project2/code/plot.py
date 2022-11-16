@@ -66,7 +66,6 @@ def get_last_colour():
 # save useful information
 import src.infoFile_ala_Nanna as Nanna
 Nanna.init()
-
 Nanna.sayhello()
 Nanna.define_categories({
     'method':'method',                      #   steepest descent scheme
@@ -99,6 +98,13 @@ def copy_info(info:dict, filename:str):
     return params
 
 
+def update():
+    Nanna.update()
+
+
+'''
+Actual plotting methods
+'''
 
 def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(500, 1000), pdfname="untitled", savepush=True, show=True):
     X = np.loadtxt(data_path + "simple_regression/design_matrix.txt", delimiter=",")
@@ -146,7 +152,6 @@ def simple_regression_polynomial(filenames:list[str], labels:list[str], epochs=(
         if show:
             plt.show()
     
-
 def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 50), pdfname="untitled", savepush=True, show=True):
     info1pd = pd.read_pickle(data_path + "simple_regression/info.pkl")
     info1 = info1pd.transpose().to_dict()
@@ -182,13 +187,12 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 
         if show:
             plt.show()
     
-
 def MSEheatmap_plot(filename, pdfname='untitled', savepush=True, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
     info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
     info2 = info2pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_regression/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "Test MSE", "extend": "max"})
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_MSE, vmin=0, vmax=1, cbar_kws={'label': "MSE", "extend": "max"})
     bestArg = np.unravel_index(np.nanargmin(score), np.shape(score))
     ax.add_patch(R((bestArg[1], bestArg[0]), 1, 1, fc='none', ec='lime', lw=5, clip_on=False))
     ax.invert_yaxis()
@@ -218,7 +222,7 @@ def epoch_plot(filename, pdfname="untitled", savepush=True, show=True):
     # ax.set_ylim(0,1)
     ax.set_xlabel("Epoch")
     ax.set_yscale("log")
-    ax.set_ylabel("Test MSE")
+    ax.set_ylabel("MSE")
     plt.legend()
 
     if savepush:
@@ -234,7 +238,7 @@ def CancerHeatmap_plot(filename, pdfname='untitled', savepush=True, show=True, x
     info3 = info3pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
     score = pd.read_pickle(data_path+"network_classification/"+filename)
-    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_ACCURACY, vmin=0, vmax=1, cbar_kws={'label': "Test accuracy", "extend": "max"})
+    sns.heatmap(score, annot=True, ax=ax, cmap=CMAP_ACCURACY, vmin=0, vmax=1, cbar_kws={'label': "Accuracy", "extend": "max"})
     bestArg = np.unravel_index(np.nanargmax(score), np.shape(score))
     ax.add_patch(R((bestArg[1], bestArg[0]), 1, 1, fc='none', ec='lime', lw=5, clip_on=False))
     ax.invert_yaxis()
@@ -263,7 +267,7 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=True, show=True):
             ax.plot(x,y, label=func)
     # ax.set_ylim(0,1)
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("Test accuracy")
+    ax.set_ylabel("Accuracy")
     plt.legend()
 
     if savepush:
@@ -273,7 +277,6 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=True, show=True):
     if not savepush:
         if show:
             plt.show()
-
 
 def FrankePlot(filename="compareModel.pkl", pdfname='untitled', savepush=True, show=True):
     info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
@@ -297,5 +300,3 @@ def FrankePlot(filename="compareModel.pkl", pdfname='untitled', savepush=True, s
         if show:
             plt.show()
 
-def update():
-    Nanna.update()

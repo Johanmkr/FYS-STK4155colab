@@ -3,7 +3,7 @@ import plot as PLOT
 
 
 
-SHOW = True
+SHOW = False
 
 '''
 --------------------------
@@ -19,16 +19,12 @@ files = ["plain_SGD.txt", "momentum_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.tx
 labels =  ["plain SGD", "momentum SGD", "AdaGrad", "RMSProp", "Adam"]
 
 
-
-
-''' OLS '''
 # PLOT.simple_regression_errors(files0, labels0, pdfname="errors_gradient_descent_nonstochastic", savepush=True, show=SHOW)
 
-#PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
+# PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=True, show=SHOW)
 
 # PLOT.simple_regression_polynomial(files, labels, pdfname="polynomial_gradient_descent", savepush=True, show=SHOW)
 
-''' Ridge '''
 # PLOT.simple_regression_errors(["ridge_"+file for file in files], labels, pdfname="ridge_errors_gradient_descent",savepush=True, show=SHOW)
 
 
@@ -38,8 +34,6 @@ FRANKE NN REGRESSION ANALYSIS
 -----------------------------
 '''
 
-
-
 # PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=True, show=SHOW)
 
 # PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=True, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
@@ -48,11 +42,11 @@ FRANKE NN REGRESSION ANALYSIS
 
 # PLOT.epoch_plot("actFuncPerEpoch250.pkl", pdfname="actFuncPerEpoch", savepush=True, show=SHOW)
 
+PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"$m$", ylabel=r"$\#$epochs", show=SHOW)
 
-# PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"$m$", ylabel=r"no. of epochs", show=SHOW)
+# PLOT.FrankePlot(pdfname='franke', savepush=SHOW)
 
 
-PLOT.FrankePlot(pdfname='franke', savepush=True)
 
 '''
 ---------------------------------
@@ -67,7 +61,8 @@ CANCER NN CLASSIFICATION ANALYSIS
 
 # PLOT.Cancerepoch_plot("actFuncPerEpochCancer250.pkl", pdfname="actFuncPerEpochCancer", savepush=True, show=SHOW)
 
-# PLOT.CancerHeatmap_plot("EpochMinibatchCancer.pkl", pdfname="epoch_minibatch_analysisCancer", savepush=True, xlabel=r"$m$", ylabel=r"no. of epochs", show=SHOW)
+PLOT.CancerHeatmap_plot("EpochMinibatchCancer.pkl", pdfname="epoch_minibatch_analysisCancer", savepush=True, xlabel=r"$m$", ylabel=r"$\#$epochs", show=SHOW)
+
 
 '''
 -----------------------------------
@@ -80,5 +75,7 @@ CANCER LOGISTIC REGRESSION ANALYSIS
 
 
 
-# Update README.md:
+'''
+Update info.pkl and README.md:
+'''
 PLOT.update()
