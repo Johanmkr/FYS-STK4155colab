@@ -21,7 +21,7 @@ Center for Computing in Science Education (CCSE), University of Oslo, Norway}
 \authorrunning{Kroken\and Bryne} 
 \date{\today    \quad GitHub repo link: \url{\projectTwolink}}  
 \abstract{
-We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 mini batches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 mini batches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1. 
+We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 minibatches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 minibatches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1. 
 }
 
 \maketitle
@@ -48,58 +48,56 @@ We build a versatile neural network code in order to perform linear regression a
 % \par $\quad$ 
 % \par $\quad$ 
 
-
+\tableofcontents
 \section*{Notation and nomenclature}
 
-\checkthis{Nanna will fix this towards the end}
-\noindent\subsection{Datasets ??}
+\subsection*{Datasets and fitting} % working title
 \begin{itemize}
-    \item[$\svec{\theta}$] Parameter vector
-    \item[$\mathcal{L}$] \rephrase{Total loss/cost function $\mathcal{L}(\svec{\theta}; f, \mathcal{D})$ of $\svec{\theta}$ parametrised by the coordinates in the data set $\mathcal{D}$ and the function $f$ (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)}
-    \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space
+    
+    \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n\in \mathbb{N}$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
+    \item[$\svec{\theta}$] Parameter vector or vector of coefficients 
+    \item[$\mathcal{L}$] Total loss function $\mathcal{L}(\hat{y}, y)$ where $\hat{y}= f(\svec{\theta}; \vec{x})$ (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)
+    \item[$n$] Number of samples in a dataset
+    \item[$p$] Number of features of the dependent variables in a dataset
     \item[$X$] Feature matrix of $n$ row vectors $\vec{x}^{(i)} \in \RR[p]$, where $p$ denotes the number of features we are considering
     \item[$\vec{y}$] Vector of $n$ input targets $y^{(i)} \in \RR$ associated with $\vec{x}^{(i)}$
-    \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n\in \mathbb{N}$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
-    \item[$n$] Number of samples in a datasets  
 \end{itemize}
-\subsection{Network components}
+\subsection*{Steepest ascent variables}
+\begin{itemize}
+    \item[$\vec{v}$] Momentum in parameter space, 
+    \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space %\item[$\mathcal{B}$] Subset of $\mathcal{D}$ 
+\end{itemize}
+
+\subsection*{Network components}
 \begin{itemize}
     \item[$\vec{h}$] Hidden layer of a neural network ($\vec{h}^l \in \RR[N_l]$)
     \item[$g$] Activation function associated with a layer in a neural network, affine transformation ($g_l \,:\,\RR[N_l] \to\RR[N_{l}]$)
     \item[$W$] Matrix of weights describing the mapping from a layer to the next ($W^{l\to l+\! 1} \in \RR[N_l \cross N_{l+\! 1}]$)
-    \item[$\vec{b}$] Bias ($\vec{b}^l \in \RR[N_l]$) \comment{More!}
+    \item[$\vec{b}$] Bias term ($\vec{b}^l \in \RR[N_l]$)
     \item[$\vec{a}$] \checkthis{Activation argument} ($\vec{a}^l \in \RR[N_l]$)
     \item[$N$] Number of neurons in a layer ($N \in \mathbb{N}$)
 \end{itemize}
 
-\subsection{Hyperparameter syntax}
+\subsection*{Hyperparameter syntax}
 \begin{itemize}
-    \item[$\eta$] Learning rate
-    \item[$\gamma$] Momentum factor
-    \item[$\vec{v}$] Momentum in parameter space  
-    \item[$L$] Number of layers, not counting the input 
+    \item[$\eta$] Learning rate (global)
+    \item[$\gamma$] Momentum factor (constant term)
+    \item[$L$] Number of layers in an NN, not counting the input layer
     \item[$\lambda$] Regularisation parameter (penalty parameter in Ridge regression)
-    \item[$m$] Number of minibatcher
+    \item[$m$] Number of minibatches
 \end{itemize}
 
 
-\subsection{Indexing and iteration variables}
-\begin{itemize}
-    \item[$k$] Iteration variable when optimising as \textbf{subscript}
-    \item[$(i)$] The $i^\mathrm{th}$ example of a sample as \textbf{superscript}
-\end{itemize}
+\subsection*{Miscellaneous}
 
-
-\subsection{Miscellaneous}
-
-\begin{enumerate}[leftmargin=2.1em]
+\begin{enumerate}[leftmargin=4.1em]
     \item[$\norm{\vec{u}}_q$] \lnorm[q]\, of $\vec{u}$
     \item[$\nabla_{\!\xi} J$] Gradient of $J$ with respect to $\svec{\xi}$
     \item[$\mathcal{N}(\mu, \sigma)$]  Normal distribution with mean $\mu$ and standard deviation $\sigma$
 \end{enumerate}
 
-\subsection{Acronyms}
-\begin{enumerate}[leftmargin=2.6em]
+\subsection*{Acronyms}
+\begin{enumerate}[leftmargin=2.9em]
     \item[DAG] Directed acyclic graph
     \item[FFNN] Feedforward neural network
     \item[GD] Gradient descent
