@@ -52,7 +52,7 @@ FRANKE NN REGRESSION ANALYSIS
 # PLOT.MSEheatmap_plot("EpochMinibatch.pkl", pdfname="epoch_minibatch_analysis", savepush=True, xlabel=r"$m$", ylabel=r"no. of epochs", show=SHOW)
 
 
-PLOT.FrankePlot('none', pdfname='franke', savepush=True)
+PLOT.FrankePlot(pdfname='franke', savepush=True)
 
 '''
 ---------------------------------

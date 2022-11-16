@@ -183,7 +183,7 @@ def simple_regression_errors(filenames:list[str], labels:list[str], epochs=(25, 
             plt.show()
     
 
-def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+def MSEheatmap_plot(filename, pdfname='untitled', savepush=True, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
     info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
     info2 = info2pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
@@ -196,14 +196,14 @@ def MSEheatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xla
     ax.set_ylabel(ylabel)
 
     if savepush:
-        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
         params = copy_info(info2, filename)
         set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
 
-def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
+def epoch_plot(filename, pdfname="untitled", savepush=True, show=True):
     info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
     info2 = info2pd.transpose().to_dict()
     fig, ax = plt.subplots(layout="constrained")
@@ -222,14 +222,14 @@ def epoch_plot(filename, pdfname="untitled", savepush=False, show=True):
     plt.legend()
 
     if savepush:
-        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
         params = copy_info(info2, filename)
         set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
 
-def CancerHeatmap_plot(filename, pdfname='untitled', savepush=False, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
+def CancerHeatmap_plot(filename, pdfname='untitled', savepush=True, show=True, xlabel=r"$\eta$", ylabel=r"$\lambda$"):
     info3pd = pd.read_pickle(data_path + "network_classification/info.pkl")
     info3 = info3pd.transpose().to_dict()
     fig, ax = plt.subplots(layout='constrained', figsize=(13,11))
@@ -242,14 +242,14 @@ def CancerHeatmap_plot(filename, pdfname='untitled', savepush=False, show=True, 
     ax.set_ylabel(ylabel)
 
     if savepush:
-        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
         params = copy_info(info3, filename)
         set_pdf_info(pdfname, **params)
     else:
         if show:
             plt.show()
 
-def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
+def Cancerepoch_plot(filename, pdfname="untitled", savepush=True, show=True):
     info3pd = pd.read_pickle(data_path + "network_classification/info.pkl")
     info3 = info3pd.transpose().to_dict()
     fig, ax = plt.subplots(layout="constrained")
@@ -267,7 +267,7 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
     plt.legend()
 
     if savepush:
-        save_push(fig, pdf_name=pdfname, tight=False, show=True)
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
         params = copy_info(info3, filename)
         set_pdf_info(pdfname, **params)
     if not savepush:
@@ -275,23 +275,24 @@ def Cancerepoch_plot(filename, pdfname="untitled", savepush=False, show=True):
             plt.show()
 
 
-def FrankePlot(filename, pdfname='untitled', savepush=True, show=True):
-    info = pd.read_pickle(data_path + "network_regression/compareModel.pkl")
-
-    fig, ax = plt.subplots(layout='constrained', figsize=(15,15), subplot_kw={'projection':'3d'})
-    info = np.transpose(info)
-    x, y, z, f = info[0], info[1], info[2], info[3]
+def FrankePlot(filename="compareModel.pkl", pdfname='untitled', savepush=True, show=True):
+    info2pd = pd.read_pickle(data_path + "network_regression/info.pkl")
+    info2 = info2pd.transpose().to_dict()
+    fig, ax = plt.subplots(layout='constrained', figsize=(11,9), subplot_kw={'projection':'3d'})
+    franke = np.transpose(pd.read_pickle(data_path + "network_regression/"+filename))
+    x, y, z, f = franke[0], franke[1], franke[2], franke[3]
     ax.scatter(x, y, z, marker="^", color="green", s=25)
     ax.plot_trisurf(x, y, f, cmap='RdBu')
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
+    ax.set_zlabel(r"$z$")
     ax.view_init(16,-33)
 
     if savepush:
-        save_push(fig, pdf_name=pdfname, tight=False, show=True)
-        # params = copy_info(info3, filename)
-        # set_pdf_info(pdfname, **params)
+        save_push(fig, pdf_name=pdfname, tight=False, show=show)
+        params = copy_info(info2, filename)
+        params['note'] = "final model"
+        set_pdf_info(pdfname, **params)
     if not savepush:
         if show:
             plt.show()
