@@ -85,7 +85,7 @@ Where the actual (physical) relationship between some dependent and independent 
         \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", calculates the update based on both the first-order momentum, the same as in momentum, and the second-order momentum, much like in RMSProp. We need two hyperparameters $\rho_1$ and $\rho_2$ for this optimisation scheme, representing the decay rate of the first and second moment, respectively. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
     
-    The choice of default values is inspired by \citep[chapter 8.5]{Goodfellow2016}. 
+x    The choice of default values is inspired by \citep[chapter 8.5]{Goodfellow2016}. 
 
     
     
@@ -223,7 +223,7 @@ where we see that $\hat{y}, b_L\in \RR$ and $ W^{0\to L} \in \RR[p\cross 1]$. Th
 
 \subsection{Model validation}\label{sec:validation}
 
-We have discussed some loss functions, but the way we will \rephrase{give} the error in a model has not yet been clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
+We have discussed some loss functions, but the way we will \rephrase{provide} the error in a model has not yet been clarified. Assume we have divided the dataset $\mathcal{D}$ of $n$ observed values into a training set $\mathcal{D}^\mathrm{train}$ and a test set $\mathcal{D}^\mathrm{test}$ of respective lengths $n^\mathrm{train}$ and $n^\mathrm{test}$, s.t. $ \mathcal{D}^\mathrm{train} \cup\mathcal{D}^\mathrm{test} = \mathcal{D}$ and $\mathcal{D}^\mathrm{train} \cap\mathcal{D}^\mathrm{test} = 0 $, also implying $n^\mathrm{train}+n^\mathrm{test}=n$.
 
 When we speak of the total loss, this concerns the training dataset, or more often subsets of which. Since we expect its error to be normally distributed around the target values, we evaluate our regression models using the MSE function
 \begin{equation}\label{eq:MSE}
