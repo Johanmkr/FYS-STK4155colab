@@ -95,6 +95,8 @@
 
 
 \subsection{Classification problem}\label{sec:analysis_classification}
-    For the classification problem we use the Wisconsin Breast Cancer dataset provided by Scikit-learn \citep{scikit-learn}.
+    For the classification problem we use the Wisconsin Breast Cancer dataset provided by Scikit-learn \citep{scikit-learn}. In short, this dataset consist of 569 samples, each with 30 features, divided into 2 classes; those that were benign, and those that were malignant. This is thus a \textit{binary classification problem} due to the two classes. The major differences to our network model will be the number of input neurons, which will now be 30 (features), and a single output neuron with a sigmoid output function. We will also use cross entropy, \Eq{logistic_regression_cost_function}, as our loss function. 
+    
+    For comparative reasons, we perform the analysis in a similar manner as with linear regression, and we start with the same model architecture; a network with 3 hidden layers, with 15-10-5 neurons in each layer. We minimise the loss function in the same way, using SGD with RMSProp as our chosen optimiser algorithm, starting with 3 mini batches. From \Fig{class_eta_lambda} with find the optimal hyperparameters to be $\eta=10^{-3}$ and $\lambda=10^{-6}$
 
 
