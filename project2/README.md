@@ -5,7 +5,7 @@ We present the work of Johan Mylius Kroken and Nanna Bryne in the second project
 
 ### Abstract
 
-We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 minibatches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 minibatches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1. 
+>We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 minibatches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 minibatches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1. 
 ## **RESULTS**
 
 The results are located in `output/data/**`, where you find information about how they where obtained in `output/data/**/README.md`. You will find the output plots in `output/figures` with associated key parameters described in `output/figures/README.md`.
@@ -19,18 +19,28 @@ In the following, we assume `code` to be the home directory.
 To properly run the code, make sure you are in the `code` directory. The `makefile` makes it easy to rerun the analyses and recreate the plots. Note that all runs will require input argument e.g. "`yes`" and it should be easy to follow the instructions given in the terminal.
 
 * Run the SGD regression part (simple one-dimensional polynomial)
-    > ```make SGDregression```
+    ~~~
+    make SGDregression
+    ~~~
 * Run the NN regression part (Franke function)
-    > ```make NNregression```
+    ~~~
+    make NNregression
+    ~~~
 * Run the classification part (Cancer data)
     - with NN
-        > ```make NNclassification```
+        ~~~
+        make NNclassification
+        ~~~
     - with logistic regression
-        > ```make logistic```
+        ~~~
+        make logistic
+        ~~~
 
 And finally, 
 * to generate and show plots, type:
-    > ```make plots ```
+    ~~~
+    make plots
+    ~~~
 
 
 ## Prerequisities
