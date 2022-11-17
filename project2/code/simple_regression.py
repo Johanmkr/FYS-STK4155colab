@@ -90,6 +90,8 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0, n
     info.set_file_info(filename, method=str(sgd).split()[1], opt=optimiser, **Params, eta="...", no_epochs=(noEpochs1, noEpochs2), no_minibatches=no_of_minibatches, n_obs=no_of_observations, theta0=theta0, timer=f"{t1-t0:.0f}")
 
 
+affirmative = ['yes', 'ye', 'y', 'yey', 'yeah', 'yay', 'yess']
+
 
 """
 ----------
@@ -97,12 +99,12 @@ def simple_analysis(optimiser, filename, params={}, params_info=None, lmbda=0, n
 ----------
 """
 
-#   OLS:
-simple_analysis("plain", "plain_GD.txt", no_of_minibatches=1)
-simple_analysis("momentum", "momentum_GD.txt", {"gamma":0.5}, no_of_minibatches=1)
-simple_analysis("adagrad", "adagrad_GD.txt", no_of_minibatches=1)
-simple_analysis("RMSprop", "rmsprop_GD.txt", {"rho":0.9}, no_of_minibatches=1)
-simple_analysis("Adam", "adam_GD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, no_of_minibatches=1)
+if input('Run simple analysis for: GD with OLS? [y/n][yes/no]').lower().strip() in affirmative:
+    simple_analysis("plain", "plain_GD.txt", no_of_minibatches=1)
+    simple_analysis("momentum", "momentum_GD.txt", {"gamma":0.5}, no_of_minibatches=1)
+    simple_analysis("adagrad", "adagrad_GD.txt", no_of_minibatches=1)
+    simple_analysis("RMSprop", "rmsprop_GD.txt", {"rho":0.9}, no_of_minibatches=1)
+    simple_analysis("Adam", "adam_GD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, no_of_minibatches=1)
 
 
 """
@@ -113,21 +115,23 @@ simple_analysis("Adam", "adam_GD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 
 
 #   OLS:
 
-# simple_analysis("plain", "plain_SGD.txt")
-# simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
-# simple_analysis("adagrad", "adagrad_SGD.txt")
-# simple_analysis("RMSprop", "rmsprop_SGD.txt", {"rho":0.9})
-# simple_analysis("Adam", "adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)})
+if input('Run simple analysis for: SGD with OLS? [y/n][yes/no]').lower().strip() in affirmative:
+    simple_analysis("plain", "plain_SGD.txt")
+    simple_analysis("momentum", "momentum_SGD.txt", {"gamma":0.5})
+    simple_analysis("adagrad", "adagrad_SGD.txt")
+    simple_analysis("RMSprop", "rmsprop_SGD.txt", {"rho":0.9})
+    simple_analysis("Adam", "adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)})
 
 
 #   Ridge:
 
 lmbda0 = 0.1
-# simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
-# simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
-# simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
-# simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
-# simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
+if input('Run simple analysis for: SGD with RIDGE? [y/n][yes/no]').lower().strip() in affirmative:
+    simple_analysis("momentum", "ridge_momentum_SGD.txt", {"gamma":0.5}, lmbda=lmbda0)
+    simple_analysis("plain", "ridge_plain_SGD.txt", lmbda=lmbda0)
+    simple_analysis("adagrad", "ridge_adagrad_SGD.txt", lmbda=lmbda0)
+    simple_analysis("RMSprop", "ridge_rmsprop_SGD.txt", {"rho":0.9}, lmbda=lmbda0)
+    simple_analysis("Adam", "ridge_adam_SGD.txt", {"rho1":0.9, 'rho2':0.999}, {'rho':(0.9, 0.999)}, lmbda=lmbda0)
 
 
 

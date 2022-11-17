@@ -2,6 +2,7 @@ from src.utils import *
 import plot as PLOT
 
 
+affirmative = ['yes', 'ye', 'y', 'yey', 'yeah', 'yay', 'yess']
 
 SHOW = True
 SAVEPUSH = False
@@ -19,7 +20,7 @@ labels0 =  ["plain GD", "momentum GD", "AdaGrad", "RMSProp", "Adam"]
 files = ["plain_SGD.txt", "momentum_SGD.txt", "adagrad_SGD.txt", "rmsprop_SGD.txt", "adam_SGD.txt"]
 labels =  ["plain SGD", "momentum SGD", "AdaGrad", "RMSProp", "Adam"]
 
-if input('Show plots for: SIMPLE REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+if input('Show plots for: SIMPLE REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in affirmative:
     PLOT.simple_regression_errors(files0, labels0, pdfname="errors_gradient_descent_nonstochastic", savepush=SAVEPUSH, show=SHOW)
 
     PLOT.simple_regression_errors(files, labels, pdfname="errors_gradient_descent", savepush=SAVEPUSH, show=SHOW)
@@ -34,7 +35,7 @@ if input('Show plots for: SIMPLE REGRESSION ANALYSIS? [y/n][yes/no]').lower().st
 FRANKE NN REGRESSION ANALYSIS
 -----------------------------
 '''
-if input('Show plots for: NEURAL NETWORK REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+if input('Show plots for: NEURAL NETWORK REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in affirmative:
     PLOT.MSEheatmap_plot("EtaLmbdaMSE.pkl", pdfname="eta_lambda_analysis", savepush=SAVEPUSH, show=SHOW)
 
     PLOT.MSEheatmap_plot("LayerNeuron.pkl", pdfname="layer_neuron_analysis", savepush=SAVEPUSH, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
@@ -53,7 +54,7 @@ if input('Show plots for: NEURAL NETWORK REGRESSION ANALYSIS? [y/n][yes/no]').lo
 CANCER NN CLASSIFICATION ANALYSIS
 ---------------------------------
 '''
-if input('Show plots for: NEURAL NETWORK CLASSIFICATION ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+if input('Show plots for: NEURAL NETWORK CLASSIFICATION ANALYSIS? [y/n][yes/no]').lower().strip() in affirmative:
     PLOT.CancerHeatmap_plot("EtaLmbdaMSECancer.pkl", pdfname="eta_lambda_analysisCancer", savepush=SAVEPUSH, show=SHOW)
 
     PLOT.CancerHeatmap_plot("LayerNeuronCancer.pkl", pdfname="layer_neuron_analysisCancer", savepush=SAVEPUSH, xlabel="$N_l$", ylabel=r"$L-1$", show=SHOW)
@@ -70,12 +71,14 @@ if input('Show plots for: NEURAL NETWORK CLASSIFICATION ANALYSIS? [y/n][yes/no]'
 CANCER LOGISTIC REGRESSION ANALYSIS
 -----------------------------------
 '''
-if input('Show plots for: LOGISTIC REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+if input('Show plots for: LOGISTIC REGRESSION ANALYSIS? [y/n][yes/no]').lower().strip() in affirmative:
     PLOT.CancerHeatmap_plot("logistic.pkl", pdfname="logistic", savepush=SAVEPUSH, show=SHOW)
 
 
 
-'''
-Update info.pkl and README.md:
-'''
-PLOT.update()
+
+if SAVEPUSH:
+    '''
+    Update info.pkl and README.md:
+    '''
+    PLOT.update()
