@@ -51,58 +51,58 @@ We build a versatile neural network code in order to perform linear regression a
 \tableofcontents
 \section*{Notation and nomenclature}
 
-\subsection*{Datasets and fitting} % working title
-\begin{itemize}
-    
-    \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n\in \mathbb{N}$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
-    \item[$\svec{\theta}$] Parameter vector or vector of coefficients 
-    \item[$\mathcal{L}$] Total loss function $\mathcal{L}(\hat{y}, y)$ where $\hat{y}= f(\svec{\theta}; \vec{x})$ (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)
-    \item[$n$] Number of samples in a dataset
-    \item[$p$] Number of features of the dependent variables in a dataset
-    \item[$X$] Feature matrix of $n$ row vectors $\vec{x} \in \RR[p]$, where $p$ denotes the number of features we are considering
-    \item[$\vec{y}$] Vector of $n$ input targets $y^{(i)} \in \RR$ associated with $\vec{x}^{(i)}$
+\subsection*{Datasets and outputs} % working title
+\begin{itemize}[leftmargin=2.5em]
+    \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
+    \item[$f$] Function $f(\svec{\theta}; \vec{x})$ that gives the model's output $\hat{y}$ given some input $\vec{x}$
+    \item[$\mathcal{L}$] Total loss function $\mathcal{L}(\hat{y}, y)$ where $\hat{y}= f(\svec{\theta}; \vec{x})$ is the output from our model (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)
+    \item[$n$] $\in \mathbb{N}\,;$ Number of samples in a dataset
+    \item[$p$] $\in \mathbb{N}\,;$ Number of features of the dependent variables in a dataset
+    \item[$\vec{x}^{(i)}$] $\in\RR[p]\, ;$ The $i^\mathrm{th}$ example of the dependent variable $\vec{x}$
+    \item[$X$] $\in\RR[n\cross p]\, ;$ Feature matrix of $n$ row vectors $\vec{x}$
+    \item[$y^{(i)}$] $\in \RR\,;$ The $i^\mathrm{th}$ example of the independent variable $y$ associated with $\vec{x}^{(i)}$
+    \item[$\hat{y}^{(i)}$] $\in \RR\,;$ The output associated with $(\vec{x}^{(i)}, y^{(i)}) \in \mathcal{D}$ 
+    \item[$\svec{\theta}$] $\in\RR[p]\, ;$ Parameter vector, or vector of coefficients 
 \end{itemize}
-\subsection*{Steepest ascent variables}
+\subsection*{Syntax for steepest descent algorithms}
 \begin{itemize}
-    \item[$\vec{v}$] Momentum in parameter space, 
-    \item[$\mathcal{A}$] Magnitude and direction of steepest ascent in parameter space %\item[$\mathcal{B}$] Subset of $\mathcal{D}$ 
+    \item[$\vec{v}$] $\in\RR[p]\, ;$ Momentum in parameter space ($\vec{v}_k$ denotes the last update to $\svec{\theta}_k$)
+    \item[$\mathcal{A}$] $=\nabla_{\! \theta} \mathcal{L} \in\RR[p]\, ;$ Magnitude and direction of steepest ascent in parameter space ($\mathcal{A}_k = \nabla_{\! \theta} \mathcal{L}(\svec{\theta}_k)$)
 \end{itemize}
 
 \subsection*{Network components}
-\begin{itemize}
-    \item[$\vec{h}$] Hidden layer of a neural network ($\vec{h}^l \in \RR[N_l]$)
-    \item[$g$] Activation function associated with a layer in a neural network, affine transformation ($g_l \,:\,\RR[N_l] \to\RR[N_{l}]$)
-    \item[$W$] Matrix of weights describing the mapping from a layer to the next ($W^{l\to l+\! 1} \in \RR[N_l \cross N_{l+\! 1}]$)
-    \item[$\vec{b}$] Bias term ($\vec{b}^l \in \RR[N_l]$)
-    \item[$\vec{a}$] \checkthis{Activation argument} ($\vec{a}^l \in \RR[N_l]$)
-    \item[$N$] Number of neurons in a layer ($N \in \mathbb{N}$)
+\begin{itemize}[leftmargin=3.6em]
+    \item[$\vec{a}$] $\in\RR[N_l]\, ;$ Activation argument of layer $l$
+    \item[$\vec{b}^l$] $\in \RR[N_l]\,;$ Bias term of neurons in layer $l$
+    \item[$g_l$] $:\,\RR[N_l] \to\RR[N_{l}]\,;$ Activation function associated with layer $l$, an affine transformation
+    \item[$\vec{h}^l$] $\in\RR[N_l]\, ;$ Information associated with layer $l$ 
+    \item[$N_l$] $\in \mathbb{N}$ Number of neurons in layer $l$
+    \item[$W^{l\to l+\! 1}$] $\in \RR[N_l \cross N_{l+\! 1}]\,;$ Matrix of weights describing the mapping from layer $l$ to layer $l+1$ ($W^{l+\! 1 \leftarrow l} \equiv [W^{l\to l+\! 1}]\TT$)
 \end{itemize}
 
 \subsection*{Hyperparameter syntax}
-\begin{itemize}
-    \item[$\eta$] Learning rate (global)
+\begin{itemize}[leftmargin=2.8em]
+    \item[$L$] Number of layers in an NN, not counting the input layer, or label of output layer 
+    \item[$m$] Number of minibatches in SGD
     \item[$\gamma$] Momentum factor (constant term)
-    \item[$L$] Number of layers in an NN, not counting the input layer
+    \item[$\eta$] Learning rate (global)
     \item[$\lambda$] Regularisation parameter (penalty parameter in Ridge regression)
-    \item[$m$] Number of minibatches
+    \item[$\rho_1, \rho_2$] Hyperparameters related to RMSProp ($\rho \equiv \rho_2$) and Adam
 \end{itemize}
 
-
 \subsection*{Miscellaneous}
-
 \begin{enumerate}[leftmargin=4.1em]
-    \item[$\norm{\vec{u}}_q$] \lnorm[q]\, of $\vec{u}$
-    \item[$\nabla_{\!\xi} J$] Gradient of $J$ with respect to $\svec{\xi}$
     \item[$\mathcal{N}(\mu, \sigma)$]  Normal distribution with mean $\mu$ and standard deviation $\sigma$
+    \item[VAR] Variance of $A$ \checkthis{FIX!!}
+    \item[$\nabla_{\!\xi} J$] Gradient of a function $J$ with respect to $\svec{\xi}$
 \end{enumerate}
 
 \subsection*{Acronyms}
-\begin{enumerate}[leftmargin=3.1em]
+\begin{enumerate}[leftmargin=3.3em]
     \item[DAG] Directed acyclic graph
     \item[FFNN] Feedforward neural network
     \item[GD] Gradient descent
     \item[MSE] Mean squared error 
-    \item[NAG] Nesterov accelerated gradient
     \item[NN] Neural network 
     \item[OLS] Ordinary least squares 
     \item[ReLU] Rectified linear unit
@@ -110,9 +110,7 @@ We build a versatile neural network code in order to perform linear regression a
 \end{enumerate}
 
 
-\comment{Should order alphabetically or logically.}
 
-%\tableofcontents
 \input{introduction}
 \input{theory}
 \input{analysis}
