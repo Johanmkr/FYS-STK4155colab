@@ -4,9 +4,6 @@ from sklearn.datasets import load_breast_cancer
 
 
 np.random.seed(69)
-
-
-
 import src.infoFile_ala_Nanna as info
 output_path = "../output/data/network_classification/"
 info.init(path=output_path)
@@ -30,7 +27,6 @@ info.define_categories({
     })
 
 
-
 class CancerData:
     def __init__(self,
                 hiddenLayers = 0,
@@ -49,11 +45,8 @@ class CancerData:
                 terminalUpdate = False):
 
         cancer = load_breast_cancer()
-        cancerpd = pd.DataFrame(cancer.data, columns=cancer.feature_names)
         inputs = cancer.data 
-        outputs = cancer.target 
-        labels = cancer.feature_names[0:30]
-        correlation_matrix = cancerpd.corr().round(1)
+        outputs = cancer.target
 
         self.inputs = inputs
         self.n_obs = len(outputs)
@@ -72,7 +65,6 @@ class CancerData:
         return stringToReturn
 
     def train(self):
-        # print(self.Net)
         t0 = time()
         self.Net.train()
         t1 = time()
@@ -267,18 +259,22 @@ if __name__=="__main__":
     try:
         log = sys.argv[1].strip().lower()
         if log in ['log', 'logistic']:
+            print('LOGISTIC REGRESSION ANALYSIS')
             logisticRegression()
         else:
             pass
     
     except IndexError:
-        # EtaLambdaAnalysis("EtaLmbdaMSECancer")
-        # LayerNeuronsAnalysis("LayerNeuronCancer")
-        # activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
-        EpochMinibatchAnalysis("EpochMinibatchCancer")
+        print('NEURAL NETWORK CLASSIFICATION ANALYSIS')
+        if input('Run: ETA/LAMBDA ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+            EtaLambdaAnalysis("EtaLmbdaMSECancer")
+        if input('Run: LAYER/NEURON ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+            LayerNeuronsAnalysis("LayerNeuronCancer")
+        if input('Run: ACT.FUNC/EPOCH ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+            activationFunctionPerEpochAnalysis("actFuncPerEpochCancer")
+        if input('Run: EPOCH/MINIBATCH ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+            EpochMinibatchAnalysis("EpochMinibatchCancer")
     
-
-
     # Update README.md and info.pkl
     info.additional_information("Loss function: cross entropy (with regularisation)")
     info.update(header="Results from cancer classification analysis using NN")

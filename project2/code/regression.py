@@ -73,7 +73,6 @@ class FrankeRegression:
         return stringToReturn
 
     def train(self):
-        # print(self.Net)
         t0 = time()
         self.Net.train()
         t1 = time()
@@ -275,22 +274,17 @@ def compareModel(filename):
 
 
 if __name__=="__main__":
-    # Freg = FrankeRegression(hiddenLayers=2, activationFunction="tanh", neuronsInEachLayer=25, outputNeurons=1, epochs=250, nrMinibatches=100, testSize=0.2, lmbda=1e-5, eta=0.001, terminalUpdate=True, optimizer='RMSProp')
-    # Freg.train()
-    # Freg.predict()
-    # print(Freg)
-    # Freg.plot()
-
-    # EtaLambdaAnalysis("EtaLmbdaMSE")
-
-    # LayerNeuronsAnalysis("LayerNeuron")
-
-    # activationFunctionPerEpochAnalysis("actFuncPerEpoch")
-
-    # EpochMinibatchAnalysis("EpochMinibatch")
-
-    compareModel('compareModel')
-
+    print('NEURAL NETWORK REGRESSION ANALYSIS')
+    if input('Run: ETA/LAMBDA ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+        EtaLambdaAnalysis("EtaLmbdaMSE")
+    if input('Run: LAYER/NEURON ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+        LayerNeuronsAnalysis("LayerNeuron")
+    if input('Run: ACT.FUNC/EPOCH ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+        activationFunctionPerEpochAnalysis("actFuncPerEpoch")
+    if input('Run: EPOCH/MINIBATCH ANALYSIS? [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+        EpochMinibatchAnalysis("EpochMinibatch")
+    if input('Run: COMPARE MODEL [y/n][yes/no]').lower().strip() in ['yes', 'y', 'ye']:
+        compareModel('compareModel')
 
     # Update README.md and info.pkl
     info.additional_information("Loss function: mean squared error (with regularisation)")

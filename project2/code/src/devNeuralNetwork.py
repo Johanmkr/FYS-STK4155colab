@@ -25,23 +25,23 @@ maxVal = 1/float_info.epsilon
 
 class devNeuralNetwork:
     def __init__(self,
-                inputData  = None,
-                targetData = None,
-                hiddenLayers = 0,
-                neuronsInEachLayer = 4,
-                activationFunction = 'sigmoid',
-                outputFunction = 'linear',
-                outputNeurons = None,
-                lossFunction = 'mse',
-                optimizer = 'plain',
-                epochs = None,
-                batchSize = None,
-                nrMinibatches = None,
-                eta = 0.01,
-                lmbda = 0.0,
-                testSize = 0.2,
-                terminalUpdate = False,
-                classification = False):
+                inputData:np.ndarray  = None,
+                targetData:np.ndarray = None,
+                hiddenLayers:int = 0,
+                neuronsInEachLayer:int = 4,
+                activationFunction:str = 'sigmoid',
+                outputFunction:str = 'linear',
+                outputNeurons:int = None,
+                lossFunction:str = 'mse',
+                optimizer:str = 'plain',
+                epochs:int = None,
+                batchSize:int = None,
+                nrMinibatches:int = None,
+                eta:float = 0.01,
+                lmbda:float = 0.0,
+                testSize:float = 0.2,
+                terminalUpdate:bool = False,
+                classification:bool = False) -> None:
         """Initialises Feed Forward Neural network with the following parameters:
 
         Args:
@@ -63,6 +63,8 @@ class devNeuralNetwork:
             terminalUpdate (bool, optional): If true, progress is written  to the terminal during training. Defaults to False.
             classification (bool, optional): If true, the networks deals with a classification problem. Defaults to False.
         """
+
+        #   Set self variables
         self.inputData = inputData
         self.targetData = targetData
         self.comparisonData = self.targetData
@@ -76,21 +78,30 @@ class devNeuralNetwork:
         self.lossFunction = LossFunctions(lossFunction)
         self.optimizer = optimizer
         self.terminalUpdate = terminalUpdate
+        self.testSize = testSize
+        self.classification = classification
+        self.epochs = epochs
+        self.eta = eta
+        self.lmbda = lmbda
+        self.Niter = 0  # Keep track of training iterations
+
+        #   Set weight initialisation according to the given activation function
         if activationFunction in ["sigmoid", "tanh"]:
             self.weightInitialiser = "Xavier"
         elif activationFunction in ["relu", "lrelu", "relu*"]:
             self.weightInitialiser = "He"
 
-        self.testSize = testSize
-        # self.ttSplit(self.testSize)
-        self.classification = classification
+        #   Split and normalise data. Classification analysis does not include feature scaling. 
         if self.classification:
             self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = feature_scale_split(self.inputData, self.targetData, train_size=1-self.testSize)
         else:
             self.inputData, self.targetData, self.trainData, self.trainOut, self.testData, self.testOut = Z_score_normalise_split(self.inputData, self.targetData, train_size=1-self.testSize)
+        
+        #   Set input and feature
         self.setInputFeatures(self.trainData)
         self.outputNeurons = outputNeurons or self.features
-        self.epochs = epochs
+
+        #   Set batch size or nr. minibatches depending on what information is given in the initialisation
         if batchSize is not None:
             self.batchSize = batchSize
             self.nrMinibatches = self.inputs//self.batchSize
@@ -100,13 +111,11 @@ class devNeuralNetwork:
         else:
             self.batchSize = self.inputs 
             self.nrMinibatches = 1
-        self.eta = eta
-        self.lmbda = lmbda
-        self.Niter = 0  # Keep track of training iterations
-
+        
         #   Make list of layer objects
         self.layers = []
         
+        #   Initialise layers objects
         self.setInitialisedLayers()
         self.nrOfLayers = len(self.layers)
 
@@ -140,29 +149,55 @@ class devNeuralNetwork:
         stringToReturn += f"Optimizer: {self.optimizer}\n\n"
         return stringToReturn
 
-    def __call__(self, X=None):
+    def __call__(self, X:np.ndarray=None) -> None:
+        """Performs one forward pass, either with the given data, or with the default data already initialised in input layer.
+
+        Args:
+            X (np.ndarray, optional): Data to initialise first layer. Defaults to None.
+
+        Returns:
+            np.ndarray: Output data, values of the output layer after output function after one forward pass.
+        """
         if X is not None:
-            self.layers[0].h = X
+            # self.layers[0].h = X
+            self.updateInputLayer(X)
         self.feedForward()
         return self.outputData
 
-    def updateInputLayer(self, data):
+    def updateInputLayer(self, data:np.ndarray) -> None:
+        """Updates input layer. Sets new inputs and features according to the updated layer.
+
+        Args:
+            data (np.ndarray): Data to initialise the input layer. 
+        """
         self.setInputFeatures(data)
         self.layers[0].UpdateLayer(self.inputs, self.features)
         self.layers[0].h = data
 
-    def sliceInputAndComparison(self, idx):
+    def sliceInputAndComparison(self, idx:np.ndarray) -> None:
+        """Slices the train data. If indices are random, this correspond to random resampling of train data. 
+
+        Args:
+            idx (np.ndarray): Indices of train data that we set as the first layer values.
+        """
         self.layers[0].h = self.trainData[idx]
         self.comparisonData = self.trainOut[idx]
 
-    def setInputFeatures(self, data):
+    def setInputFeatures(self, data:np.ndarray) -> None:
+        """Initialises the inputs and feature variables. This could be done if we change the input data set for instance.
+
+        Args:
+            data (np.ndarray): Data to initialise first layer. 
+        """
         if data.ndim == 1 or data.ndim == 0:
             self.inputs = len(data)
             self.features = 1 
         else:
             self.inputs, self.features = data.shape
 
-    def setInitialisedLayers(self):
+    def setInitialisedLayers(self) -> None:
+        """Initialises the layers according to the number of hidden layers and neurons in each layer.
+        """
         #   Append input layer
         self.layers.append(Layer(activationFunction=self.activationFunction, inputs=self.inputs, features=self.features))
         #   Append hidden layers
@@ -177,11 +212,14 @@ class devNeuralNetwork:
         #   Append output layers
         self.layers.append(Layer(self.outputNeurons, activationFunction=self.outputFunction))
 
-    def addLayer(self,
-                layer = None,
-                idx = -1,
-                neurons = None):
+    def addLayer(self, layer:Layer = None, idx:int = -1, neurons:int = None) -> None:
+        """Adds a layer to the list of layer object at a given index.
 
+        Args:
+            layer (Layer, optional): Layer object to be added. Defaults to None.
+            idx (int, optional): Index at which to add the layer in the layer list. Defaults to -1.
+            neurons (int, optional): Number of neurons in the added layer. Defaults to None.
+        """
         if layer is not None:
             LayerToAdd = layer
         else:
@@ -190,13 +228,18 @@ class devNeuralNetwork:
         self.nrOfLayers += 1
         self.initialiseWeights()
 
-    def initialiseWeights(self):
+    def initialiseWeights(self) -> None:
+        """Initialises the weights.
+        """
         for i in range(1, self.nrOfLayers): #looping over hidden layers + output layer
             nIn = self.layers[i-1].neurons
             nOut = self.layers[i].neurons
             self.layers[i].setWmatrix(nIn,nOut, initialisation=self.weightInitialiser)
 
-    def feedForward(self):
+    def feedForward(self) -> None:
+        """Feed forward pass
+        """
+        #   Loop through all the layers except the input layer.
         for i in range(1, self.nrOfLayers):
             w = self.layers[i].w
             h = self.layers[i-1].h
@@ -205,45 +248,41 @@ class devNeuralNetwork:
             activator = h @ w.T + b
             self.layers[i].a = activator
             self.layers[i].h = self.activationFunction(activator)
-        #   Override last output
+        #   Override last output -> run last output through the output function
         self.layers[-1].h = self.outputFunction(self.layers[-1].a)
         self.outputData = self.layers[-1].h
 
-    def backPropagation(self):
+    def backPropagation(self) -> None:
+        """Back propagation pass
+        """
+        #   Find delta (error) of output layer
         self.layers[-1].delta = self.activationFunction.derivative(self.layers[-1].a) * self.lossFunction.derivative(self.outputData, self.comparisonData)
-        #   Find and set deltas
+        #   Find and set deltas for the remaining layers
         for l in range(self.nrOfLayers-2, 0, -1):
             delta = self.layers[l+1].delta
             w = self.layers[l+1].w
             a = self.layers[l].a
-            # embed()
             self.layers[l].delta = (delta @ w) * self.activationFunction.derivative(a)
-        # embed()
-        F = EAC(self.layers) # Generating full matrices W, B, D, H
 
-        
-        regularisation = 0
-        if self.lmbda > 0.0:
-            regularisation = self.lmbda * F.W
+        F = EAC(self.layers) # Generating full matrices W, B, D, H in order to update all weights and biases in one computation. 
 
-        # sgd.simple_initialise()
-        gradW = F.regGradW() + regularisation
+        gradW = F.regGradW()
         gradB = F.regGradB()
-        # maxVal = 1e6
+        if self.lmbda > 0.0:
+            gradW += self.lmbda * F.W
+
+        #   Update weight and biases, avoid too large gradients.
         if np.any(gradW > maxVal) or np.any(gradB > maxVal):
             pass
-            # print("passed")
         else:
-            # print(F.W)
             F.W = self.sgdW.simple_update(gradW, F.W)
             F.B = self.sgdB.simple_update(gradB, F.B)
 
-        # F.W = F.W - self.eta * F.regGradW()
-        # F.B = F.B - self.eta * F.regGradB()
-
+        #   Collapse weights and biases back down in to layer form
         newWeights = F.collapseWeights()
         newBiases = F.collapseBiases()
 
+        #   Update weights and biases for each laye
         for i in range(1, self.nrOfLayers):
             self.layers[i].w = newWeights[i-1]
             self.layers[i].bias = newBiases[i-1]
@@ -252,14 +291,8 @@ class devNeuralNetwork:
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
     def accuracy(self, prediction, target, tol=1e-5):
-        # samples = len(target)
         prediction = np.where(prediction > 0.5, 1, 0)
-        # accuracy = 0
         accuracy = np.where(np.abs(prediction-target) < tol, 1, 0)
-        # for i in range(samples):
-        #     if abs(prediction[i]-target[i]) < tol:
-        #         accuracy += 1
-        # accuracy /= samples
         return np.mean(accuracy)
 
     def get_testLoss(self):
@@ -324,93 +357,4 @@ class devNeuralNetwork:
 
 
 if __name__=="__main__":
-    # x = np.linspace(-5,5, 100)
-    # y = x*np.cos(x) + 0.5*np.random.randn(len(x))
-    # ynorm = (y-np.mean(y))/np.std(y)
-    # x = x[:,np.newaxis]
-    # ynorm = ynorm[:,np.newaxis]
-    # plt.plot(x,ynorm, ".", label="data")
-    # # plt.show()
-    # dummy = devNeuralNetwork(x, ynorm, hiddenLayers=3, neuronsInEachLayer=4)
-    # print(dummy)
-    # # dummy.train()
-    # # dummy()
-    # Niter = 16
-    # dummy.train()
-    # pred = dummy()
-    # plt.plot(x, pred, label="Untrained")
-    # LF = LossFunctions()
-    # t0 = time()
-    # for i in range(1, Niter+1):
-    #     N =  (250*i)
-    #     dummy.train(N)
-    #     pred = dummy()
-    #     # embed()
-    #     loss = np.mean(LF(pred, ynorm))
-    #     # embed()
-    #     print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
-    #     if i % 4 == 0:
-    #         plt.plot(x,pred, label=f"N={i}")
-    # t1 = time()
-
-    # # xtest = np.linspace(-10,10,1000)
-
-    # # ypredtest = dummy(xtest)
-    # # plt.plot(xtest, ypredtest, label="Test point")
-
-
-    # plt.legend()
-    # print(f"Duration: {t1-t0:.2f} s")
-    # plt.show()
-
-
-    # TEST FRANKE
-    # Make data.
-    space = np.linspace(0,1,20)
-    xx, yy = np.meshgrid(space,space)
-
-    def FrankeFunction(x,y):
-        term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
-        term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
-        term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
-        term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-        return term1 + term2 + term3 + term4
-
-    zz = FrankeFunction(xx, yy)
-    zzr = zz.ravel()
-    zzr = (zzr-np.mean(zzr))/np.std(zzr)
-    FrankeX = np.zeros((len(zzr),2))
-    FrankeX[:,0] = xx.ravel()
-    FrankeX[:,1] = yy.ravel()
-    FrankeY = zzr[:,np.newaxis]
-    FNet = devNeuralNetwork(FrankeX, FrankeY, hiddenLayers=3, activationFunction='tanh', neuronsInEachLayer=40, outputNeurons=1, epochs=1000, batchSize=20, testSize=0.2, lmbda=0.001, eta=0.01)
-    print(FNet)
-    # FNet.train(10000)
-    # FrankePred = FNet()
-    t0 = time()
-    FNet.train()
-    t1 = time()
-    print(f"Training time: {t1-t0:.2f} s")
- 
-    # LF = LossFunctions()
-    # print(FNet)
-    # for i in range(1, Niter+1):
-    #     N =  (250*i)
-    #     FNet.train(N)
-    #     FrankePred = FNet(FrankeX)
-    #     # embed()
-    #     loss = np.mean(LF(FrankePred, FNet.targetData))
-    #     # embed()
-    #     print(f"Loss for N = {i}: {loss:.2f}  with {N} iterations")
-    #     # if i % 4 == 0:
-    #         # plt.plot(x,pred, label=f"N={i}")
-    FrankePred = FNet(FrankeX)
-    print(f"Total iterations: {FNet.Niter}")
-
-    fig = plt.figure(figsize=(15,15))
-    ax = fig.gca(projection='3d')
-    surf = ax.plot_surface(xx, yy, np.reshape(FrankePred, (20,20)), cmap="coolwarm", alpha=0.7)
-    scatter = ax.scatter(xx,yy,zzr, color="green")
-    plt.show()
-
-    # print(dummy.weights[0].w.shape)
+    pass
