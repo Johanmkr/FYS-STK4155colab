@@ -85,7 +85,7 @@ Where the actual (physical) relationship between some dependent and independent 
         \item[]\textbf{Adam} \citep[algorithm 8.7]{Goodfellow2016}, from "adaptive moments", calculates the update based on both the first-order momentum, the same as in momentum, and the second-order momentum, much like in RMSProp. We need two hyperparameters $\rho_1$ and $\rho_2$ for this optimisation scheme, representing the decay rate of the first and second moment, respectively. By default: $\rho_1 = 0.9$, $\rho_2=0.999$ and $\epsilon=10^{-8}$.
     \end{enumerate}
     
-x    The choice of default values is inspired by \citep[chapter 8.5]{Goodfellow2016}. 
+The choice of default values is inspired by \citep[chapter 8.5]{Goodfellow2016}. 
 
     
     
@@ -122,7 +122,7 @@ We have so far discussed regression and given a lot of attention to the coeffici
     A layer $\vec{h}^l$ has an associated activation $\vec{a}^l \in \RR[N_l]$ which is a function of the previous layer values, $\vec{h}^{l-\!1}$, the weights, $W^{l-\!1\to l}$, and the biases linked with each neuron, $\vec{b}^l$. The activation is passed as argument to the activation function $g_l$ whose job is to perform the affine transformation from one layer to another in a NN. In eq. \eqref{eq:nn_layers} the activation is $\vec{a}^l = (W^{l-\! 1\to l})\TT\vec{h}^{l -\!1} + \vec{b}^l$, which is valid for $l= 1, 2,\dots L$. Note that the weight matrix $W^{l-\! 1\to l}$ is associated with both the current and previous layer. We can rewrite the formula in eq. \eqref{eq:nn_layers} as the more compact expression:
     \begin{equation}\label{eq:NN_layers_compact}
         \begin{split}
-            \vec{h}^0 &= \vec{x} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
+            \vec{h}^0 &= \vec{x}^{(i)} \,,\quad \vec{h}^l =  g_l(\vec{a}^l)\,, \, \, l=1,2, \dots L \,; \\
             &\quad \vec{a}^l = W^{l\leftarrow l-\!1}\vec{h}^{l -\!1} + \vec{b}^l \,;
         \end{split}
     \end{equation}
@@ -152,13 +152,13 @@ We have so far discussed regression and given a lot of attention to the coeffici
 
 
     \subsubsection{Initialisation}\label{sec:initialisation}
-    Before we even start to calculate anything with our network we need to know how it should be initialised. For the bias this is straightforward as all the $\vec{b}^l, \quad l=1,2,\dots,L$ are initialised with a constant small but non-zero value. For the weights on the other hand, the initialisation depends on the choice of activation functions. All weight initialisation are drawn from normal distribution, but limits are put on the variance of these distributions. For the sigmoid and hyperbolic tangent activation functions, weight are drawn from a normal distribution centred around zero, with the variance:
+    Before we even start to calculate anything with our network we need to know how it should be initialised. For the bias this is straightforward as all the $\vec{b}^l, \quad l=1,2,\dots,L$ are initialised with a constant small but non-zero value. For the weights on the other hand, the initialisation depends on the choice of activation functions. All weight initialisation are drawn from normal distribution, but limits are put on the variance of these distributions. For the sigmoid and hyperbolic tangent activation functions, weight are drawn from a normal distribution centred around zero, with variance
     \begin{equation}\label{eq:init_xavier}
-        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}+N_l}
+        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}+N_l}.
     \end{equation}
-    Similarly, for the ReLU and leaky ReLU activation function, the variance of the normal distribution centred around zero must satisfy:
+    Similarly, for the ReLU and leaky ReLU activation function, the variance of the normal distribution centred around zero must satisfy
     \begin{equation}\label{eq:init_he}
-        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}}
+        \mathrm{Var}\left[W^{l-1\!\to l}\right] = \frac{2}{N_{l-1}}.
     \end{equation}
     We have that \Eq{init_xavier} is known as \textit{Xavier} initialisation, while \Eq{init_he} is known as \textit{He} initialisation \citep{Goodfellow2016}.
 
