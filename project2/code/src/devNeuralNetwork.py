@@ -14,8 +14,6 @@ except ModuleNotFoundError:
     import GradientDescent as GradientDescent
     from ExtendAndCollapse import ExtendAndCollapse as EAC
     from utils import *
-from IPython import embed
-from time import time
 from tqdm import trange
 from sys import float_info
 
@@ -149,7 +147,7 @@ class devNeuralNetwork:
         stringToReturn += f"Optimizer: {self.optimizer}\n\n"
         return stringToReturn
 
-    def __call__(self, X:np.ndarray=None) -> None:
+    def __call__(self, X:np.ndarray=None) -> np.ndarray:
         """Performs one forward pass, either with the given data, or with the default data already initialised in input layer.
 
         Args:
@@ -159,8 +157,7 @@ class devNeuralNetwork:
             np.ndarray: Output data, values of the output layer after output function after one forward pass.
         """
         if X is not None:
-            # self.layers[0].h = X
-            self.updateInputLayer(X)
+            self.layers[0].h = X
         self.feedForward()
         return self.outputData
 
@@ -282,32 +279,62 @@ class devNeuralNetwork:
         newWeights = F.collapseWeights()
         newBiases = F.collapseBiases()
 
-        #   Update weights and biases for each laye
+        #   Update weights and biases for each layer
         for i in range(1, self.nrOfLayers):
             self.layers[i].w = newWeights[i-1]
             self.layers[i].bias = newBiases[i-1]
 
-    def setRandomIndecies(self):
+    def setRandomIndecies(self) -> None:
+        """Finds a set of ransom indecies from the current input and batchsize, without replacement.
+
+        Returns:
+            np.ndarray: Random indices
+        """
         return np.random.choice(np.arange(self.inputs), size=self.batchSize, replace=False)
 
-    def accuracy(self, prediction, target, tol=1e-5):
+    def accuracy(self, prediction:np.ndarray, target:np.ndarray, tol:float=1e-5) -> float:
+        """Calculated the accuracy of a forward pass.
+
+        Args:
+            prediction (np.ndarray): Prediction values
+            target (np.ndarray): Target values
+            tol (float, optional): Numerical tolerance when evaluating equalities. Defaults to 1e-5.
+
+        Returns:
+            float: Accuracy score between 0 and 1
+        """
         prediction = np.where(prediction > 0.5, 1, 0)
         accuracy = np.where(np.abs(prediction-target) < tol, 1, 0)
         return np.mean(accuracy)
 
-    def get_testLoss(self):
+    def get_testLoss(self) -> float:
+        """Returns the test loss or accuracy depending on the problem.
+
+        Returns:
+            float: Loss/accuracy.
+        """
         if self.classification:
             return self.accuracy(self.__call__(self.testData), self.testOut)
         else:
             return np.mean(self.lossFunction(self.__call__(self.testData), self.testOut))
     
-    def get_trainLoss(self):
+    def get_trainLoss(self) -> float:
+        """Return the train loss or accuracy depending on the problem.
+
+        Returns:
+            float: Loss/accuracy.
+        """
         if self.classification:
             return self.accuracy(self.__call__(self.trainData), self.trainOut)
         else:
             return np.mean(self.lossFunction(self.__call__(self.trainData), self.trainOut))
 
-    def printTrainingInfo(self, epoch):
+    def printTrainingInfo(self, epoch:int) -> None:
+        """Prints the training information.
+
+        Args:
+            epoch (int): Nr epochs.
+        """
         trainLoss = self.get_trainLoss()
         testLoss = self.get_testLoss()
         stringToPrint = f"Epochs: {epoch}\n"
@@ -319,7 +346,12 @@ class devNeuralNetwork:
             stringToPrint += f"Test loss:    {testLoss:.2f}\n"
         print(stringToPrint)
 
-    def train(self, extractInfoPerXEpoch = None):
+    def train(self, extractInfoPerXEpoch:int = None) -> None:
+        """Trains the network. Different types of problem require different training procedures. This is taken care of by if-else statements. There is also a functionality to extract the loss for every X epochs.
+
+        Args:
+            extractInfoPerXEpoch (int, optional): How many epochs are run between each read of the loss. 1 mean every epoch. Defaults to None.
+        """
         self.sgdW = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdB = GradientDescent.SGD.simple_initialise(eta=self.eta)
         self.sgdW.set_update_rule(self.optimizer)
