@@ -83,3 +83,27 @@
     \caption{Heatmap of the MSE as function of learning rate $\eta$ and regularisation parameter $\lambda$, using SGD with RMSProp as optimiser performing regression analysis of a network with no hidden layers using the sigmoid function as activation function. This is equivalent of performing logistic regression.}
     \label{fig:logistic_eta_lambda}
 \end{figure}
+
+
+\clearpage
+
+\section{Back propagation algorithm}\label{app:backprop}
+    The output $\vec{\hat{y}}$ of our Neural Network is given by the layer value of the output layer $\vec{h}^L$ passed through an output function $g_\mathrm{O}$: $\vec{\hat{y}} = g_\mathrm{O}(\vec{h}^L)$. The output error  is given by:
+    \begin{equation}\label{eq:app_backprop_output_error}
+        \svec{\delta}^L = \dv{g^L(\vec{a}^L)}{\vec{a}^L} \circ \pdv{\mathcal{L}}{\vec{\hat{y}}} =\dv{g^L(\vec{a}^L)}{\vec{a}^L} \circ \pdv{\mathcal{L}}{\vec{h}^L}\left( \pdv{\vec{\hat{y}}}{\vec{h}^L} \right)^{-1},
+    \end{equation}
+    where $\circ$ is the element wise Hadamard product. This error is propagated through the layers of the network in backward order by:
+    \begin{equation}\label{eq:app_backprop_prop_error}
+        \svec{\delta}^l = \svec{\delta}^{l+1}W^{l+1\!\to l} \circ \dv{}{\vec{a}^l}g^l(\vec{a}^l),
+    \end{equation}
+    for $l=L-1, L-2,\dots, 1$. Having found the error propagated through each layer, we update the weights and biases as follows:
+    \begin{equation}\label{eq:app_backprop_update}
+        \begin{split}
+            \nabla_{\!W}^l &= (\svec{\delta}^l)\TT\vec{h}^{l-1} \\
+            \nabla_{\!\vec{b}}^l &= \svec{\delta}^l \\
+            W^l &= \mathcal{U}(W^l, \nabla_{\!W}^l)\\
+            \vec{b}^l &= \mathcal{U}(\vec{b}^l, \nabla_{\!\vec{b}}^l) \\
+            \implies \svec{\theta}^l &= \mathcal{U}(\svec{\theta}^l, \nabla_{\!\svec{\theta}}^l) \quad\quad\quad \svec{\theta}^l = (W^l, \vec{b}^l)
+,        \end{split}
+    \end{equation}
+    where $\mathcal{U}(\svec{\theta}, \nabla_{\!\svec{\theta}})$ is a function that updates the parameter $\svec{\theta}$ according som some optimisation scheme, typically SGD with a favoured optimised. For reference, plain gradient descent reads: $\mathcal{U}(\svec{\theta}, \nabla_{\!\svec{\theta}}) = \svec{\theta} - \eta\nabla_{\!\svec{\theta}}$, where $\eta$ is the learning rate. 

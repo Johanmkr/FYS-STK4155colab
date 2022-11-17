@@ -1,28 +1,30 @@
 # **Project 2**: Classification and regression
 
-We present the work of Johan Mylius Kroken and Nanna Bryne in the second project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder. 
+We present the work of Johan Mylius Kroken and Nanna Bryne in the second project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder.
 
 The results are located in `output/data/**`, where you find information about how they where obtained in `output/data/**/README.md`. You will find the output plots in `output/figures` with associated key parameters described in `output/figures/README.md`.
 
-
 ## **CODE**
 
-In the following, we assume `code` to be the home directory. 
+In the following, we assume `code` to be the home directory.
+
 ## How to run
 
-To properly run the code, make sure you are in the `code` directory. 
+To properly run the code, make sure you are in the `code` directory.
 
 DESCRIBE HOW TO USE MAKEFILE!
 
 ### Examples
+
 ```
 make plots
 ### ???
 ```
 
-
 ### Prerequisities
+
 In addition to the regular libraries, such as `numpy` and `matplotlib`, the user needs the below-listed libraries downloaded on beforehand to properly run the codes.
+
 - `pandas`
 - `seaborn`
 - `tabulate`
@@ -30,7 +32,7 @@ In addition to the regular libraries, such as `numpy` and `matplotlib`, the user
 - `copy`
 
 ## Structure
- 
+
 `generate_plots.py` uses functions from `plot.py` to create all plots. These functions read relevant information from `../output/data/**/info.pkl` so that it is saved to `../output/figures/info.pkl` and presented in `../output/figures/README.md`.
 
 The main programs are run from the following scripts:
@@ -50,6 +52,6 @@ Useful imports, random seed, miscellaneous functions etc. is stored in this file
 
 SHORT DESC.
 
-### **`src/NeuralNetwork.py`**
+### **`src/devNeuralNetwork.py`**
 
-SHORT DESC.
+Contains the neural network class, and main functionalitites of the network itself. Nothing is run from this file, it only contain the network class.
