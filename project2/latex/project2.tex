@@ -52,7 +52,7 @@ We build a versatile neural network code in order to perform linear regression a
 \section*{Notation and nomenclature}
 
 \subsection*{Datasets and outputs} % working title
-\begin{itemize}[leftmargin=2.5em]
+\begin{itemize}[leftmargin=2.4em]
     \item[$\mathcal{D}$] Dataset $\big\{ X, \vec{y} \big\}$ of length $n$ on the form $\big\{(\vec{x}^{(1)}, y^{(1)}),\,(\vec{x}^{(2)}, y^{(2)}),\,\dots, \, (\vec{x}^{(n)}, y^{(n)}) \big\} $
     \item[$f$] Function $f(\svec{\theta}; \vec{x})$ that gives the model's output $\hat{y}$ given some input $\vec{x}$
     \item[$\mathcal{L}$] Total loss function $\mathcal{L}(\hat{y}, y)$ where $\hat{y}= f(\svec{\theta}; \vec{x})$ is the output from our model (often written as $\mathcal{L}(\svec{\theta})$ for ease of notation)
@@ -71,7 +71,7 @@ We build a versatile neural network code in order to perform linear regression a
 \end{itemize}
 
 \subsection*{Network components}
-\begin{itemize}[leftmargin=3.6em]
+\begin{itemize}[leftmargin=3.8em]
     \item[$\vec{a}$] $\in\RR[N_l]\, ;$ Activation argument of layer $l$
     \item[$\vec{b}^l$] $\in \RR[N_l]\,;$ Bias term of neurons in layer $l$
     \item[$g_l$] $:\,\RR[N_l] \to\RR[N_{l}]\,;$ Activation function associated with layer $l$, an affine transformation
@@ -80,7 +80,7 @@ We build a versatile neural network code in order to perform linear regression a
     \item[$W^{l\to l+\! 1}$] $\in \RR[N_l \cross N_{l+\! 1}]\,;$ Matrix of weights describing the mapping from layer $l$ to layer $l+1$ ($W^{l+\! 1 \leftarrow l} \equiv [W^{l\to l+\! 1}]\TT$)
 \end{itemize}
 
-\subsection*{Hyperparameter syntax}
+\subsection*{Hyperparameters}
 \begin{itemize}[leftmargin=2.8em]
     \item[$L$] Number of layers in an NN, not counting the input layer, or label of output layer 
     \item[$m$] Number of minibatches in SGD
@@ -93,7 +93,7 @@ We build a versatile neural network code in order to perform linear regression a
 \subsection*{Miscellaneous}
 \begin{enumerate}[leftmargin=4.1em]
     \item[$\mathcal{N}(\mu, \sigma)$]  Normal distribution with mean $\mu$ and standard deviation $\sigma$
-    \item[VAR] Variance of $A$ \checkthis{FIX!!}
+    \item[Var$(A)$] Variance of $A$ % something strange here
     \item[$\nabla_{\!\xi} J$] Gradient of a function $J$ with respect to $\svec{\xi}$
 \end{enumerate}
 
