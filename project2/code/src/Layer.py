@@ -22,7 +22,7 @@ class Layer:
             self.neurons = neurons
             self.h = None
             #   Only hidden layers and output layers need weights and biases
-            self.bias = np.ones((1,self.neurons)) * 0.01 #how do we initialise this
+            self.bias = np.ones((1,self.neurons)) * 0.01    #small but non-zero value
             self.w = None
         self.a = None 
         self.delta = None
@@ -46,9 +46,7 @@ class Layer:
             limit = np.sqrt(2/float(neuronsOut))
             self.w = np.random.normal(0.0, limit, size=(neuronsIn, neuronsOut)).T
 
-    def UpdateLayer(self,
-                    inputs:int = None,
-                    features:int = None) -> None:
+    def UpdateLayer(self, inputs:int = None, features:int = None) -> None:
         """Updates the layer with new input data and features.
 
         Args:
