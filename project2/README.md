@@ -1,4 +1,4 @@
-# **Project 2**: Classification and regression
+# **Project 2**: Classification and Regression
 
 We present the work of Johan Mylius Kroken and Nanna Bryne in the second project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder, or [here](https://github.com/Johanmkr/FYS-STK4155colab/blob/main/project2/latex/project2.pdf).
 
