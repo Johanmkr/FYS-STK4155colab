@@ -73,15 +73,27 @@ Useful imports, random seed, miscellaneous functions etc. is stored in this file
 
 #### **`src/GradientDescent.py`**
 
-Scrips for performing different sorts of gradient descent algorithms. A simple usage of the main class `SGD` is implemented in `devNeuralNetwork`.
+Script for performing different sorts of gradient descent algorithms. A simple usage of the main class `SGD` is implemented in `devNeuralNetwork`.
 
 #### **`src/devNeuralNetwork.py`**
 
-SHORT DESC. (Jojo)
+Main neural network class. Has no external functions, does only contain the neural network class. 
 
-#### **`src/LossFunctions.py`**,  **`src/ExtendAndCollapse.py`**,  **`src/Layer.py`**
+#### **`src/LossFunctions.py`**
 
-Contains classes to help pass information in the NN code. 
+Library of loss functions. 
+
+#### **`src/ActivationFunction.py`**
+
+Library of activation functions. 
+
+#### **`src/ExtendAndCollapse.py`**
+
+Class to hold the weight and biases of every layer, expanded into one large array for weights and one for biases. The class has functionality to compute the gradients of the whole network simultaneously, and collapse the weights and biases back into their layer individuals. 
+
+#### **`src/Layer.py`**
+
+Class to contain the layer objects. It has class variables to keep track of the number of neurons, their value, their biases and the weights feeding forward to this layer. 
 
 #### **`src/infoFile_ala_Nanna.py`**
 
