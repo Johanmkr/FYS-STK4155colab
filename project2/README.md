@@ -1,11 +1,11 @@
-
 # **Project 2**: Classification and regression
 
-We present the work of Johan Mylius Kroken and Nanna Bryne in the second project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder.
+We present the work of Johan Mylius Kroken and Nanna Bryne in the second project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder, or [here](https://github.com/Johanmkr/FYS-STK4155colab/blob/main/project2/latex/project2.pdf).
 
 ### Abstract
 
->We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 minibatches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 minibatches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1. 
+> We build a versatile neural network code in order to perform linear regression and binary classification tasks. We train the network by minising the loss function by performing plain and stochastic gradient descent (SGD) for a variety of optimisation algorithms. SGD with RMSProp optimiser perform best and is used in training. A network with 1 hidden layer of 30 neurons where $\eta=10^{-1}$ and $\lambda=10^{-4}$ which uses the sigmoid activation function trained for 700 epochs with 2 minibatches yield the best test MSE of 0.052 when trained to fit the noise Franke function, compared to an MSE of 0.15 for OLS. For the binary classification task the data is the Wisconsin Breast Cancer data. A neural network of 2 hidden layers of 10 neurons each where $\eta=10^{-3}$ and $\lambda=10^{-6}$ which uses the ReLU activation function trained for 900 epochs with 5 minibatches yield the best accuracy of 1. Logistic regression with $\eta=10^{-3}$ and $\lambda=10^{-8}$ also yield an accuracy of 1.
+
 ## **RESULTS**
 
 The results are located in `output/data/**`, where you find information about how they where obtained in `output/data/**/README.md`. You will find the output plots in `output/figures` with associated key parameters described in `output/figures/README.md`.
@@ -19,31 +19,32 @@ In the following, we assume `code` to be the home directory.
 To properly run the code, make sure you are in the `code` directory. The `makefile` makes it easy to rerun the analyses and recreate the plots. Note that all runs will require input argument e.g. "`yes`" and it should be easy to follow the instructions given in the terminal.
 
 * Run the SGD regression part (simple one-dimensional polynomial)
-    ~~~
-    make SGDregression
-    ~~~
+  ~~~
+  make SGDregression
+  ~~~
 * Run the NN regression part (Franke function)
-    ~~~
-    make NNregression
-    ~~~
+  ~~~
+  make NNregression
+  ~~~
 * Run the classification part (Cancer data)
-    - with NN
-        ~~~
-        make NNclassification
-        ~~~
-    - with logistic regression
-        ~~~
-        make logistic
-        ~~~
+  - with NN
+    ~~~
+    make NNclassification
+    ~~~
+  - with logistic regression
+    ~~~
+    make logistic
+    ~~~
 
-And finally, 
+And finally,
+
 * to generate and show plots, type:
-    ~~~
-    make plots
-    ~~~
-
+  ~~~
+  make plots
+  ~~~
 
 ## Prerequisities
+
 In addition to the regular libraries, such as `numpy` and `matplotlib`, the user needs the below-listed libraries downloaded on beforehand to properly run the codes.
 
 - `pandas`
@@ -77,23 +78,23 @@ Script for performing different sorts of gradient descent algorithms. A simple u
 
 #### **`src/devNeuralNetwork.py`**
 
-Main neural network class. Has no external functions, does only contain the neural network class. 
+Main neural network class. Has no external functions, does only contain the neural network class.
 
 #### **`src/LossFunctions.py`**
 
-Library of loss functions. 
+Library of loss functions.
 
 #### **`src/ActivationFunction.py`**
 
-Library of activation functions. 
+Library of activation functions.
 
 #### **`src/ExtendAndCollapse.py`**
 
-Class to hold the weight and biases of every layer, expanded into one large array for weights and one for biases. The class has functionality to compute the gradients of the whole network simultaneously, and collapse the weights and biases back into their layer individuals. 
+Class to hold the weight and biases of every layer, expanded into one large array for weights and one for biases. The class has functionality to compute the gradients of the whole network simultaneously, and collapse the weights and biases back into their layer individuals.
 
 #### **`src/Layer.py`**
 
-Class to contain the layer objects. It has class variables to keep track of the number of neurons, their value, their biases and the weights feeding forward to this layer. 
+Class to contain the layer objects. It has class variables to keep track of the number of neurons, their value, their biases and the weights feeding forward to this layer.
 
 #### **`src/infoFile_ala_Nanna.py`**
 
