@@ -303,7 +303,7 @@ class rule_AdaGrad(noneRULEadaptive):
             gradient of loss function at befitting arguments
         """
         self.r = self.r + grad**2
-        self.v = - self.eta*(self.epsilon+np.sqrt(self.r))**(-1) * grad # check if this is element-wise
+        self.v = - self.eta*(self.epsilon+np.sqrt(self.r))**(-1) * grad
         self.theta = theta + self.v 
 
     def set_params(self, eta:float=None, epsilon:float=None):
@@ -350,7 +350,7 @@ class rule_RMSProp(noneRULEadaptive):
             gradient of loss function at befitting arguments
         """
         self.r = self.rho*self.r + (1-self.rho)*grad**2
-        self.v = - self.eta / (np.sqrt(self.epsilon + self.r))*grad # is this element-wise? should be...
+        self.v = - self.eta / (np.sqrt(self.epsilon + self.r))*grad
         self.theta = theta + self.v
 
     def set_params(self, eta:float=None, rho:float=None,  epsilon:float=None):
@@ -409,7 +409,7 @@ class rule_Adam(noneRULEadaptive):
         self.r = self.rho2*self.r + (1-self.rho2)*grad**2
         s_hat = self.s * (1-self.rho1**k)**(-1)
         r_hat = self.r * (1-self.rho2**k)**(-1)
-        self.v = - self.eta*s_hat * (np.sqrt(r_hat) + self.epsilon)**(-1) # is this element-wise? should be...
+        self.v = - self.eta*s_hat * (np.sqrt(r_hat) + self.epsilon)**(-1) 
         self.theta = theta + self.v
 
     def set_params(self, eta:float=None, rho1:float=None, rho2:float=None, epsilon:float=None):
@@ -537,7 +537,6 @@ class noneGradientDescent:
         """
         Apply Nesterov momentum.
         """
-        # try-except?
         self.grad = lambda k=0: self.compute_gradient(self.theta + self.update_rule.gamma+self.v)
 
     def set_update_rule(self, scheme:str, params:dict={}, NAG=False):
@@ -639,7 +638,7 @@ class noneGradientDescent:
         def gradient(x, y, theta):
             # FIXME
             def lf(theta):
-                xt = x@theta # is this ok? What about intercept??
+                xt = x@theta 
                 return - np.mean( y*(xt )  - np.log10(1 +np.exp(xt) )) # cross entropy
             return egrad(lf)(theta)
         self.grad = gradient
