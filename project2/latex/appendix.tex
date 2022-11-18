@@ -89,45 +89,72 @@
 
 \section{Optimiser algorithms}\label{app:optimisers}
 
-\checkthis{FIX CITATIONS}
 
-Adagrad\footnote{Algorithm 8.4 in Goodfellow et al.}
+We have the parameter update 
+\begin{equation}\label{eq:update_rule_opt}
+    \svec{\theta}_{k+1} = \svec{\theta}_k + \vec{v}_k, \quad k=0,1,\dots, (m\times\#\mathrm{epochs})-1
+\end{equation}
+for which $\vec{v}_k$ can be computed in different ways. We present three update rules of the adaptive learning rate sort. All require:
+\begin{enumerate}[label=*]
+    \item a global learning rate $\eta$
+    \item a small number $\epsilon$ for numerical stability
+    \item an initial parameter $\svec{\theta}_0$
+    \item an initial accumulation variable $\vec{r}_{-1}$ (and $\vec{s}_{-1}$ for Adam)
+\end{enumerate}
 
-\begin{algorithm}
-\caption{Adagrad algorithm}\label{algo:adagrad}
-\begin{algorithmic}
-    \Require Global learning rate $\eta$
-    \Require Initial parameter $\svec{\theta}$
-    \Ensure Initialise gradient accumulation variable $\vec{r} = \vec{0}$
-    \While{$\abs{\vec{v}}>10^{-10}$}
-        \State Accumulate squared gradient: $\vec{r} \leftarrow \vec{r} + \vec{g}\odot\vec{g}$
-        \State Compute update 
-    \EndWhile
-\end{algorithmic}
-\end{algorithm}
+
+\begin{enumerate}[leftmargin=0pt,labelwidth=!,labelsep=.05em]
+    \item[] The \textbf{AdaGrad} algorithm has the following update rule, in combination with eq. \eqref{eq:update_rule_opt}:
+    \begin{subequations}\label{eq:adagrad_algo}
+    \begin{align}
+        \vec{r}_{k} &= \vec{r}_{k-1} + \mathcal{A}_k \odot \mathcal{A}_k \,;\\
+        \vec{v}_{k} &= -\frac{\eta}{\epsilon + \sqrt{\vec{r}_k}} \odot \mathcal{A}_k \,;\label{eq:v_ada}
+    \end{align}
+    \end{subequations}
+    \item[] The \textbf{RMSProp} algorithm needs a decay rate $\rho$, and in combination with eq. \eqref{eq:update_rule_opt} updates the parameter as follows:
+    \begin{subequations}\label{eq:rmsprop_algo}
+    \begin{align}
+        \vec{r}_{k} &= \rho \vec{r}_{k-1} + (1-\rho)\mathcal{A}_k \odot \mathcal{A}_k\,; \\
+        \vec{v}_{k} &= -\frac{\eta}{\sqrt{\epsilon + \vec{r}_k}} \odot \mathcal{A}_k\,;\label{eq:v_rms}
+    \end{align}
+    \end{subequations}
+    \item[] The \textbf{Adam} algorithm requires two decay rates $\rho_1, \rho_2 \in [0, 1)$ and uses the following scheme to find the parameter change in \eqref{eq:update_rule_opt}:
+    \begin{subequations}\label{eq:adam_algo}
+    \begin{align}
+        \vec{s}_{k} &= \rho_1 \vec{s}_{k-1} + (1-\rho_1)\mathcal{A}_k\,; \\
+        \vec{r}_{k} &= \rho_2 \vec{r}_{k-1} + (1-\rho_2)\mathcal{A}_k \odot \mathcal{A}_k\,; \\
+        \hat{\vec{s}} &= \frac{\vec{s}_k}{1-\rho_1^{k+1}}\,; \\
+        \hat{\vec{r}} &= \frac{\vec{r}_k}{1-\rho_2^{k+1}}\,; \\
+        \vec{v}_{k} &= -\frac{\eta \hat{\vec{s}}}{\epsilon+\sqrt{\hat{\vec{r}}}} \,; \label{eq:v_adam}
+    \end{align}
+    \end{subequations}
+\end{enumerate}
+
+
+In eqs. \eqref{eq:v_ada} the division and square root operations are applied element-wise. 
 
 
 
 
 \section{Back propagation algorithm}\label{app:backprop}
-    The output $\vec{\hat{y}}$ of our NN is given by the layer value of the output layer $\vec{h}^L$ passed through an output function $g_L$: $\vec{\hat{y}} = g_L(\vec{h}^L)$. The output error is given by
+    The output $\vec{\hat{y}}$ of our NN is given by the layer value of the output layer $\vec{h}^L$ passed through an output function $g_L$, s.t. $\vec{\hat{y}} = g_L(\vec{h}^L)$. The output error is given by
     \begin{equation}\label{eq:app_backprop_output_error}
         \svec{\delta}^L = \dv{g_L(\vec{a}^L)}{\vec{a}^L} \odot \pdv{\mathcal{L}}{\vec{\hat{y}}} =\dv{g_L(\vec{a}^L)}{\vec{a}^L} \odot \pdv{\mathcal{L}}{\vec{h}^L}\left( \pdv{\vec{\hat{y}}}{\vec{h}^L} \right)^{-1},
     \end{equation}
-    where $\odot$ is the element wise Hadamard product. This error is propagated through the layers of the network in backward order,
+    where $\odot$ is the element-wise Hadamard product. This error is propagated through the layers of the network in backward order,
     \begin{equation}\label{eq:app_backprop_prop_error}
-        \svec{\delta}^l = \svec{\delta}^{l+1}W^{l+1\!\to l} \odot \dv{}{\vec{a}^l}g_l(\vec{a}^l),
+        \svec{\delta}^l = \svec{\delta}^{l+1}W^{l+\!1\leftarrow l} \odot \dv{}{\vec{a}^l}g_l(\vec{a}^l),
     \end{equation}
     for $l=L-1, L-2,\dots, 1$. Having found the error propagated through each layer, we update the weights and biases as follows:
     \begin{equation}\label{eq:app_backprop_update}
         \begin{split}
-            \nabla_{\!W}^l &= (\svec{\delta}^l)\TT\vec{h}^{l-1} \\
-            \nabla_{\!b}^l &= \svec{\delta}^l \\
-            W^l &= \mathcal{U}(W^l, \nabla_{\!W}^l)\\
-            \vec{b}^l &= \mathcal{U}(\vec{b}^l, \nabla_{\!b}^l) \\
-            \implies \svec{\theta}^l &= \mathcal{U}(\svec{\theta}^l, \nabla_{\!\theta}^l) \,;\quad\quad\quad \svec{\theta}^l = (W^l, \vec{b}^l)
-,        \end{split}
+            \nabla_{\!W^{l-\!1\to l}} \mathcal{L} &= \svec{\delta}^l\big[\vec{h}^{l-1}\big]\TT\,; \\
+            \nabla_{\!\vec{b}^l} \mathcal{L}&= \svec{\delta}^l\,; \\
+            W^{l-\!1\to l} &= \mathcal{U}(W^{l-\! 1 \to l}, \nabla_{\!W^{l-\! 1\to l}} \mathcal{L})\,;\\
+            \vec{b}^l &= \mathcal{U}(\vec{b}^l, \nabla_{\!\vec{b}^l} \mathcal{L})\,; \\
+            \implies \Theta^l &= \mathcal{U}(\Theta^l, \nabla_{\!\Theta^l}\mathcal{L}) \,;\quad\quad \Theta^l \equiv (W^{l-\! 1 \to l}, \vec{b}^l) \,;
+        \end{split}
     \end{equation}
-    Here $\mathcal{U}(\svec{\theta}, \nabla_{\!\theta})$ is a function that updates the parameter $\svec{\theta}$ according som some optimisation scheme, typically SGD with a favoured optimised. For reference, plain gradient descent reads: $\mathcal{U}(\svec{\theta}, \nabla_{\!\theta}) = \svec{\theta} - \eta\nabla_{\!\theta}$, where $\eta$ is the learning rate. 
+    Here $\mathcal{U}(\Theta, \nabla_{\!\Theta}\mathcal{L})$ is a function that updates the parameter $\Theta$ according som some optimisation scheme, typically SGD with a favoured optimised. For reference, plain gradient descent reads $\mathcal{U}(\Theta, \nabla_{\!\Theta}\mathcal{L}) =\Theta - \eta\nabla_{\!\Theta}\mathcal{L}$, where $\eta$ is the learning rate. 
 
 
