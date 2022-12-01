@@ -1,5 +1,11 @@
 # **Project 3**: Something something 
 
+In collaboration with three others, found [here](https://github.com/hkve/FYS-STK4155/tree/main/Project3).
+
+
+# Delete the below
+
+
 OBSOBS! Not ready at all. Remember to fix before deadline.
 
 We present the work of Johan Mylius Kroken and Nanna Bryne in the third and last project in Applied Data Analysis and Machine Learning (autumn 2022). The project report (creatively named `project2.pdf`) is found in the `latex`-folder, or [here](https://github.com/Johanmkr/FYS-STK4155colab/blob/main/project2/latex/project3.pdf).
